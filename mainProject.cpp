@@ -549,6 +549,9 @@ int main(int argc, char*argv[])
 
     float walkSpeed = 0.5f;
     float runSpeed = 1.0f;
+    float scaleFactor = 0.25f;
+    float scaleSpeed = 0.25f;
+
     bool isRunning = false;
     bool wireframe = false;
     bool spinning = false;
@@ -584,7 +587,7 @@ int main(int argc, char*argv[])
 
         // Top right triangle - translate by (0.5, 0.5, 0.5)
         // Scaling model by 0.25, notice negative value to flip Y axis
-        mat4 scalingMatrix = scale(mat4(1.0f), vec3(0.25f, 0.25f, 0.25f));
+        mat4 scalingMatrix = scale(mat4(1.0f), vec3(scaleFactor, scaleFactor, scaleFactor));
         mat4 translationMatrix = translate(mat4(1.0f), vec3(0.5f, 0.5f, -5.0f));
 
         mat4 worldMatrix = translationMatrix * rotationMatrix * scalingMatrix;
@@ -633,12 +636,25 @@ int main(int argc, char*argv[])
             // glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
             cameraPosition = vec3(0.0f, 0.0f, 5.0f);
+            scaleFactor = 0.25f;
         }
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
             isRunning = true;
         } else {
             isRunning = false;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+        {
+            // scale up
+            scaleFactor += scaleSpeed * dt;
+        }
+        
+        if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+        {
+            // scale down
+            scaleFactor -= scaleSpeed * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
