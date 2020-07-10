@@ -211,13 +211,17 @@ int main(int argc, char* argv[])
     float cameraFastSpeed = 2 * cameraSpeed;
     float cameraHorizontalAngle = 90.0f;
     float cameraVerticalAngle = 0.0f;
+    float FOV = 70.0f;
     bool  cameraFirstPerson = true; // press 1 or 2 to toggle this variable
+    bool xMoveMode = false;
+    bool angleMoveMode = false;
+    bool zoomMoveMode = false;
 
     // Spinning cube at camera position
     float spinningCubeAngle = 0.0f;
 
     // Set projection matrix for shader, this won't change
-    mat4 projectionMatrix = glm::perspective(70.0f,            // field of view in degrees
+    mat4 projectionMatrix = glm::perspective(FOV,            // field of view in degrees
         800.0f / 600.0f,  // aspect ratio
         0.01f, 100.0f);   // near and far (near > 0)
 
@@ -232,7 +236,7 @@ int main(int argc, char* argv[])
     GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
-    //int gridVBO = createGRIDVertexBufferObject();
+    int gridVBO = createGRIDVertexBufferObject();
 
     // For frame time
     float lastFrameTime = glfwGetTime();
@@ -240,15 +244,11 @@ int main(int argc, char* argv[])
     double lastMousePosX, lastMousePosY;
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
+    // Other OpenGL states to set once
     // Enable Backface culling
     glEnable(GL_CULL_FACE);
 
-    // Enable Depth Test
-    glEnable(GL_DEPTH_TEST);
-
-    bool xMoveMode = false;
-    bool angleMoveMode = false;
-    bool zoomMoveMode = false;
+    glEnable(GL_DEPTH_TEST); // @TODO 1
 
     // Entering Main Loop
     while (!glfwWindowShouldClose(window))
@@ -265,7 +265,7 @@ int main(int argc, char* argv[])
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Draw geometry
-        //glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
         //glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
         // Draw ground
@@ -273,7 +273,7 @@ int main(int argc, char* argv[])
         GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
         glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &groundWorldMatrix[0][0]);
 
-        //glDrawArrays(GL_LINES, 0, 32); // 36 vertices, starting at index 0
+        glDrawArrays(GL_LINES, 0, 32); // 36 vertices, starting at index 0
 
         // End Frame
         glfwSwapBuffers(window);
@@ -337,27 +337,31 @@ int main(int argc, char* argv[])
         }
 
         // On key down , unset movement mode flag
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_RELEASE) {
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_RELEASE)
+        {
             xMoveMode = false;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        {
             angleMoveMode = true;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_RELEASE) {
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_RELEASE)
+        {
             angleMoveMode = false;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        {
             zoomMoveMode = true;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_RELEASE) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_RELEASE)
+        {
             zoomMoveMode = false;
         }
 
-        // On GLFW_KEY_RIGHT key down, begin while loop
         if (xMoveMode)
         {
             glfwPollEvents();
@@ -366,25 +370,19 @@ int main(int argc, char* argv[])
             double mousePosX, mousePosY;
             glfwGetCursorPos(window, &mousePosX, &mousePosY);
             double dx_pos = mousePosX - lastMousePosX;
-            double dy_pos = mousePosY - lastMousePosY;
+            lastMousePosX = mousePosX;
 
-            if (xMoveMode) {
-
-                lastMousePosX = mousePosX;
-
-                // If mouse position goes toward positive axis, increase cameraposition
-                if (dx_pos > 0) {
-                    cameraPosition.x += currentCameraSpeed * dt;
-                }
-                // If position goes toward negative axis, increase cameraposition
-                else if (dx_pos < 0) {
-                    cameraPosition.x -= currentCameraSpeed * dt;
-                }
+            // If mouse position goes toward positive axis, increase cameraposition
+            if (dx_pos > 0) {
+                cameraPosition.x += currentCameraSpeed * dx_pos * dt;
+            }
+            // If position goes toward negative axis, increase cameraposition
+            else if (dx_pos < 0) {
+                cameraPosition.x -= currentCameraSpeed * (-1) * dx_pos * dt;
             }
 
         }
 
-        // On GLFW_KEY_UP key down, begin while loop
         if (angleMoveMode)
         {
             glfwPollEvents();
@@ -396,15 +394,20 @@ int main(int argc, char* argv[])
             lastMousePosY = mousePosY;
 
             if (dy_pos < 0) {
-                cameraVerticalAngle += cameraAngularSpeed * dt;
+                cameraVerticalAngle += cameraAngularSpeed * dt * -1 * dy_pos;
             }
 
             else if (dy_pos > 0) {
-                cameraVerticalAngle -= cameraAngularSpeed * dt;
+                cameraVerticalAngle -= cameraAngularSpeed * dt * dy_pos;
             }
         }
 
-        // On GLFW_KEY_UP key down, begin while loop
+        /*
+         *  NOTE: in zoomMoveMode, I chose to manipulate the FOV to zoom. IF we slowly increase/decrease the FOV linearly,
+         *  the view goes upside down then right side up again depending on the values. So here, I have chosen three
+         *  "safe" values we can jump around to: 90.0f, 70.0f, and 0.5f.
+         */
+
         if (zoomMoveMode)
         {
             glfwPollEvents();
@@ -415,24 +418,30 @@ int main(int argc, char* argv[])
             double dy_pos = mousePosY - lastMousePosY;
             lastMousePosY = mousePosY;
 
-            // If mouse position goes toward positive axis, increase cameraposition
             if (dy_pos > 0) {
-
-                //INSTEAD OF X POSITION THIS SHOULD BE ZOOM
-                //glTranslate3f(5.0, 0.0, 0.0);
-                //cameraPosition.x += currentCameraSpeed * dt;
+                if (FOV == 70.0f) {
+                    FOV = 90.0f;
+                }
+                else if (FOV == 0.5f) {
+                    FOV = 70.f;
+                }
             }
 
-            // If position goes toward negative axis, increase cameraposition
             else if (dy_pos < 0) {
-                //glTranslate3f(-5.0, 0.0, 0.0);
-                //cameraPosition.x -= currentCameraSpeed * dt;
+                if (FOV == 90.0f) {
+                    FOV = 70.0f;
+                }
+                else if (FOV == 70.0f) {
+                    FOV = 0.5f;
+                }
             }
 
-            // On key up, break from while loop
-            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_RELEASE) {
-                break;
-            }
+            mat4 projectionMatrix = glm::perspective(FOV,            // field of view in degrees
+                800.0f / 600.0f,  // aspect ratio
+                0.01f, 100.0f);   // near and far (near > 0)
+
+            GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+            glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
         }
 
