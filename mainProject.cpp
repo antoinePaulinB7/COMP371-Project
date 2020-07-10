@@ -26,11 +26,17 @@ const char* getVertexShaderSource()
                 "#version 330 core\n"
                 "layout (location = 0) in vec3 aPos;"
                 "layout (location = 1) in vec3 aColor;"
+                ""
+                "uniform mat4 worldMatrix;"
+                "uniform mat4 viewMatrix = mat4(1.0);"  // default value for view matrix (identity)
+                "uniform mat4 projectionMatrix = mat4(1.0);"
+                ""
                 "out vec3 vertexColor;"
                 "void main()"
                 "{"
                 "   vertexColor = aColor;"
-                "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);"
+                "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+                "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
                 "}";
 }
 
@@ -103,53 +109,93 @@ int compileAndLinkShaders()
     return shaderProgram;
 }
 
-int createVertexArrayObject()
+int createVertexBufferObject()
 {
-    // A vertex is a point on a polygon, it contains positions and other data (eg: colors)
-    glm::vec3 vertexArray[] = {
-        glm::vec3( 0.0f,  0.5f, 0.03f),  // top center position
-        glm::vec3( 1.0f,  0.0f, 0.0f),  // top center color (red)
-        glm::vec3( 0.5f, -0.5f, 0.03f),  // bottom right
-        glm::vec3( 0.0f,  1.0f, 0.0f),  // bottom right color (green)
-        glm::vec3(-0.5f, -0.5f, 0.03f),  // bottom left
-        glm::vec3( 0.0f,  0.0f, 1.0f),  // bottom left color (blue)
-    };
-    
-    // Create a vertex array
-    GLuint vertexArrayObject;
-    glGenVertexArrays(1, &vertexArrayObject);
-    glBindVertexArray(vertexArrayObject);
-    
-    
-    // Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-    GLuint vertexBufferObject;
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+	// Cube model
+	glm::vec3 vertexArray[] = {  // position,                            color
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f), //left - gray
+		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
 
-    glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-                          3,                   // size
-                          GL_FLOAT,            // type
-                          GL_FALSE,            // normalized?
-                          2*sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
-                          (void*)0             // array buffer offset
-                          );
-    glEnableVertexAttribArray(0);
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+
+		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f), // far - white
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+
+		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+
+		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f), // bottom - grey
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+
+		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+
+		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f), // near - white
+		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+
+		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+
+		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f), // right - grey
+		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+
+		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+
+		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f), // top - grey
+		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+
+		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f)
+	};
 
 
-    glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-                          3,
-                          GL_FLOAT,
-                          GL_FALSE,
-                          2*sizeof(glm::vec3),
-                          (void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
-                          );
-    glEnableVertexAttribArray(1);
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
 
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindVertexArray(0);
 
-  return vertexArrayObject;
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
+		3,                   // size
+		GL_FLOAT,            // type
+		GL_FALSE,            // normalized?
+		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
+		(void*)0             // array buffer offset
+	);
+	glEnableVertexAttribArray(0);
+
+
+	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		2 * sizeof(glm::vec3),
+		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
+	);
+	glEnableVertexAttribArray(1);
+
+
+	return vertexBufferObject;
 }
 
 
@@ -193,34 +239,149 @@ int main(int argc, char*argv[])
     
     // Compile and link shaders here ...
     int shaderProgram = compileAndLinkShaders();
+
+	// We can set the shader once, since we have only one
+	glUseProgram(shaderProgram);
+
+
+	// Camera parameters for view transform
+	glm::vec3 cameraPosition(0.6f, 1.0f, 10.0f);
+	glm::vec3 cameraLookAt(0.0f, 0.0f, -1.0f);
+	glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+
+	// Other camera parameters
+	float cameraSpeed = 1.0f;
+	float cameraFastSpeed = 2 * cameraSpeed;
+	float cameraHorizontalAngle = 90.0f;
+	float cameraVerticalAngle = 0.0f;
+
+
+	// Set projection matrix for shader, this won't change
+	glm::mat4 projectionMatrix = glm::perspective(70.0f,            // field of view in degrees
+		800.0f / 600.0f,  // aspect ratio
+		0.01f, 100.0f);   // near and far (near > 0)
+
+	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+
+
+	// Set initial view matrix
+	glm::mat4 viewMatrix = lookAt(cameraPosition,  // eye
+		cameraPosition + cameraLookAt,  // center
+		cameraUp); // up
+
+	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+
+	// Define and upload geometry to the GPU here ...
+	int vbo = createVertexBufferObject();
     
-    // Define and upload geometry to the GPU here ...
-    int vao = createVertexArrayObject();
-    
-    // Variables to be used later in tutorial
-    float angle = 0;
-    float rotationSpeed = 180.0f;  // 180 degrees per second
-    float lastFrameTime = glfwGetTime();
+	// For frame time
+	float lastFrameTime = glfwGetTime();
+	int lastMouseLeftState = GLFW_RELEASE;
+	double lastMousePosX, lastMousePosY;
+	glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
+
+	// Enable Backface culling
+	glEnable(GL_CULL_FACE);
 
     // Entering Main Loop
     while(!glfwWindowShouldClose(window))
     {
-        // Each frame, reset color of each pixel to glClearColor
-        glClear(GL_COLOR_BUFFER_BIT);
-        
-        // Draw geometry
-        glUseProgram(shaderProgram);
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3); // 3 vertices, starting at index 0
+		// Frame time calculation
+		float dt = glfwGetTime() - lastFrameTime;
+		lastFrameTime += dt;
 
-        glBindVertexArray(0);
+		glEnable(GL_DEPTH_TEST);
+
+        // Each frame, reset color of each pixel to glClearColor
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+		// Draw geometry
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+		// Draw ground
+		//glm::mat4 groundWorldMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.01f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1000.0f, 0.02f, 1000.0f));
+		GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+		//glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &groundWorldMatrix[0][0]);
+
+		//glDrawArrays(GL_TRIANGLES, 0, 36); // 36 vertices, starting at index 0
+
+		// Draw pillars
+		glm::mat4 letterL1 = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL1[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glm::mat4 letterL2 = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL2[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glm::mat4 nine1 = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine1[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glm::mat4 nine2 = translate(glm::mat4(1.0f), glm::vec3(1.5f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine2[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glm::mat4 nine3 = translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.5f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine3[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glm::mat4 nine4 = translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine4[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+/*
+		for (int i = 0; i < 20; ++i)
+		{
+			for (int j = 0; j < 20; ++j)
+			{
+				pillarWorldMatrix = translate(glm::mat4(1.0f), glm::vec3(-100.0f + i * 10.0f, 5.0f, -100.0f + j * 10.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 10.0f, 1.0f));
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &pillarWorldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+
+				pillarWorldMatrix = translate(glm::mat4(1.0f), glm::vec3(-100.0f + i * 10.0f, 0.55f, -100.0f + j * 10.0f)) * rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.1f, 1.1f, 1.1f));
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &pillarWorldMatrix[0][0]);
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+		}*/
+
+		glDrawArrays(GL_TRIANGLES, 0, 36);
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
         
         // Handle inputs
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, true);
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			glfwSetWindowShouldClose(window, true);
+
+		// This was solution for Lab02 - Moving camera exercise
+		// We'll change this to be a first or third person camera
+		bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+		float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
+
+
+		// @TODO 5 = use camera lookat and side vectors to update positions with ASDW
+		// adjust code below
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move camera to the left
+		{
+			cameraPosition.x -= currentCameraSpeed * dt;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move camera to the right
+		{
+			cameraPosition.x += currentCameraSpeed * dt;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move camera up
+		{
+			cameraPosition.y -= currentCameraSpeed * dt;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move camera down
+		{
+			cameraPosition.y += currentCameraSpeed * dt;
+		}
+
+		glm::mat4 viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+
+		GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
     }
     
     // Shutdown GLFW
