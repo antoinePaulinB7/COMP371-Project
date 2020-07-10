@@ -332,32 +332,32 @@ int main(int argc, char* argv[])
         /* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 
         // On key up, set movement mode flag
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
             xMoveMode = true;
         }
 
         // On key down , unset movement mode flag
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_RELEASE)
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
         {
             xMoveMode = false;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
         {
             angleMoveMode = true;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_RELEASE)
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_RELEASE)
         {
             angleMoveMode = false;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
         {
             zoomMoveMode = true;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_RELEASE)
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
         {
             zoomMoveMode = false;
         }
