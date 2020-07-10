@@ -19,6 +19,10 @@
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 
+#include <algorithm>
+using namespace std;
+#include <list>
+
 const char* getVertexShaderSource()
 {
     // For now, you use a string for your shader code, in the assignment, shaders will be stored in .glsl files
@@ -153,11 +157,11 @@ int createVertexArrayObject()
 }
 
 
-int main(int argc, char*argv[])
+int main(int argc, char* argv[])
 {
     // Initialize GLFW and OpenGL version
     glfwInit();
-    
+
 #if defined(PLATFORM_OSX)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -170,7 +174,7 @@ int main(int argc, char*argv[])
 #endif
 
     // Create Window and rendering context using GLFW, resolution is 800x600
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Comp371 - Lab 02", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Comp371 - Lab 03", NULL, NULL);
     if (window == NULL)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -178,7 +182,6 @@ int main(int argc, char*argv[])
         return -1;
     }
     glfwMakeContextCurrent(window);
-    
 
     // Initialize GLEW
     glewExperimental = true; // Needed for core profile
@@ -190,41 +193,243 @@ int main(int argc, char*argv[])
 
     // Black background
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    
+
     // Compile and link shaders here ...
     int shaderProgram = compileAndLinkShaders();
-    
-    // Define and upload geometry to the GPU here ...
-    int vao = createVertexArrayObject();
-    
-    // Variables to be used later in tutorial
-    float angle = 0;
-    float rotationSpeed = 180.0f;  // 180 degrees per second
+
+    // We can set the shader once, since we have only one
+    glUseProgram(shaderProgram);
+
+
+    // Camera parameters for view transform
+    vec3 cameraPosition(0.6f, 1.0f, 10.0f);
+    vec3 cameraLookAt(0.0f, 0.0f, -1.0f);
+    vec3 cameraUp(0.0f, 1.0f, 0.0f);
+
+    // Other camera parameters
+    float cameraSpeed = 1.0f;
+    float cameraFastSpeed = 2 * cameraSpeed;
+    float cameraHorizontalAngle = 90.0f;
+    float cameraVerticalAngle = 0.0f;
+    bool  cameraFirstPerson = true; // press 1 or 2 to toggle this variable
+
+    // Spinning cube at camera position
+    float spinningCubeAngle = 0.0f;
+
+    // Set projection matrix for shader, this won't change
+    mat4 projectionMatrix = glm::perspective(70.0f,            // field of view in degrees
+        800.0f / 600.0f,  // aspect ratio
+        0.01f, 100.0f);   // near and far (near > 0)
+
+    GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+    glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+
+    // Set initial view matrix
+    mat4 viewMatrix = lookAt(cameraPosition,  // eye
+        cameraPosition + cameraLookAt,  // center
+        cameraUp); // up
+
+    GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+    glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+
+    //int gridVBO = createGRIDVertexBufferObject();
+
+    // For frame time
     float lastFrameTime = glfwGetTime();
+    int lastMouseLeftState = GLFW_RELEASE;
+    double lastMousePosX, lastMousePosY;
+    glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
+
+    // Enable Backface culling
+    glEnable(GL_CULL_FACE);
+
+    // Enable Depth Test
+    glEnable(GL_DEPTH_TEST);
 
     // Entering Main Loop
-    while(!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window))
     {
-        // Each frame, reset color of each pixel to glClearColor
-        glClear(GL_COLOR_BUFFER_BIT);
-        
-        // Draw geometry
-        glUseProgram(shaderProgram);
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3); // 3 vertices, starting at index 0
+        // Frame time calculation
+        float dt = glfwGetTime() - lastFrameTime;
+        lastFrameTime += dt;
 
-        glBindVertexArray(0);
+        // Each frame, reset color of each pixel to glClearColor
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Add the GL_DEPTH_BUFFER_BIT to glClear – TODO 1
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Draw geometry
+        glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+        //glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+        // Draw ground
+        mat4 groundWorldMatrix = translate(mat4(1.0f), vec3(0.0f, -0.01f, 0.0f)) * scale(mat4(1.0f), vec3(1000.0f, 0.02f, 1000.0f));
+        GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &groundWorldMatrix[0][0]);
+
+        // glDrawArrays(GL_LINES, 0, 32); // 36 vertices, starting at index 0
+
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
-        
+
         // Handle inputs
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
+
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) // move camera down
+        {
+            cameraFirstPerson = true;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) // move camera down
+        {
+            cameraFirstPerson = false;
+        }
+
+        bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+        float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
+
+        // Retrieving mouse coordinates
+        double mousePosX, mousePosY;
+        glfwGetCursorPos(window, &mousePosX, &mousePosY);
+
+        // Calculating directional movement
+        double dx = mousePosX - lastMousePosX;
+        double dy = mousePosY - lastMousePosY;
+
+        // Update last position coordinates
+        lastMousePosX = mousePosX;
+        lastMousePosY = mousePosY;
+
+        // Convert to spherical coordinates
+        const float cameraAngularSpeed = 60.0f;
+
+        cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
+        if (cameraHorizontalAngle > 360)
+        {
+            cameraHorizontalAngle -= 360;
+        }
+        else if (cameraHorizontalAngle < -360)
+        {
+            cameraHorizontalAngle += 360;
+        }
+
+        float theta = radians(cameraHorizontalAngle);
+        float phi = radians(cameraVerticalAngle);
+
+        cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
+        vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
+
+        glm::normalize(cameraSideVector);
+
+        /* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
+
+        // On GLFW_KEY_RIGHT key down, begin while loop
+        while (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        {
+            glfwPollEvents();
+
+            // Update mouse position, dx values
+            double mousePosX, mousePosY;
+            glfwGetCursorPos(window, &mousePosX, &mousePosY);
+            double dx_pos = mousePosX - lastMousePosX;
+            lastMousePosX = mousePosX;
+
+            // If mouse position goes toward positive axis, increase cameraposition
+            if (dx_pos > 0) {
+                cameraPosition.x += currentCameraSpeed * dt;
+            }
+            // If position goes toward negative axis, increase cameraposition
+            else if (dx_pos < 0) {
+                cameraPosition.x -= currentCameraSpeed * dt;
+            }
+
+            mat4 viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+
+            GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+            glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+
+            // On key up, break from while loop
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_RELEASE) {
+                break;
+            }
+
+        }
+
+        // On GLFW_KEY_UP key down, begin while loop
+        while (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        {
+            glfwPollEvents();
+
+            // Update mouse position, dx values
+            double mousePosX, mousePosY;
+            glfwGetCursorPos(window, &mousePosX, &mousePosY);
+            double dy_pos = mousePosY - lastMousePosY;
+            lastMousePosY = mousePosY;
+
+            if (dy_pos < 0) {
+                cameraVerticalAngle += cameraAngularSpeed * dt;
+            }
+
+            else if (dy_pos > 0) {
+                cameraVerticalAngle -= cameraAngularSpeed * dt;
+            }
+
+            // On key up, break from while loop
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_RELEASE) {
+                break;
+            }
+
+        }
+
+        // On GLFW_KEY_UP key down, begin while loop
+        while (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        {
+            glfwPollEvents();
+
+            // Update mouse position, dx values
+            double mousePosX, mousePosY;
+            glfwGetCursorPos(window, &mousePosX, &mousePosY);
+            double dy_pos = mousePosY - lastMousePosY;
+            lastMousePosY = mousePosY;
+
+            // If mouse position goes toward positive axis, increase cameraposition
+            if (dy_pos > 0) {
+
+                //INSTEAD OF X POSITION THIS SHOULD BE ZOOM
+                //glTranslate3f(5.0, 0.0, 0.0);
+                //cameraPosition.x += currentCameraSpeed * dt;
+            }
+
+            // If position goes toward negative axis, increase cameraposition
+            else if (dy_pos < 0) {
+                //glTranslate3f(-5.0, 0.0, 0.0);
+                //cameraPosition.x -= currentCameraSpeed * dt;
+            }
+
+            // On key up, break from while loop
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_RELEASE) {
+                break;
+            }
+
+        }
+
+        /* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
+
+        // Update viewMatrix
+        mat4 viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+
+        // Update viewMatrixLocation
+        GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+        glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+
     }
-    
+
     // Shutdown GLFW
     glfwTerminate();
-    
+
     return 0;
 }
