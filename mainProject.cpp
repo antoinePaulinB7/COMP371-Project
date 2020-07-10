@@ -246,6 +246,10 @@ int main(int argc, char* argv[])
     // Enable Depth Test
     glEnable(GL_DEPTH_TEST);
 
+    bool xMoveMode = false;
+    bool angleMoveMode = false;
+    bool zoomMoveMode = false;
+
     // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -261,7 +265,7 @@ int main(int argc, char* argv[])
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Draw geometry
-        glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+        //glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
         //glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
         // Draw ground
@@ -269,7 +273,7 @@ int main(int argc, char* argv[])
         GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
         glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &groundWorldMatrix[0][0]);
 
-        // glDrawArrays(GL_LINES, 0, 32); // 36 vertices, starting at index 0
+        //glDrawArrays(GL_LINES, 0, 32); // 36 vertices, starting at index 0
 
         // End Frame
         glfwSwapBuffers(window);
@@ -327,8 +331,34 @@ int main(int argc, char* argv[])
 
         /* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 
+        // On key up, set movement mode flag
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            xMoveMode = true;
+        }
+
+        // On key down , unset movement mode flag
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_RELEASE) {
+            xMoveMode = false;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+            angleMoveMode = true;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_RELEASE) {
+            angleMoveMode = false;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+            zoomMoveMode = true;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_RELEASE) {
+            zoomMoveMode = false;
+        }
+
         // On GLFW_KEY_RIGHT key down, begin while loop
-        while (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        if (xMoveMode)
         {
             glfwPollEvents();
 
@@ -336,31 +366,26 @@ int main(int argc, char* argv[])
             double mousePosX, mousePosY;
             glfwGetCursorPos(window, &mousePosX, &mousePosY);
             double dx_pos = mousePosX - lastMousePosX;
-            lastMousePosX = mousePosX;
+            double dy_pos = mousePosY - lastMousePosY;
 
-            // If mouse position goes toward positive axis, increase cameraposition
-            if (dx_pos > 0) {
-                cameraPosition.x += currentCameraSpeed * dt;
-            }
-            // If position goes toward negative axis, increase cameraposition
-            else if (dx_pos < 0) {
-                cameraPosition.x -= currentCameraSpeed * dt;
-            }
+            if (xMoveMode) {
 
-            mat4 viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+                lastMousePosX = mousePosX;
 
-            GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-            glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
-            // On key up, break from while loop
-            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_RELEASE) {
-                break;
+                // If mouse position goes toward positive axis, increase cameraposition
+                if (dx_pos > 0) {
+                    cameraPosition.x += currentCameraSpeed * dt;
+                }
+                // If position goes toward negative axis, increase cameraposition
+                else if (dx_pos < 0) {
+                    cameraPosition.x -= currentCameraSpeed * dt;
+                }
             }
 
         }
 
         // On GLFW_KEY_UP key down, begin while loop
-        while (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        if (angleMoveMode)
         {
             glfwPollEvents();
 
@@ -377,16 +402,10 @@ int main(int argc, char* argv[])
             else if (dy_pos > 0) {
                 cameraVerticalAngle -= cameraAngularSpeed * dt;
             }
-
-            // On key up, break from while loop
-            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_RELEASE) {
-                break;
-            }
-
         }
 
         // On GLFW_KEY_UP key down, begin while loop
-        while (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        if (zoomMoveMode)
         {
             glfwPollEvents();
 
