@@ -952,49 +952,47 @@ int main(int argc, char*argv[])
 			//define identity matrices to translate, rotate and scale I9 model
 			//used for hierarchical modeling 
 			mat4 translateI9Model = translate(mat4(1.0f), vec3(10.0f, 0.0f, -10.0f));
-			mat4 scaleI9Model(1.0f);
-			mat4 rotateI9Model = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 90.0f, 0.0f));
 
 			//----------------------------------------------------------------------------------
 			//get the worldview of the model within the scene
-			mat4 WorldView_Model = translateI9Model * scaleI9Model * rotateI9Model * sharedModelMatrix;
+			mat4 I9_Model = translateI9Model * sharedModelMatrix;
 
 			//topI
-			mat4 topI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, -3.f))* scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
+			mat4 topI = I9_Model * translate(mat4(1.0f), vec3(-3.0f, 4.5f, 0.0f))* scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &topI[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 
 
 			//middleI
-			mat4 middleI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.5f, -3.f)) * scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f));
+			mat4 middleI = I9_Model * translate(mat4(1.0f), vec3(-3.0f, 2.5f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &middleI[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 
 			//bottomI
-			mat4 bottomI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 0.5f, -3.f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
+			mat4 bottomI = I9_Model * translate(mat4(1.0f), vec3(-3.0f, 0.5f, 0.0f)) * scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &bottomI[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 
 			//top9
-			mat4 top9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, 2.75f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.5f));
+			mat4 top9 = I9_Model * translate(mat4(1.0f), vec3(2.75f, 4.5f, 0.0f)) * scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &top9[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 
 
 			//left9
-			mat4 left9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 3.25f, 1.5f)) * scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
+			mat4 left9 = I9_Model * translate(mat4(1.0f), vec3(1.5f, 3.25f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &left9[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 
 
 			//bottom9
-			mat4 bottom9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.0f, 2.75f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.5f));
+			mat4 bottom9 = I9_Model * translate(mat4(1.0f), vec3(2.75f, 2.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &bottom9[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 
 
 			//right9
-			mat4 right9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.51f, 4.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.f, 1.0f));
+			mat4 right9 = I9_Model * translate(mat4(1.0f), vec3(4.0f, 2.51f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.f, 1.0f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &right9[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 			//----------------------------------------------------------------------------------
