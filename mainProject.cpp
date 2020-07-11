@@ -109,7 +109,7 @@ int compileAndLinkShaders()
     return shaderProgram;
 }
 
-int createVertexBufferObject()
+int createUnitCubeVertexBufferObject()
 {
 	// Cube model
 	glm::vec3 vertexArray[] = {  // position,                            color
@@ -274,7 +274,7 @@ int main(int argc, char*argv[])
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
 	// Define and upload geometry to the GPU here ...
-	int vbo = createVertexBufferObject();
+	int unitCubeVBO = createUnitCubeVertexBufferObject();
     
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -282,8 +282,9 @@ int main(int argc, char*argv[])
 	double lastMousePosX, lastMousePosY;
 	glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
-	// Enable Backface culling
+	// Enable Backface culling and depth test
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 
     // Entering Main Loop
     while(!glfwWindowShouldClose(window))
@@ -292,22 +293,16 @@ int main(int argc, char*argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
-		glEnable(GL_DEPTH_TEST);
-
         // Each frame, reset color of each pixel to glClearColor
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-		// Draw geometry
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		// Draw alphanumeric models
+		glBindBuffer(GL_ARRAY_BUFFER, unitCubeVBO);
 
-		// Draw ground
-		//glm::mat4 groundWorldMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.01f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1000.0f, 0.02f, 1000.0f));
 		GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-		//glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &groundWorldMatrix[0][0]);
 
-		//glDrawArrays(GL_TRIANGLES, 0, 36); // 36 vertices, starting at index 0
-
-		// Draw pillars
+#pragma region L9
+		// Draw L9
 		glm::mat4 letterL1 = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL1[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -326,22 +321,8 @@ int main(int argc, char*argv[])
 		glm::mat4 nine4 = translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine4[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-/*
-		for (int i = 0; i < 20; ++i)
-		{
-			for (int j = 0; j < 20; ++j)
-			{
-				pillarWorldMatrix = translate(glm::mat4(1.0f), glm::vec3(-100.0f + i * 10.0f, 5.0f, -100.0f + j * 10.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 10.0f, 1.0f));
-				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &pillarWorldMatrix[0][0]);
-				glDrawArrays(GL_TRIANGLES, 0, 36);
+#pragma endregion
 
-				pillarWorldMatrix = translate(glm::mat4(1.0f), glm::vec3(-100.0f + i * 10.0f, 0.55f, -100.0f + j * 10.0f)) * rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.1f, 1.1f, 1.1f));
-				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &pillarWorldMatrix[0][0]);
-				glDrawArrays(GL_TRIANGLES, 0, 36);
-			}
-		}*/
-
-		glDrawArrays(GL_TRIANGLES, 0, 36);
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
