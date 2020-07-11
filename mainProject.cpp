@@ -22,9 +22,9 @@ using namespace std;
 #pragma region unitCubes
 int createUnitCubeVertexBufferObject()
 {
-	// Cube model
-	glm::vec3 vertexArray[] = {  // position,                            color
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f), //left - gray
+	// Cube model (position, colors)
+	glm::vec3 vertexArray[] = {
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f), //left - grey
 		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
 		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
 
@@ -884,27 +884,63 @@ int main(int argc, char*argv[])
 		if (drawL9) {
 			glBindVertexArray(unitCubeVBO);
 
-			mat4 translateL9Model = translate(mat4(1.0f), vec3(-10.0f, 0.0f, -10.0f));
+		// Draw L9 using hierarchical modeling
+		// Setting up the L9 Matrix - Changing the values of the translation of L9 will change its position in the world
+		glm::mat4 L9Matrix = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
 
-			// Draw L9
-			glm::mat4 letterL1 = translateL9Model * translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL1[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glm::mat4 letterL2 = translateL9Model * translate(glm::mat4(1.0f), glm::vec3(-1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL2[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glm::mat4 nine1 = translateL9Model * translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine1[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glm::mat4 nine2 = translateL9Model * translate(glm::mat4(1.0f), glm::vec3(1.5f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine2[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glm::mat4 nine3 = translateL9Model * translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.5f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine3[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glm::mat4 nine4 = translateL9Model * translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine4[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
+		// Setting up the letter L
+		glm::mat4 LMatrix = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+
+		// Creating left-part of the letter L
+		glm::mat4 Lpart = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+
+		glm::mat4 Lpart1 = L9Matrix * LMatrix * Lpart;
+		
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart1[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Creating right-part of the letter L
+		Lpart = translate(glm::mat4(1.0f), glm::vec3(1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+
+		glm::mat4 Lpart2 = L9Matrix * LMatrix * Lpart;
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart2[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Setting up the number 9
+		glm::mat4 Num9Matrix = translate(glm::mat4(1.0f), glm::vec3(4.5f, 0.0f, 0.0f));
+
+		// Creating top-part of the number 9
+		glm::mat4 Num9part = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+
+		glm::mat4 Num9part1 = L9Matrix * Num9Matrix * Num9part;
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part1[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Creating right-part of the number 9
+		Num9part = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+
+		glm::mat4 Num9part2 = L9Matrix * Num9Matrix * Num9part;
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part2[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Creating left-part of the number 9
+		Num9part = translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+
+		glm::mat4 Num9part3 = L9Matrix * Num9Matrix * Num9part;
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part3[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Creating bottom-part of the number 9
+		Num9part = translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
+
+		glm::mat4 Num9part4 = L9Matrix * Num9Matrix * Num9part;
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part4[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 #pragma endregion
 
