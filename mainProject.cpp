@@ -202,9 +202,65 @@ int createUnitCubeVertexBufferObject()
 	return vertexBufferObject;
 }
 
+// Camera parameters
+float cameraSpeed = 1.0f;
+float cameraFastSpeed = 2 * cameraSpeed;
+float cameraHorizontalAngle = 90.0f;
+float cameraVerticalAngle = 0.0f;
+float FOV = 70.0f;
+const float cameraAngularSpeed = 60.0f;
+bool cameraFirstPerson = true, xMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
+
+void handleCameraFlagInputs(GLFWwindow* window) {
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) // move camera down
+	{
+		cameraFirstPerson = true;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) // move camera down
+	{
+		cameraFirstPerson = false;
+	}
+
+	fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+
+	// On key up, set movement mode flag
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+		xMoveMode = true;
+	}
+
+	// On key down , unset movement mode flag
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+	{
+		xMoveMode = false;
+	}
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
+	{
+		angleMoveMode = true;
+	}
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_RELEASE)
+	{
+		angleMoveMode = false;
+	}
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+	{
+		zoomMoveMode = true;
+	}
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+	{
+		zoomMoveMode = false;
+	}
+
+}
+
 
 int main(int argc, char* argv[])
 {
+#pragma region windowSetUp
     // Initialize GLFW and OpenGL version
     glfwInit();
 
@@ -245,19 +301,12 @@ int main(int argc, char* argv[])
   
 	// We can set the shader once, since we have only one
 	glUseProgram(shaderProgram);
-
+#pragma endregion windowSetUp
 
 	// Camera parameters for view transform
 	glm::vec3 cameraPosition(0.6f, 1.0f, 10.0f);
 	glm::vec3 cameraLookAt(0.0f, 0.0f, -1.0f);
 	glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
-
-	// Other camera parameters
-	float cameraSpeed = 1.0f;
-	float cameraFastSpeed = 2 * cameraSpeed;
-	float cameraHorizontalAngle = 90.0f;
-	float cameraVerticalAngle = 0.0f;
-
 
 	// Set projection matrix for shader, this won't change
 	glm::mat4 projectionMatrix = glm::perspective(70.0f,            // field of view in degrees
@@ -292,8 +341,7 @@ int main(int argc, char* argv[])
     // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
-
-    // Frame time calculation
+		// Frame time calculation
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
@@ -332,20 +380,10 @@ int main(int argc, char* argv[])
         glfwPollEvents();
 
         // Handle inputs
+		handleCameraFlagInputs(window);
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) // move camera down
-        {
-            cameraFirstPerson = true;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) // move camera down
-        {
-            cameraFirstPerson = false;
-        }
-
-        bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
         float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
 
         // Retrieving mouse coordinates
@@ -360,9 +398,6 @@ int main(int argc, char* argv[])
         lastMousePosX = mousePosX;
         lastMousePosY = mousePosY;
 
-        // Convert to spherical coordinates
-        const float cameraAngularSpeed = 60.0f;
-
         cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
         if (cameraHorizontalAngle > 360)
         {
@@ -373,84 +408,36 @@ int main(int argc, char* argv[])
             cameraHorizontalAngle += 360;
         }
 
-        float theta = radians(cameraHorizontalAngle);
-        float phi = radians(cameraVerticalAngle);
+        float theta = glm::radians(cameraHorizontalAngle);
+        float phi = glm::radians(cameraVerticalAngle);
 
-        cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
-        vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
+        cameraLookAt = glm::vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
+		glm::vec3 cameraSideVector = glm::cross(cameraLookAt, glm::vec3(0.0f, 1.0f, 0.0f));
 
         glm::normalize(cameraSideVector);
 
-        /* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
-
-        // On key up, set movement mode flag
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-            xMoveMode = true;
-        }
-
-        // On key down , unset movement mode flag
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
-        {
-            xMoveMode = false;
-        }
-
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
-        {
-            angleMoveMode = true;
-        }
-
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_RELEASE)
-        {
-            angleMoveMode = false;
-        }
-
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-        {
-            zoomMoveMode = true;
-        }
-
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-        {
-            zoomMoveMode = false;
-        }
-
+        /* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */      
         if (xMoveMode)
         {
-            glfwPollEvents();
-
-            // Update mouse position, dx values
-            double mousePosX, mousePosY;
-            glfwGetCursorPos(window, &mousePosX, &mousePosY);
-            double dx_pos = mousePosX - lastMousePosX;
-            lastMousePosX = mousePosX;
-
             // If mouse position goes toward positive axis, increase cameraposition
-            if (dx_pos > 0) {
-                cameraPosition.x += currentCameraSpeed * dx_pos * dt;
+            if (dx > 0) {
+                cameraPosition.x += currentCameraSpeed * dx * dt;
             }
             // If position goes toward negative axis, increase cameraposition
-            else if (dx_pos < 0) {
-                cameraPosition.x -= currentCameraSpeed * (-1) * dx_pos * dt;
+            else if (dx < 0) {
+                cameraPosition.x -= currentCameraSpeed * (-1) * dx * dt;
             }
 
         }
 
         if (angleMoveMode)
         {
-            glfwPollEvents();
-
-            // Update mouse position, dx values
-            double mousePosX, mousePosY;
-            glfwGetCursorPos(window, &mousePosX, &mousePosY);
-            double dy_pos = mousePosY - lastMousePosY;
-            lastMousePosY = mousePosY;
-
-            if (dy_pos < 0) {
-                cameraVerticalAngle += cameraAngularSpeed * dt * -1 * dy_pos;
+            if (dy < 0) {
+                cameraVerticalAngle += cameraAngularSpeed * dt * -1 * dy;
             }
 
-            else if (dy_pos > 0) {
-                cameraVerticalAngle -= cameraAngularSpeed * dt * dy_pos;
+            else if (dy > 0) {
+                cameraVerticalAngle -= cameraAngularSpeed * dt * dy;
             }
         }
 
@@ -462,15 +449,7 @@ int main(int argc, char* argv[])
 
         if (zoomMoveMode)
         {
-            glfwPollEvents();
-
-            // Update mouse position, dx values
-            double mousePosX, mousePosY;
-            glfwGetCursorPos(window, &mousePosX, &mousePosY);
-            double dy_pos = mousePosY - lastMousePosY;
-            lastMousePosY = mousePosY;
-
-            if (dy_pos > 0) {
+            if (dy > 0) {
                 if (FOV == 70.0f) {
                     FOV = 90.0f;
                 }
@@ -479,7 +458,7 @@ int main(int argc, char* argv[])
                 }
             }
 
-            else if (dy_pos < 0) {
+            else if (dy < 0) {
                 if (FOV == 90.0f) {
                     FOV = 70.0f;
                 }
@@ -488,7 +467,7 @@ int main(int argc, char* argv[])
                 }
             }
 
-            mat4 projectionMatrix = glm::perspective(FOV,            // field of view in degrees
+			glm::mat4 projectionMatrix = glm::perspective(FOV,            // field of view in degrees
                 800.0f / 600.0f,  // aspect ratio
                 0.01f, 100.0f);   // near and far (near > 0)
 
@@ -500,7 +479,7 @@ int main(int argc, char* argv[])
         /* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 
         // Update viewMatrix
-        mat4 viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+        glm::mat4 viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 
         // Update viewMatrixLocation
         GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
