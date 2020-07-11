@@ -1,117 +1,24 @@
-//
-// COMP 371 Labs Framework
-//
-// Created by Nicolas Bergeron on 20/06/2019.
-//
-// Inspired by the following tutorials:
-// - https://learnopengl.com/Getting-started/Hello-Window
-// - https://learnopengl.com/Getting-started/Hello-Triangle
-
 #include <iostream>
+#include <list>
+#define GLEW_STATIC 1
 
-
-#define GLEW_STATIC 1   // This allows linking with Static Library on Windows, without DLL
-#include <GL/glew.h>    // Include GLEW - OpenGL Extension Wrangler
-
-#include <GLFW/glfw3.h> // GLFW provides a cross-platform interface for creating a graphical context,
-                        // initializing OpenGL and binding inputs
-
-#include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
-#include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
-
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/common.hpp>
+#include "vertices.h"
+#include "shaders.h"
+#include <time.h>
 #include <algorithm>
-using namespace std;
 #include <list>
 
-const char* getVertexShaderSource()
-{
-    // For now, you use a string for your shader code, in the assignment, shaders will be stored in .glsl files
-    return
-                "#version 330 core\n"
-                "layout (location = 0) in vec3 aPos;"
-                "layout (location = 1) in vec3 aColor;"
-                ""
-                "uniform mat4 worldMatrix;"
-                "uniform mat4 viewMatrix = mat4(1.0);"  // default value for view matrix (identity)
-                "uniform mat4 projectionMatrix = mat4(1.0);"
-                ""
-                "out vec3 vertexColor;"
-                "void main()"
-                "{"
-                "   vertexColor = aColor;"
-                "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-                "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-                "}";
-}
+//define namespaces for glm and c++ std
+using namespace glm;
+using namespace std;
 
-
-const char* getFragmentShaderSource()
-{
-    return
-                "#version 330 core\n"
-                "in vec3 vertexColor;"
-                "out vec4 FragColor;"
-                "void main()"
-                "{"
-                "   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
-                "}";
-}
-
-
-int compileAndLinkShaders()
-{
-    // compile and link shader program
-    // return shader program id
-    // ------------------------------------
-
-    // vertex shader
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    const char* vertexShaderSource = getVertexShaderSource();
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    
-    // fragment shader
-    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fragmentShaderSource = getFragmentShaderSource();
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    
-    // link shaders
-    int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-    
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-    
-    return shaderProgram;
-}
+//storing the redering mode in a variable 
+	int renderingMode = GL_TRIANGLES;
 
 int createUnitCubeVertexBufferObject()
 {
@@ -412,6 +319,42 @@ int main(int argc, char*argv[])
 	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
+  //define identity matrices to translate, rotate and scale I9 model
+	//used for hierarchical modeling 
+	mat4 translateI9Model(1.f);
+	mat4 scaleI9Model(1.f);
+	mat4 rotateI9Model = rotate(mat4(1.0f), radians(90.0f), vec3(00.0f, 90.0f, 0.0f));
+  
+  	GLuint model_Shader = Shader("G:/COMP 371/Lab02FullFramework/Lab_Framework/Source/modelShader.vs", 
+		"G:/COMP 371/Lab02FullFramework/Lab_Framework/Source/modelShader.fs");
+  
+  	//Define and upload geometry to the GPU here by creating a VAO and VBO that has multiple objects
+	//This way we can store the geometry of all the objects at different indices.
+	//adapted from the online tutorial: https://learnopengl.com/Getting-started/Hello-Triangle
+	GLuint VAOs[3], VBOs[3];
+	glGenVertexArrays(3, VAOs);
+	glGenBuffers(3, VBOs);
+
+	/* IGNORE
+	//grid vertices
+	glBindVertexArray(VAOs[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(grid_vertices), grid_vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0); 
+
+	//axis vertices
+	glBindVertexArray(VAOs[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(axis_vertices), axis_vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);  
+	*/
+
+	//model vertices
+	glBindVertexArray(VAOs[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(model_vertices), model_vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  
 	// Define and upload geometry to the GPU here ...
 	int unitCubeVBO = createUnitCubeVertexBufferObject();    
   int cubeVBO = createVertexBufferObjectU3();
@@ -503,9 +446,76 @@ int main(int argc, char*argv[])
 		}
 #pragma endregion
 
-        // End Frame
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+#pragma region I9
+      		//setting up the MVP of the world to place the objects 
+		modelViewProjection = projectionMatrix * viewMatrix * modelMatrix;
+
+		//----------------------------------------------------------------------------------
+		//geometry for the I9 model
+		glEnableVertexAttribArray(0);
+		glUseProgram(model_Shader);
+		glBindVertexArray(VAOs[2]);
+
+
+		//get the worldview of the model within the scene
+		mat4 WorldView_Model = projectionMatrix * viewMatrix * translateI9Model * scaleI9Model * rotateI9Model;
+
+		//get the mvp of the model and uniform color variable so we can use it to make the I and 9.
+		GLuint modelViewProjection_Model = glGetUniformLocation(model_Shader, "mvp");
+		GLuint model_Color = glGetUniformLocation(model_Shader, "model_color");
+
+		//topI
+		mat4 topI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, -3.f))* scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
+		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &topI[0][0]);
+		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
+		glDrawArrays(renderingMode, 0, 36);
+
+
+		//middleI
+		mat4 middleI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.5f, -3.f)) * scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f));
+		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &middleI[0][0]);
+		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
+		glDrawArrays(renderingMode, 0, 36);
+
+		//bottomI
+		mat4 bottomI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 0.5f, -3.f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
+		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &bottomI[0][0]);
+		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
+		glDrawArrays(renderingMode, 0, 36);
+
+		//top9
+		mat4 top9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, 2.75f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.5f));
+		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &top9[0][0]);
+		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
+		glDrawArrays(renderingMode, 0, 36);
+
+
+		//left9
+		mat4 left9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 3.25f, 1.5f)) * scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
+		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &left9[0][0]);
+		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
+		glDrawArrays(renderingMode, 0, 36);
+
+
+		//bottom9
+		mat4 bottom9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.0f, 2.75f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.5f));
+		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &bottom9[0][0]);
+		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
+		glDrawArrays(renderingMode, 0, 36);
+
+
+		//right9
+		mat4 right9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.51f, 4.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.f, 1.0f));
+		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &right9[0][0]);
+		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
+		glDrawArrays(renderingMode, 0, 36);
+		//----------------------------------------------------------------------------------
+#pragma endregion
+
+      		// End Frame, include swap interval to prevent blurriness
+		glfwSwapBuffers(window);
+		glfwSwapInterval(1);
+		glfwPollEvents();
 
         // Handle inputs
 		handleCameraFlagInputs(window);
@@ -605,6 +615,57 @@ int main(int argc, char*argv[])
         }
 
         /* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
+      
+      	//----------------------------------------------------------------------------------
+		//User can change the rendering mode
+		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) //change to points
+		{
+			renderingMode = GL_POINTS;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) //change to lines
+		{
+			renderingMode = GL_LINES;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) //change to trianges
+		{
+			renderingMode = GL_TRIANGLES;
+		}
+
+		//Changing World Orientation 
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) //rotate X axis in anti-clockwise direction
+		{
+			modelMatrix = modelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(-1.0f, 0.f, 0.f));
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) //rotate X axis in clockwise direction
+		{
+			modelMatrix = modelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(1.0f, 0.f, 0.f));
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) //rotate Y axis in anti-clockwise direction
+		{
+			modelMatrix = modelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, -1.f, 0.f));
+		}
+
+
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) //rotate Y axis in clockwise direction
+		{
+			modelMatrix = modelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, 1.0f, 0.f));
+		}
+
+		//reset world orientation to original settings
+		//used Tab to test as I do not have a Home button
+		if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS) 
+		{
+			modelMatrix = mat4(1.0f);
+		}
+		//----------------------------------------------------------------------------------
+
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			glfwSetWindowShouldClose(window, true);
+
 
         // Update viewMatrix
         glm::mat4 viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
@@ -619,3 +680,4 @@ int main(int argc, char*argv[])
 
     return 0;
 }
+
