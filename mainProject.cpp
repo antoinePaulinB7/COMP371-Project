@@ -23,6 +23,8 @@
 using namespace glm;
 
 // font taken from https://fontstruct.com/fontstructions/show/716744/3_by_5_pixel_font
+// I'm really sorry this is all in one file. I am so freakin illiterate in C++, I have no clue what do.
+// But basically, this maps a char to a string that represents a square pattern following the pixel font linked above
 std::map<char, char*> alphabet = {
     { 'A',
         "***"
@@ -278,6 +280,8 @@ std::map<char, char*> alphabet = {
     }
 };
 
+// This is just the basic vertex shader from the labs
+// Could be put in a separate file
 const char* getVertexShaderSource()
 {
     // For now, you use a string for your shader code, in the assignment, shaders will be stored in .glsl files
@@ -299,6 +303,7 @@ const char* getVertexShaderSource()
                 "}";
 }
 
+// Same here
 const char* getFragmentShaderSource()
 {
     return
@@ -370,54 +375,56 @@ int compileAndLinkShaders()
 int createVertexArrayObject()
 {
     // Cube model
+
+    // Straight from the lab code, except I translated the vertices to start at 0,0,0 because otherwise my brain melts.
     vec3 vertexArray[] = {  // position, color
-        vec3(0.0f,0.0f,0.0f), vec3(1.0f, 0.0f, 0.0f), //left - red
-        vec3(0.0f,0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), //left - red
+        vec3(0.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
         vec3(0.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
         
-        vec3(0.0f,0.0f,0.0f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f),
         vec3(0.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
-        vec3(0.0f, 1.0f,0.0f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(0.0f, 1.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f),
         
-        vec3( 1.0f, 1.0f,0.0f), vec3(0.0f, 0.0f, 1.0f), // far - blue
-        vec3(0.0f,0.0f,0.0f), vec3(0.0f, 0.0f, 1.0f),
-        vec3(0.0f, 1.0f,0.0f), vec3(0.0f, 0.0f, 1.0f),
+        vec3(1.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), // far - blue
+        vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+        vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
         
-        vec3( 1.0f, 1.0f,0.0f), vec3(0.0f, 0.0f, 1.0f),
-        vec3( 1.0f,0.0f,0.0f), vec3(0.0f, 0.0f, 1.0f),
-        vec3(0.0f,0.0f,0.0f), vec3(0.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+        vec3( 0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
         
-        vec3( 1.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
-        vec3(0.0f,0.0f,0.0f), vec3(0.0f, 1.0f, 1.0f),
-        vec3( 1.0f,0.0f,0.0f), vec3(0.0f, 1.0f, 1.0f),
+        vec3( 1.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
+        vec3( 0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 1.0f),
+        vec3( 1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 1.0f),
         
-        vec3( 1.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f),
-        vec3(0.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f),
-        vec3(0.0f,0.0f,0.0f), vec3(0.0f, 1.0f, 1.0f),
+        vec3( 1.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f),
+        vec3( 0.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f),
+        vec3( 0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 1.0f),
         
-        vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), // near - green
-        vec3(0.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
-        vec3( 1.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
+        vec3( 0.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), // near - green
+        vec3( 0.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
+        vec3( 1.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
         
         vec3( 1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
-        vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
-        vec3( 1.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
+        vec3( 0.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
+        vec3( 1.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
         
         vec3( 1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), // right - purple
-        vec3( 1.0f,0.0f,0.0f), vec3(1.0f, 0.0f, 1.0f),
-        vec3( 1.0f, 1.0f,0.0f), vec3(1.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 1.0f, 0.0f), vec3(1.0f, 0.0f, 1.0f),
         
-        vec3( 1.0f,0.0f,0.0f), vec3(1.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 1.0f),
         vec3( 1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f),
-        vec3( 1.0f,0.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f),
         
         vec3( 1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
-        vec3( 1.0f, 1.0f,0.0f), vec3(1.0f, 1.0f, 0.0f),
-        vec3(0.0f, 1.0f,0.0f), vec3(1.0f, 1.0f, 0.0f),
+        vec3( 1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f),
+        vec3( 0.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f),
         
         vec3( 1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 0.0f),
-        vec3(0.0f, 1.0f,0.0f), vec3(1.0f, 1.0f, 0.0f),
-        vec3(0.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 0.0f)
+        vec3( 0.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f),
+        vec3( 0.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 0.0f)
     };
 
     
@@ -455,47 +462,31 @@ int createVertexArrayObject()
     return vertexArrayObject;
 }
 
-void drawGrid() {
-    glPolygonMode(GL_BACK, GL_LINE);
-    glColor3f(1.0, 0.0, 0.0);
-    int xsize = 0, ysize = 0;
-    for(int j = 0; j < 10; j++)
-    {
-        xsize = 0;
-        for(int i = 0; i < 10; i++)
-        {
-            glBegin(GL_POLYGON);
-                glVertex3f(-50.0+xsize, -50.0+ysize, -5.0);
-                glVertex3f(-40.0+xsize, -50.0+ysize, -5.0);
-                glVertex3f(-40.0+xsize, -40.0+ysize, -5.0);
-                glVertex3f(-50.0+xsize, -40.0+ysize, -5.0);
-            glEnd();
-            xsize += 10.0;
-        }
-        ysize += 10.0;
-    }
-    glFlush();
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
-void drawLetter(char c, int index, mat4 modelTranslationMatrix, mat4 modelRotationMatrix, mat4 modelScalingMatrix, GLuint worldMatrixLocation, mat4 worldMatrix)
+/*
+ * This is the main rendering function.
+ * It picks a letter from the alphabet and draws it according to the
+ * modelMatrix transform
+ */
+void drawLetter(char c, int index, mat4 modelMatrix, GLuint worldMatrixLocation)
 {
     char* letter = alphabet[c];
 
-    mat4 primitiveScalingMatrix = scale(mat4(1.0f), vec3(1.0f));
+    // The primitive matrices (They place each cube to form the letters -- you could actually make all the cubes spin :) )
+    mat4 primitiveScalingMatrix = scale(mat4(1.0f), vec3(1.0f)); // You can modify this make the letters thicker (but < 1 is bad, cuz they won't connect anymore)
     mat4 primitiveRotationMatrix = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
     mat4 primitiveTranslationMatrix;
+
+    mat4 worldMatrix;
 
     for(int i = 0; i < 15; i++)
     {
         if (letter[i] == '*')
         {
             primitiveTranslationMatrix = translate(mat4(1.0f), vec3(-3.5f + (index * 4.0f) + (i%3)*1.0f, 1.5 + (ceil(i/3)*-1.0f), -0.5f));
-
-            worldMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * primitiveTranslationMatrix * primitiveRotationMatrix * primitiveScalingMatrix;
+            worldMatrix = modelMatrix * primitiveTranslationMatrix * primitiveRotationMatrix * primitiveScalingMatrix;
 
             glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-            glDrawArrays(GL_TRIANGLES, 0, 36); // 3 vertices, starting at index 0
+            glDrawArrays(GL_TRIANGLES, 0, 36); // 36 vertices (because cube), starting at index 0
         }
     }
 }
@@ -545,31 +536,32 @@ int main(int argc, char*argv[])
     int vao = createVertexArrayObject();
     
     // Variables to be used later in tutorial
-    float angle = 0;
     float rotationSpeed = 90.0f;  // 180 degrees per second
     float lastFrameTime = glfwGetTime();
 
+    // Camera variables
     vec3 cameraPosition = vec3(0.0f, 0.0f, 5.0f);
     bool projection = false; //false = perspective / true = ortho
-    // glEnable(GL_CULL_FACE);
 
-    float walkSpeed = 0.5f;
-    float runSpeed = 1.0f;
+    // Control variables
+    float moveSpeed = 1.0f;
     float scaleFactor = 0.25f;
     float scaleSpeed = 0.25f;
 
+    // Model variables
     float modelXRotationAngle = 0.0f;
     float modelYRotationAngle = 0.0f;
     float modelScaleFactor = 1.0f;
     vec3 modelPosition = vec3(0.0f, 0.0f, 0.0f);
 
+    // Declaring model matrices
     mat4 modelScalingMatrix;
     mat4 modelRotationMatrix;
     mat4 modelTranslationMatrix;
+    mat4 modelMatrix;
 
-    bool isRunning = false;
+    // this is used to decide the polygon mode (GL_FILL, GL_LINE)
     bool wireframe = false;
-    bool spinning = false;
 
     int lastKeyStateP = GLFW_RELEASE;
     int lastKeyStateF = GLFW_RELEASE;
@@ -578,6 +570,7 @@ int main(int argc, char*argv[])
     int textCursor = 0;
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
     // Entering Main Loop
     while(!glfwWindowShouldClose(window))
@@ -592,31 +585,18 @@ int main(int argc, char*argv[])
         float dt = glfwGetTime() - lastFrameTime;
         lastFrameTime += dt;
         
-        //spinning ? (modelRotationAngle + rotationSpeed * dt) : 0; //angles in degrees, but glm expects radians (conversion below)
-
+        // Model Matrices - they control the transformations of the letters model
         modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
         modelRotationMatrix = rotate(mat4(1.0f), radians(modelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(modelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
         modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
 
-        mat4 worldMatrix = mat4(1.0f);
+        modelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
+
+        // We need this to give
         GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
-        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-
-        drawLetter('A', 0, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-        drawLetter('A', 1, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-        // drawLetter('9', 2, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-        // drawLetter('2', 3, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-
-        // drawLetter('F', 4, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-        // drawLetter('H', 5, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-        // drawLetter('3', 6, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-        // drawLetter('1', 7, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-
-        // drawLetter('4', 8, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-        // drawLetter('P', 9, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-        // drawLetter('5', 10, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
-        // drawLetter('Z', 11, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
+        drawLetter('A', 0, modelMatrix, worldMatrixLocation);
+        drawLetter('A', 1, modelMatrix, worldMatrixLocation);
 
         glBindVertexArray(0);
         // End Frame
@@ -627,7 +607,8 @@ int main(int argc, char*argv[])
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
         
-        //by default, camera is centered at the origin and looks towards negative z-axis
+        // by default, camera is centered at the origin and looks towards negative z-axis
+        // Not related to role -- only for my sanity
         if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
         {
             cameraPosition = vec3(0.0f, 0.0f, 5.0f);
@@ -637,12 +618,7 @@ int main(int argc, char*argv[])
             modelYRotationAngle = 0.0f;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-            isRunning = true;
-        } else {
-            isRunning = false;
-        }
-
+        // Role 4 input handling
         if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
         {
             // scale up
@@ -657,49 +633,23 @@ int main(int argc, char*argv[])
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
         {
-            modelPosition += vec3(0.0f, 0.0f, -1.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
+            modelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
         {
-            modelPosition += vec3(0.0f, 0.0f, 1.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
+            modelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move left
         {
-            modelPosition += vec3(-1.0f, 0.0f, 0.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
+            modelPosition += vec3(-1.0f, 0.0f, 0.0f) * moveSpeed * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move right 
         {
-            modelPosition += vec3(1.0f, 0.0f, 0.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
+            modelPosition += vec3(1.0f, 0.0f, 0.0f) * moveSpeed * dt;
         }
-
-        mat4 viewMatrix = lookAt(
-            cameraPosition,    // eye
-            vec3(0.0f),             // center
-            vec3(0.0f, 1.0f, 0.0f));    // up
-
-        GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-        glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-        
-        if (lastKeyStateP == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) // move right 
-        {
-            projection = !projection;
-        }
-        lastKeyStateP = glfwGetKey(window, GLFW_KEY_P);
-
-        if (lastKeyStateF == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-        {
-            wireframe = !wireframe;
-
-            if (wireframe) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            } else {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-        }
-        lastKeyStateF = glfwGetKey(window, GLFW_KEY_F);
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
@@ -720,6 +670,35 @@ int main(int argc, char*argv[])
         {
             modelYRotationAngle -= rotationSpeed * dt;
         }
+
+        // View Matrix setup
+        mat4 viewMatrix = lookAt(
+            cameraPosition,    // eye
+            vec3(0.0f),             // center
+            vec3(0.0f, 1.0f, 0.0f));    // up
+
+        GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+        glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+        
+        // Unrelated to role -- just for fun and trying out stuff
+        if (lastKeyStateP == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) // move right 
+        {
+            projection = !projection;
+        }
+        lastKeyStateP = glfwGetKey(window, GLFW_KEY_P);
+
+        if (lastKeyStateF == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+        {
+            wireframe = !wireframe;
+
+            if (wireframe) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            } else {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+        }
+        lastKeyStateF = glfwGetKey(window, GLFW_KEY_F);
+
         // drawGrid();
 
         // perspective
@@ -734,7 +713,7 @@ int main(int argc, char*argv[])
             GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
             glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
         } 
-        else // ortholinear
+        else // ortholinear (so freakin cool yoo)
         {
             mat4 projectionMatrix = ortho(
                 -4.0f, 4.0f,    // left/right
