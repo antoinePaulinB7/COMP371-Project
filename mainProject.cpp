@@ -111,9 +111,9 @@ int compileAndLinkShaders()
 
 int createVertexBufferObject()
 {
-	// Cube model
-	glm::vec3 vertexArray[] = {  // position,                            color
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f), //left - gray
+	// Cube model (position, colors)
+	glm::vec3 vertexArray[] = {
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f), //left - grey
 		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
 		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
 
@@ -197,7 +197,6 @@ int createVertexBufferObject()
 
 	return vertexBufferObject;
 }
-
 
 int main(int argc, char*argv[])
 {
@@ -292,56 +291,79 @@ int main(int argc, char*argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
+		// Enable Depth Test
 		glEnable(GL_DEPTH_TEST);
 
-        // Each frame, reset color of each pixel to glClearColor
+        // Each frame, reset color of each pixel to glClearColor and clear depth buffer bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 		// Draw geometry
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-		// Draw ground
-		//glm::mat4 groundWorldMatrix = translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.01f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1000.0f, 0.02f, 1000.0f));
+		// Draw ground TODO
 		GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-		//glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &groundWorldMatrix[0][0]);
 
-		//glDrawArrays(GL_TRIANGLES, 0, 36); // 36 vertices, starting at index 0
+#pragma Melissa Lim 27195842 (L9 model)
+		// Draw L9 using hierarchical modeling
+		// Setting up the L9 Matrix - Changing the values of the translation of L9 will change its position in the world
+		glm::mat4 L9Matrix = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
 
-		// Draw pillars
-		glm::mat4 letterL1 = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL1[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 letterL2 = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL2[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 nine1 = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine1[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 nine2 = translate(glm::mat4(1.0f), glm::vec3(1.5f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine2[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 nine3 = translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.5f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine3[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 nine4 = translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine4[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-/*
-		for (int i = 0; i < 20; ++i)
-		{
-			for (int j = 0; j < 20; ++j)
-			{
-				pillarWorldMatrix = translate(glm::mat4(1.0f), glm::vec3(-100.0f + i * 10.0f, 5.0f, -100.0f + j * 10.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 10.0f, 1.0f));
-				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &pillarWorldMatrix[0][0]);
-				glDrawArrays(GL_TRIANGLES, 0, 36);
+		// Setting up the letter L
+		glm::mat4 LMatrix = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-				pillarWorldMatrix = translate(glm::mat4(1.0f), glm::vec3(-100.0f + i * 10.0f, 0.55f, -100.0f + j * 10.0f)) * rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.1f, 1.1f, 1.1f));
-				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &pillarWorldMatrix[0][0]);
-				glDrawArrays(GL_TRIANGLES, 0, 36);
-			}
-		}*/
+		// Creating left-part of the letter L
+		glm::mat4 Lpart = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
 
+		glm::mat4 Lpart1 = L9Matrix * LMatrix * Lpart;
+		
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart1[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Creating right-part of the letter L
+		Lpart = translate(glm::mat4(1.0f), glm::vec3(1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+
+		glm::mat4 Lpart2 = L9Matrix * LMatrix * Lpart;
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart2[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Setting up the number 9
+		glm::mat4 Num9Matrix = translate(glm::mat4(1.0f), glm::vec3(4.5f, 0.0f, 0.0f));
+
+		// Creating top-part of the number 9
+		glm::mat4 Num9part = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+
+		glm::mat4 Num9part1 = L9Matrix * Num9Matrix * Num9part;
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part1[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Creating right-part of the number 9
+		Num9part = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+
+		glm::mat4 Num9part2 = L9Matrix * Num9Matrix * Num9part;
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part2[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Creating left-part of the number 9
+		Num9part = translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+
+		glm::mat4 Num9part3 = L9Matrix * Num9Matrix * Num9part;
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part3[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Creating bottom-part of the number 9
+		Num9part = translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
+
+		glm::mat4 Num9part4 = L9Matrix * Num9Matrix * Num9part;
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part4[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+#pragma end of L9 model
+
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
