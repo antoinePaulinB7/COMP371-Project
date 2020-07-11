@@ -385,7 +385,7 @@ vec3 modelPosition = vec3(0.0f, 0.0f, 0.0f);
 mat4 modelScalingMatrix = mat4(1.0f);
 mat4 modelRotationMatrix;
 mat4 modelTranslationMatrix;
-mat4 modelMatrix;
+mat4 sharedModelMatrix;
 void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	//Changing World Orientation 
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) //rotate X axis in anti-clockwise direction
@@ -876,7 +876,7 @@ int main(int argc, char*argv[])
 		modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
 		modelRotationMatrix = rotate(mat4(1.0f), radians(modelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(modelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
 		modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
-		modelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
+		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
 
 		//Set your flag to draw or hide your alphanumerical model
 		bool drawL9 = true, drawI9 = true, drawU3 = true, drawAA = true, drawC4 = true;
@@ -920,7 +920,7 @@ int main(int argc, char*argv[])
 
 			//----------------------------------------------------------------------------------
 			//get the worldview of the model within the scene
-			mat4 WorldView_Model = worldOrientationModelMatrix * translateI9Model * scaleI9Model * rotateI9Model;
+			mat4 WorldView_Model = translateI9Model * scaleI9Model * rotateI9Model * sharedModelMatrix;
 
 			//topI
 			mat4 topI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, -3.f))* scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
@@ -1005,8 +1005,8 @@ int main(int argc, char*argv[])
 
 			mat4 translateAAModel = translate(mat4(1.0f), vec3(-10.0f, 0.0f, 2.0f));
 
-			drawLetter('A', 0, translateAAModel * modelMatrix, worldMatrixLocation);
-			drawLetter('A', 1, translateAAModel * modelMatrix, worldMatrixLocation);
+			drawLetter('A', 0, translateAAModel * sharedModelMatrix, worldMatrixLocation);
+			drawLetter('A', 1, translateAAModel * sharedModelMatrix, worldMatrixLocation);
 		}
 #pragma endregion
 
@@ -1018,7 +1018,7 @@ int main(int argc, char*argv[])
 
 			// controls model hierarchy movement and orientation	
 			glm::mat4 groupTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 2.5f, +2.5f));
-			glm::mat4 groupMatrix = groupTranslationMatrix * modelMatrix;
+			glm::mat4 groupMatrix = groupTranslationMatrix * sharedModelMatrix;
 			glm::mat4 cMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -2.5f, 0.5f));
 			glm::mat4 fourMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, -2.5f, 0.5f));
 
