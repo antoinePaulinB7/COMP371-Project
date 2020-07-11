@@ -371,53 +371,53 @@ int createVertexArrayObject()
 {
     // Cube model
     vec3 vertexArray[] = {  // position, color
-        vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
-        vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-        vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(0.0f,0.0f,0.0f), vec3(1.0f, 0.0f, 0.0f), //left - red
+        vec3(0.0f,0.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(0.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
         
-        vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
-        vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-        vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(0.0f,0.0f,0.0f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(0.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(0.0f, 1.0f,0.0f), vec3(1.0f, 0.0f, 0.0f),
         
-        vec3( 0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
-        vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-        vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 1.0f,0.0f), vec3(0.0f, 0.0f, 1.0f), // far - blue
+        vec3(0.0f,0.0f,0.0f), vec3(0.0f, 0.0f, 1.0f),
+        vec3(0.0f, 1.0f,0.0f), vec3(0.0f, 0.0f, 1.0f),
         
-        vec3( 0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-        vec3( 0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-        vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 1.0f,0.0f), vec3(0.0f, 0.0f, 1.0f),
+        vec3( 1.0f,0.0f,0.0f), vec3(0.0f, 0.0f, 1.0f),
+        vec3(0.0f,0.0f,0.0f), vec3(0.0f, 0.0f, 1.0f),
         
-        vec3( 0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
-        vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-        vec3( 0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+        vec3( 1.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
+        vec3(0.0f,0.0f,0.0f), vec3(0.0f, 1.0f, 1.0f),
+        vec3( 1.0f,0.0f,0.0f), vec3(0.0f, 1.0f, 1.0f),
         
-        vec3( 0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-        vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-        vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+        vec3( 1.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f),
+        vec3(0.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f),
+        vec3(0.0f,0.0f,0.0f), vec3(0.0f, 1.0f, 1.0f),
         
-        vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
-        vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-        vec3( 0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+        vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f), // near - green
+        vec3(0.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
+        vec3( 1.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
         
-        vec3( 0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-        vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-        vec3( 0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+        vec3( 1.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
+        vec3(0.0f, 1.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
+        vec3( 1.0f,0.0f, 1.0f), vec3(0.0f, 1.0f, 0.0f),
         
-        vec3( 0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
-        vec3( 0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-        vec3( 0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), // right - purple
+        vec3( 1.0f,0.0f,0.0f), vec3(1.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 1.0f,0.0f), vec3(1.0f, 0.0f, 1.0f),
         
-        vec3( 0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-        vec3( 0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
-        vec3( 0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+        vec3( 1.0f,0.0f,0.0f), vec3(1.0f, 0.0f, 1.0f),
+        vec3( 1.0f, 1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f),
+        vec3( 1.0f,0.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f),
         
-        vec3( 0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
-        vec3( 0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-        vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+        vec3( 1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
+        vec3( 1.0f, 1.0f,0.0f), vec3(1.0f, 1.0f, 0.0f),
+        vec3(0.0f, 1.0f,0.0f), vec3(1.0f, 1.0f, 0.0f),
         
-        vec3( 0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
-        vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-        vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
+        vec3( 1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 0.0f),
+        vec3(0.0f, 1.0f,0.0f), vec3(1.0f, 1.0f, 0.0f),
+        vec3(0.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 0.0f)
     };
 
     
@@ -478,15 +478,21 @@ void drawGrid() {
     // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void drawLetter(char c, int index, mat4 translationMatrix, mat4 rotationMatrix, mat4 scalingMatrix, GLuint worldMatrixLocation, mat4 worldMatrix)
+void drawLetter(char c, int index, mat4 modelTranslationMatrix, mat4 modelRotationMatrix, mat4 modelScalingMatrix, GLuint worldMatrixLocation, mat4 worldMatrix)
 {
     char* letter = alphabet[c];
+
+    mat4 primitiveScalingMatrix = scale(mat4(1.0f), vec3(1.0f));
+    mat4 primitiveRotationMatrix = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+    mat4 primitiveTranslationMatrix;
+
     for(int i = 0; i < 15; i++)
     {
         if (letter[i] == '*')
         {
-            translationMatrix = translate(mat4(1.0f), vec3(index + (i%3)*0.25f, 1.25f + (ceil(i/3)*-0.25f), 0.0f));
-            worldMatrix = translationMatrix * rotationMatrix * scalingMatrix;
+            primitiveTranslationMatrix = translate(mat4(1.0f), vec3(-3.5f + (index * 4.0f) + (i%3)*1.0f, 1.5 + (ceil(i/3)*-1.0f), -0.5f));
+
+            worldMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix * primitiveTranslationMatrix * primitiveRotationMatrix * primitiveScalingMatrix;
 
             glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
             glDrawArrays(GL_TRIANGLES, 0, 36); // 3 vertices, starting at index 0
@@ -552,6 +558,15 @@ int main(int argc, char*argv[])
     float scaleFactor = 0.25f;
     float scaleSpeed = 0.25f;
 
+    float modelXRotationAngle = 0.0f;
+    float modelYRotationAngle = 0.0f;
+    float modelScaleFactor = 1.0f;
+    vec3 modelPosition = vec3(0.0f, 0.0f, 0.0f);
+
+    mat4 modelScalingMatrix;
+    mat4 modelRotationMatrix;
+    mat4 modelTranslationMatrix;
+
     bool isRunning = false;
     bool wireframe = false;
     bool spinning = false;
@@ -576,47 +591,32 @@ int main(int argc, char*argv[])
 
         float dt = glfwGetTime() - lastFrameTime;
         lastFrameTime += dt;
-
-        angle = spinning ? (angle + rotationSpeed * dt) : 0; //angles in degrees, but glm expects radians (conversion below)
-        mat4 rotationMatrix = rotate(mat4(1.0f), std::sin(radians(angle))*3.1415f, vec3(1.0f, 1.0f, 1.0f));
-
-        GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
-
-        // // glDrawArrays(GL_TRIANGLES, 0, 36); // 3 vertices, starting at index 0
-
-        // Top right triangle - translate by (0.5, 0.5, 0.5)
-        // Scaling model by 0.25, notice negative value to flip Y axis
-        mat4 scalingMatrix = scale(mat4(1.0f), vec3(scaleFactor, scaleFactor, scaleFactor));
-        mat4 translationMatrix = translate(mat4(1.0f), vec3(0.5f, 0.5f, -5.0f));
-
-        mat4 worldMatrix = translationMatrix * rotationMatrix * scalingMatrix;
         
-        // glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-        // glDrawArrays(GL_TRIANGLES, 0, 36); // 3 vertices, starting at index 0
+        //spinning ? (modelRotationAngle + rotationSpeed * dt) : 0; //angles in degrees, but glm expects radians (conversion below)
 
-        // translationMatrix = translate(mat4(1.0f), vec3(-0.5f, 0.5f, 1.0f));
-        // worldMatrix = translationMatrix * rotationMatrix * scalingMatrix;
+        modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
+        modelRotationMatrix = rotate(mat4(1.0f), radians(modelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(modelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
+        modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
 
-        // glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-        // glDrawArrays(GL_TRIANGLES, 0, 36); // 3 vertices, starting at index 0
+        mat4 worldMatrix = mat4(1.0f);
+        GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
-        // rotationMatrix = rotate(mat4(1.0f), 0.0f, vec3(1.0f, 1.0f, 1.0f));
+        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 
-        drawLetter('A', 0, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
-        drawLetter('B', 1, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
-        drawLetter('9', 2, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
-        drawLetter('2', 3, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
+        drawLetter('A', 0, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
+        drawLetter('A', 1, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
+        // drawLetter('9', 2, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
+        // drawLetter('2', 3, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
 
-        drawLetter('F', 4, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
-        drawLetter('H', 5, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
-        drawLetter('3', 6, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
-        drawLetter('1', 7, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
+        // drawLetter('F', 4, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
+        // drawLetter('H', 5, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
+        // drawLetter('3', 6, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
+        // drawLetter('1', 7, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
 
-        drawLetter('4', 8, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
-        drawLetter('P', 9, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
-        drawLetter('5', 10, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
-        drawLetter('Z', 11, translationMatrix, rotationMatrix, scalingMatrix, worldMatrixLocation, worldMatrix);
+        // drawLetter('4', 8, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
+        // drawLetter('P', 9, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
+        // drawLetter('5', 10, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
+        // drawLetter('Z', 11, modelTranslationMatrix, modelRotationMatrix, modelScalingMatrix, worldMatrixLocation, worldMatrix);
 
         glBindVertexArray(0);
         // End Frame
@@ -630,13 +630,11 @@ int main(int argc, char*argv[])
         //by default, camera is centered at the origin and looks towards negative z-axis
         if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
         {
-            // mat4 viewMatrix = mat4(1.0f);
-            
-            // GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-            // glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
             cameraPosition = vec3(0.0f, 0.0f, 5.0f);
-            scaleFactor = 0.25f;
+            modelScaleFactor = 1.0f;
+            modelPosition = vec3(0.0f);
+            modelXRotationAngle = 0.0f;
+            modelYRotationAngle = 0.0f;
         }
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
@@ -648,38 +646,38 @@ int main(int argc, char*argv[])
         if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
         {
             // scale up
-            scaleFactor += scaleSpeed * dt;
+            modelScaleFactor += scaleSpeed * dt;
         }
         
         if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
         {
             // scale down
-            scaleFactor -= scaleSpeed * dt;
+            modelScaleFactor -= scaleSpeed * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
         {
-            cameraPosition += vec3(0.0f, 0.0f, -1.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
+            modelPosition += vec3(0.0f, 0.0f, -1.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
         {
-            cameraPosition += vec3(0.0f, 0.0f, 1.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
+            modelPosition += vec3(0.0f, 0.0f, 1.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move left
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move left
         {
-            cameraPosition += vec3(-1.0f, 0.0f, 0.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
+            modelPosition += vec3(-1.0f, 0.0f, 0.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move right 
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move right 
         {
-            cameraPosition += vec3(1.0f, 0.0f, 0.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
+            modelPosition += vec3(1.0f, 0.0f, 0.0f) * (isRunning ? runSpeed : walkSpeed) * dt;
         }
 
         mat4 viewMatrix = lookAt(
-            vec3(-0.5f, 0.0f, 0.0f) + cameraPosition,    // eye
-            vec3(-0.5f, 0.0f, -5.0f) + cameraPosition,             // center
+            cameraPosition,    // eye
+            vec3(0.0f),             // center
             vec3(0.0f, 1.0f, 0.0f));    // up
 
         GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
@@ -698,16 +696,30 @@ int main(int argc, char*argv[])
             if (wireframe) {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             } else {
-                glPolygonMode(GL_FRONT, GL_FILL);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
         }
         lastKeyStateF = glfwGetKey(window, GLFW_KEY_F);
 
-        if (lastKeyStateT == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
-            spinning = !spinning;
+            modelXRotationAngle -= rotationSpeed * dt;
         }
-        lastKeyStateT = glfwGetKey(window, GLFW_KEY_T);
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        {
+            modelXRotationAngle += rotationSpeed * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        {
+            modelYRotationAngle += rotationSpeed * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        {
+            modelYRotationAngle -= rotationSpeed * dt;
+        }
         // drawGrid();
 
         // perspective
