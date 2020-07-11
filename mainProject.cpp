@@ -886,7 +886,7 @@ int main(int argc, char*argv[])
 
 		// Draw L9 using hierarchical modeling
 		// Setting up the L9 Matrix - Changing the values of the translation of L9 will change its position in the world
-		glm::mat4 L9Matrix = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
+		glm::mat4 L9Matrix = translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0.0f, -10.0f)) * sharedModelMatrix;
 
 		// Setting up the letter L
 		glm::mat4 LMatrix = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
