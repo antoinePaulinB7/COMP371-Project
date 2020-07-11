@@ -442,60 +442,65 @@ int main(int argc, char*argv[])
 
 		GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
+		//Set your flag true to draw your alphanumeric model
+		bool drawL9 = false, drawU3 = false;
+
 #pragma region L9
-
-		// Draw L9
-		glm::mat4 letterL1 = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL1[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 letterL2 = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL2[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 nine1 = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine1[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 nine2 = translate(glm::mat4(1.0f), glm::vec3(1.5f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine2[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 nine3 = translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.5f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine3[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 nine4 = translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine4[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
+		if (drawL9) {
+			// Draw L9
+			glm::mat4 letterL1 = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL1[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glm::mat4 letterL2 = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &letterL2[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glm::mat4 nine1 = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine1[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glm::mat4 nine2 = translate(glm::mat4(1.0f), glm::vec3(1.5f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine2[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glm::mat4 nine3 = translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.5f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine3[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glm::mat4 nine4 = translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &nine4[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 #pragma endregion
 
 #pragma region U3
-		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+		if (drawU3) {
+			glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 
-		/* Transforming the Unit Triangle - La(u)ra Wheatley 400(3)4960 */
+			/* Transforming the Unit Triangle - La(u)ra Wheatley 400(3)4960 */
 
-		// Creating U from unit cube
-		glm::mat4 uLeft = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uLeft[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 uBottom = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uBottom[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 uRight = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uRight[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+			// Creating U from unit cube
+			glm::mat4 uLeft = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uLeft[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glm::mat4 uBottom = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uBottom[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glm::mat4 uRight = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uRight[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-		// Creating 3 from unit cube
-		glm::mat4 threeBase = translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeBase[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 threeArm1 = translate(glm::mat4(1.0f), glm::vec3(2.5f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm1[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 threeArm2 = translate(glm::mat4(1.0f), glm::vec3(2.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm2[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glm::mat4 threeArm3 = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm3[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+			// Creating 3 from unit cube
+			glm::mat4 threeBase = translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeBase[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glm::mat4 threeArm1 = translate(glm::mat4(1.0f), glm::vec3(2.5f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm1[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glm::mat4 threeArm2 = translate(glm::mat4(1.0f), glm::vec3(2.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm2[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glm::mat4 threeArm3 = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm3[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 #pragma endregion
 
         // End Frame
