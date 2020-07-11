@@ -17,9 +17,7 @@
 using namespace glm;
 using namespace std;
 
-//storing the redering mode in a variable 
-	int renderingMode = GL_TRIANGLES;
-
+#pragma region unitCubes
 int createUnitCubeVertexBufferObject()
 {
 	// Cube model
@@ -109,6 +107,96 @@ int createUnitCubeVertexBufferObject()
 	return vertexBufferObject;
 }
 
+int createVertexBufferObjectU3()
+{
+	glm::vec3 vertexArray[] = {
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
+		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
+		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 0.0f),
+
+		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
+		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
+
+		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
+		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
+
+		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f),
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.0f, 0.0f, 1.0f),
+
+		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
+		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+
+		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+
+		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+
+		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.0f, 0.1f, 0.0f),
+		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+
+		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 0.1f, 0.0f),
+		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
+
+		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.0f, 0.1f, 0.0f),
+		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
+
+		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f)
+	};
+
+
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
+
+
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
+		3,                   // size
+		GL_FLOAT,            // type
+		GL_FALSE,            // normalized?
+		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
+		(void*)0             // array buffer offset
+	);
+	glEnableVertexAttribArray(0);
+
+
+	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		2 * sizeof(glm::vec3),
+		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
+	);
+	glEnableVertexAttribArray(1);
+
+
+	return vertexBufferObject;
+}
+#pragma endregion
+
+#pragma region cameraInput
 // Camera parameters
 float cameraSpeed = 1.0f;
 float cameraFastSpeed = 2 * cameraSpeed;
@@ -163,97 +251,76 @@ void handleCameraFlagInputs(GLFWwindow* window) {
 	}
 
 }
+#pragma endregion
 
-int createVertexBufferObjectU3()
-{
-    glm::vec3 vertexArray[] = {
-        glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-        glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
-        glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+//storing the redering mode in a variable 
+int renderingMode = GL_TRIANGLES;
+void handleRenderingModeInput(GLFWwindow* window) {
+	//----------------------------------------------------------------------------------
+	//User can change the rendering mode
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) //change to points
+	{
+		renderingMode = GL_POINTS;
+	}
 
-        glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-        glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
-        glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 0.0f),
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) //change to lines
+	{
+		renderingMode = GL_LINES;
+	}
 
-        glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
-        glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
-        glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) //change to trianges
+	{
+		renderingMode = GL_TRIANGLES;
+	}
+}
 
-        glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
-        glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
-        glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
+mat4 worldOrientationModelMatrix = mat4(1.0f);
+void handleWorldOrientationInput(GLFWwindow* window) {
+	//Changing World Orientation 
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) //rotate X axis in anti-clockwise direction
+	{
+		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(-1.0f, 0.f, 0.f));
+	}
 
-        glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f),
-        glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-        glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.0f, 0.0f, 1.0f),
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) //rotate X axis in clockwise direction
+	{
+		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(1.0f, 0.f, 0.f));
+	}
 
-        glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
-        glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) //rotate Y axis in anti-clockwise direction
+	{
+		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, -1.f, 0.f));
+	}
 
-        glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) //rotate Y axis in clockwise direction
+	{
+		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, 1.0f, 0.f));
+	}
 
-        glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+	//reset world orientation to original settings
+	//used Tab to test as I do not have a Home button
+	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS)
+	{
+		worldOrientationModelMatrix = mat4(1.0f);
+	}
+}
 
-        glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-        glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.0f, 0.1f, 0.0f),
-        glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+void handleExitInput(GLFWwindow* window) {
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+}
 
-        glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-        glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 0.1f, 0.0f),
-        glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
-
-        glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-        glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.0f, 0.1f, 0.0f),
-        glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
-
-        glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f),
-        glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.0f, 0.0f, 1.0f),
-        glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f)
-    };
-
-
-    // Create a vertex array
-    GLuint vertexArrayObject;
-    glGenVertexArrays(1, &vertexArrayObject);
-    glBindVertexArray(vertexArrayObject);
-
-
-    // Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-    GLuint vertexBufferObject;
-    glGenBuffers(1, &vertexBufferObject);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-        3,                   // size
-        GL_FLOAT,            // type
-        GL_FALSE,            // normalized?
-        2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
-        (void*)0             // array buffer offset
-    );
-    glEnableVertexAttribArray(0);
-
-
-    glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        2 * sizeof(glm::vec3),
-        (void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
-    );
-    glEnableVertexAttribArray(1);
-
-
-    return vertexBufferObject;
+void checkErrors() {
+	int errorValue = glGetError();
+	if (errorValue != 0) {
+		std::cout << "error of some sort: " << errorValue << std::endl;
+	}
 }
 
 int main(int argc, char*argv[])
 {
+	checkErrors();
+
 #pragma region windowSetUp
     // Initialize GLFW and OpenGL version
     glfwInit();
@@ -291,7 +358,7 @@ int main(int argc, char*argv[])
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Compile and link shaders here ...
-    int shaderProgram = compileAndLinkShaders();
+	GLuint shaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
   
 	// We can set the shader once, since we have only one
 	glUseProgram(shaderProgram);
@@ -319,15 +386,8 @@ int main(int argc, char*argv[])
 	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
-  //define identity matrices to translate, rotate and scale I9 model
-	//used for hierarchical modeling 
-	mat4 translateI9Model(1.f);
-	mat4 scaleI9Model(1.f);
-	mat4 rotateI9Model = rotate(mat4(1.0f), radians(90.0f), vec3(00.0f, 90.0f, 0.0f));
   
-  	GLuint model_Shader = Shader("G:/COMP 371/Lab02FullFramework/Lab_Framework/Source/modelShader.vs", 
-		"G:/COMP 371/Lab02FullFramework/Lab_Framework/Source/modelShader.fs");
-  
+	/*
   	//Define and upload geometry to the GPU here by creating a VAO and VBO that has multiple objects
 	//This way we can store the geometry of all the objects at different indices.
 	//adapted from the online tutorial: https://learnopengl.com/Getting-started/Hello-Triangle
@@ -335,30 +395,18 @@ int main(int argc, char*argv[])
 	glGenVertexArrays(3, VAOs);
 	glGenBuffers(3, VBOs);
 
-	/* IGNORE
-	//grid vertices
-	glBindVertexArray(VAOs[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(grid_vertices), grid_vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0); 
-
-	//axis vertices
-	glBindVertexArray(VAOs[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(axis_vertices), axis_vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);  
-	*/
 
 	//model vertices
 	glBindVertexArray(VAOs[2]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(model_vertices), model_vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	*/
   
 	// Define and upload geometry to the GPU here ...
 	int unitCubeVBO = createUnitCubeVertexBufferObject();    
-  int cubeVBO = createVertexBufferObjectU3();
-  
+	int rainbowCubeVBO = createVertexBufferObjectU3();
+
 	// For frame time
 	float lastFrameTime = glfwGetTime();
 	int lastMouseLeftState = GLFW_RELEASE;
@@ -386,7 +434,7 @@ int main(int argc, char*argv[])
 		GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
 		//Set your flag true to draw your alphanumeric model
-		bool drawL9 = false, drawU3 = false;
+		bool drawL9 = false, drawU3 = false, drawI9 = true;
 
 #pragma region L9
 		if (drawL9) {
@@ -412,9 +460,63 @@ int main(int argc, char*argv[])
 		}
 #pragma endregion
 
+#pragma region I9
+		if (drawI9) {
+			//define identity matrices to translate, rotate and scale I9 model
+			//used for hierarchical modeling 
+			mat4 translateI9Model(1.0f);
+			mat4 scaleI9Model(1.0f);
+			mat4 rotateI9Model = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 90.0f, 0.0f));
+
+			//----------------------------------------------------------------------------------
+			//get the worldview of the model within the scene
+			mat4 WorldView_Model = worldOrientationModelMatrix * translateI9Model * scaleI9Model * rotateI9Model;
+
+			//topI
+			mat4 topI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, -3.f))* scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &topI[0][0]);
+			glDrawArrays(renderingMode, 0, 36);
+
+
+			//middleI
+			mat4 middleI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.5f, -3.f)) * scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &middleI[0][0]);
+			glDrawArrays(renderingMode, 0, 36);
+
+			//bottomI
+			mat4 bottomI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 0.5f, -3.f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &bottomI[0][0]);
+			glDrawArrays(renderingMode, 0, 36);
+
+			//top9
+			mat4 top9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, 2.75f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.5f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &top9[0][0]);
+			glDrawArrays(renderingMode, 0, 36);
+
+
+			//left9
+			mat4 left9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 3.25f, 1.5f)) * scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &left9[0][0]);
+			glDrawArrays(renderingMode, 0, 36);
+
+
+			//bottom9
+			mat4 bottom9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.0f, 2.75f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.5f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &bottom9[0][0]);
+			glDrawArrays(renderingMode, 0, 36);
+
+
+			//right9
+			mat4 right9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.51f, 4.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.f, 1.0f));
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &right9[0][0]);
+			glDrawArrays(renderingMode, 0, 36);
+			//----------------------------------------------------------------------------------
+		}
+#pragma endregion
+
 #pragma region U3
 		if (drawU3) {
-			glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+			glBindBuffer(GL_ARRAY_BUFFER, rainbowCubeVBO);
 
 			/* Transforming the Unit Triangle - La(u)ra Wheatley 400(3)4960 */
 
@@ -446,79 +548,16 @@ int main(int argc, char*argv[])
 		}
 #pragma endregion
 
-#pragma region I9
-      		//setting up the MVP of the world to place the objects 
-		modelViewProjection = projectionMatrix * viewMatrix * modelMatrix;
-
-		//----------------------------------------------------------------------------------
-		//geometry for the I9 model
-		glEnableVertexAttribArray(0);
-		glUseProgram(model_Shader);
-		glBindVertexArray(VAOs[2]);
-
-
-		//get the worldview of the model within the scene
-		mat4 WorldView_Model = projectionMatrix * viewMatrix * translateI9Model * scaleI9Model * rotateI9Model;
-
-		//get the mvp of the model and uniform color variable so we can use it to make the I and 9.
-		GLuint modelViewProjection_Model = glGetUniformLocation(model_Shader, "mvp");
-		GLuint model_Color = glGetUniformLocation(model_Shader, "model_color");
-
-		//topI
-		mat4 topI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, -3.f))* scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
-		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &topI[0][0]);
-		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
-		glDrawArrays(renderingMode, 0, 36);
-
-
-		//middleI
-		mat4 middleI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.5f, -3.f)) * scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f));
-		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &middleI[0][0]);
-		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
-		glDrawArrays(renderingMode, 0, 36);
-
-		//bottomI
-		mat4 bottomI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 0.5f, -3.f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
-		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &bottomI[0][0]);
-		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
-		glDrawArrays(renderingMode, 0, 36);
-
-		//top9
-		mat4 top9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, 2.75f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.5f));
-		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &top9[0][0]);
-		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
-		glDrawArrays(renderingMode, 0, 36);
-
-
-		//left9
-		mat4 left9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 3.25f, 1.5f)) * scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
-		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &left9[0][0]);
-		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
-		glDrawArrays(renderingMode, 0, 36);
-
-
-		//bottom9
-		mat4 bottom9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.0f, 2.75f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.5f));
-		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &bottom9[0][0]);
-		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
-		glDrawArrays(renderingMode, 0, 36);
-
-
-		//right9
-		mat4 right9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.51f, 4.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.f, 1.0f));
-		glUniformMatrix4fv(modelViewProjection_Model, 1, GL_FALSE, &right9[0][0]);
-		glUniform4f(model_Color, 0.5f, 0.5f, 0.5f, 1.0f);
-		glDrawArrays(renderingMode, 0, 36);
-		//----------------------------------------------------------------------------------
-#pragma endregion
-
-      		// End Frame, include swap interval to prevent blurriness
+      	// End Frame, include swap interval to prevent blurriness
 		glfwSwapBuffers(window);
 		glfwSwapInterval(1);
 		glfwPollEvents();
 
         // Handle inputs
 		handleCameraFlagInputs(window);
+		handleRenderingModeInput(window);
+		handleWorldOrientationInput(window);
+		handleExitInput(window);
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
@@ -554,6 +593,7 @@ int main(int argc, char*argv[])
 
         glm::normalize(cameraSideVector);
 
+#pragma region mouseCameraMovement
         /* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */      
         if (xMoveMode)
         {
@@ -615,56 +655,8 @@ int main(int argc, char*argv[])
         }
 
         /* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
-      
-      	//----------------------------------------------------------------------------------
-		//User can change the rendering mode
-		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) //change to points
-		{
-			renderingMode = GL_POINTS;
-		}
+#pragma endregion
 
-		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) //change to lines
-		{
-			renderingMode = GL_LINES;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) //change to trianges
-		{
-			renderingMode = GL_TRIANGLES;
-		}
-
-		//Changing World Orientation 
-		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) //rotate X axis in anti-clockwise direction
-		{
-			modelMatrix = modelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(-1.0f, 0.f, 0.f));
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) //rotate X axis in clockwise direction
-		{
-			modelMatrix = modelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(1.0f, 0.f, 0.f));
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) //rotate Y axis in anti-clockwise direction
-		{
-			modelMatrix = modelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, -1.f, 0.f));
-		}
-
-
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) //rotate Y axis in clockwise direction
-		{
-			modelMatrix = modelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, 1.0f, 0.f));
-		}
-
-		//reset world orientation to original settings
-		//used Tab to test as I do not have a Home button
-		if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS) 
-		{
-			modelMatrix = mat4(1.0f);
-		}
-		//----------------------------------------------------------------------------------
-
-		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-			glfwSetWindowShouldClose(window, true);
 
 
         // Update viewMatrix

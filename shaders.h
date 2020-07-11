@@ -14,7 +14,7 @@
 //https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/shader.h
 
 //compiles and links shaders
-GLuint Shader(std::string vertexPath, std::string fragmentPath)
+GLuint shader(std::string vertexPath, std::string fragmentPath)
 {
 	std::string fragmentCode;
 	std::string vertexCode;
