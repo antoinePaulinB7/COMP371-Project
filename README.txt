@@ -2,9 +2,9 @@ Group 14
 
 Nicole Parmentier - 
 Laura Wheatley - 40034960
-Melissa - 
+Melissa Lim - 
 Antoine Paulin-Bessette -
-Briana -
+Briana Toia -
 
 
 The controls in our project meet the specified requirements, with the following points of note:
