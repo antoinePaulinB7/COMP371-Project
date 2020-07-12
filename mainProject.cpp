@@ -470,7 +470,8 @@ float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = 0.0f;
 float FOV = 70.0f;
 const float cameraAngularSpeed = 60.0f;
-bool cameraFirstPerson = true, xMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
+float magnificationFactor = 1.0f;
+bool cameraFirstPerson = true, panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
 
 void handleCameraFlagInputs(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) // move camera down
@@ -487,13 +488,13 @@ void handleCameraFlagInputs(GLFWwindow* window) {
 
 	// On key up, set movement mode flag
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-		xMoveMode = true;
+		panMoveMode = true;
 	}
 
 	// On key down , unset movement mode flag
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 	{
-		xMoveMode = false;
+		panMoveMode = false;
 	}
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
@@ -1125,7 +1126,7 @@ int main(int argc, char*argv[])
 
 		// Draw L9 using hierarchical modeling
 		// Setting up the L9 Matrix - Changing the values of the translation of L9 will change its position in the world
-		glm::mat4 L9Matrix = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
+		glm::mat4 L9Matrix = translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0.0f, -10.0f)) * sharedModelMatrix;
 
 		// Setting up the letter L
 		glm::mat4 LMatrix = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
@@ -1386,68 +1387,49 @@ int main(int argc, char*argv[])
         glm::normalize(cameraSideVector);
 
 #pragma region mouseCameraMovement
-        /* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */      
-        if (xMoveMode)
-        {
-            // If mouse position goes toward positive axis, increase cameraposition
-            if (dx > 0) {
-                cameraPosition.x += currentCameraSpeed * dx * dt;
-            }
-            // If position goes toward negative axis, increase cameraposition
-            else if (dx < 0) {
-                cameraPosition.x -= currentCameraSpeed * (-1) * dx * dt;
-            }
+		/* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
+		if (panMoveMode)
+		{
+			if (dx > 0) {
+				cameraHorizontalAngle -= cameraAngularSpeed * dt * 1 * dx;
+			}
+			// If position goes toward negative axis, increase cameraposition
+			else if (dx < 0) {
+				cameraHorizontalAngle += cameraAngularSpeed * dt * -1 * dx;
+			}
+		}
 
-        }
+		if (angleMoveMode)
+		{
+			if (dy < 0) {
+				cameraVerticalAngle += cameraAngularSpeed * dt * -1 * dy;
+			}
 
-        if (angleMoveMode)
-        {
-            if (dy < 0) {
-                cameraVerticalAngle += cameraAngularSpeed * dt * -1 * dy;
-            }
+			else if (dy > 0) {
+				cameraVerticalAngle -= cameraAngularSpeed * dt * dy;
+			}
+		}
 
-            else if (dy > 0) {
-                cameraVerticalAngle -= cameraAngularSpeed * dt * dy;
-            }
-        }
+		if (zoomMoveMode)
+		{
+			if (dy > 0) { //INCR
+				magnificationFactor = magnificationFactor * 1.5f;
+			}
 
-        /*
-         *  NOTE: in zoomMoveMode, I chose to manipulate the FOV to zoom. IF we slowly increase/decrease the FOV linearly,
-         *  the view goes upside down then right side up again depending on the values. So here, I have chosen three
-         *  "safe" values we can jump around to: 90.0f, 70.0f, and 0.5f.
-         */
-
-        if (zoomMoveMode)
-        {
-            if (dy > 0) {
-                if (FOV == 70.0f) {
-                    FOV = 90.0f;
-                }
-                else if (FOV == 0.5f) {
-                    FOV = 70.f;
-                }
-            }
-
-            else if (dy < 0) {
-                if (FOV == 90.0f) {
-                    FOV = 70.0f;
-                }
-                else if (FOV == 70.0f) {
-                    FOV = 0.5f;
-                }
-            }
-        }
-
-		glm::mat4 projectionMatrix = glm::perspective(FOV,            // field of view in degrees
-			1024.0f / 768.0f,  // aspect ratio
-			0.01f, 100.0f);   // near and far (near > 0)
+			else if (dy < 0) { // DECR
+				magnificationFactor = magnificationFactor / 1.5f;
+			}
+		}
 
 		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
 		// Update viewMatrix
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+		viewMatrix = glm::scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
+
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-        /* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
+
+		/* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 #pragma endregion
 
     }
