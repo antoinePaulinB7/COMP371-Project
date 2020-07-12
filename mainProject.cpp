@@ -955,6 +955,8 @@ int main(int argc, char*argv[])
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
+	glPointSize(3.0f);
+
     // Entering Main Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -1033,7 +1035,7 @@ int main(int argc, char*argv[])
 		glm::mat4 Lpart1 = L9Matrix * LMatrix * Lpart;
 		
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart1[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(renderingMode, 0, 36);
 
 		// Creating right-part of the letter L
 		Lpart = translate(glm::mat4(1.0f), glm::vec3(1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
@@ -1041,7 +1043,7 @@ int main(int argc, char*argv[])
 		glm::mat4 Lpart2 = L9Matrix * LMatrix * Lpart;
 
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart2[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(renderingMode, 0, 36);
 
 		// Setting up the number 9
 		glm::mat4 Num9Matrix = translate(glm::mat4(1.0f), glm::vec3(4.5f, 0.0f, 0.0f));
@@ -1052,7 +1054,7 @@ int main(int argc, char*argv[])
 		glm::mat4 Num9part1 = L9Matrix * Num9Matrix * Num9part;
 
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part1[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(renderingMode, 0, 36);
 
 		// Creating right-part of the number 9
 		Num9part = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
@@ -1060,7 +1062,7 @@ int main(int argc, char*argv[])
 		glm::mat4 Num9part2 = L9Matrix * Num9Matrix * Num9part;
 
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part2[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(renderingMode, 0, 36);
 
 		// Creating left-part of the number 9
 		Num9part = translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
@@ -1068,7 +1070,7 @@ int main(int argc, char*argv[])
 		glm::mat4 Num9part3 = L9Matrix * Num9Matrix * Num9part;
 
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part3[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(renderingMode, 0, 36);
 
 		// Creating bottom-part of the number 9
 		Num9part = translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
@@ -1076,7 +1078,7 @@ int main(int argc, char*argv[])
 		glm::mat4 Num9part4 = L9Matrix * Num9Matrix * Num9part;
 
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part4[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(renderingMode, 0, 36);
 		}
 #pragma endregion
 
