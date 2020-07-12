@@ -1,3 +1,12 @@
+## Group 14
+
+Nicole Parmentier - 
+Laura Wheatley - 40034960
+Melissa - 
+Antoine Paulin-Bessette -
+Bria
+
+
 The controls in our project meet the specified requirements, with the following points of note:
 • Using WASD while holding a shift key moves the models in the world, and using WASD without
 	holding a shift key rotates the models.
