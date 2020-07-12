@@ -288,6 +288,98 @@ int createVertexArrayObjectR4()
 }
 #pragma endregion
 
+#pragma region lines
+int createVertexBufferObjectCoordinateXYZ()
+{
+	// Cube model (position, colors)
+	glm::vec3 vertexArray[] = {
+		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), // middle, red
+		glm::vec3(5.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), // right, red
+		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), // middle, green
+		glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), // up, green
+		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), // middle, blue
+		glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f) // front, blue
+	};
+
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
+
+
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
+		3,                   // size
+		GL_FLOAT,            // type
+		GL_FALSE,            // normalized?
+		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
+		(void*)0             // array buffer offset
+	);
+	glEnableVertexAttribArray(0);
+
+
+	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		2 * sizeof(glm::vec3),
+		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
+	);
+	glEnableVertexAttribArray(1);
+
+
+	return vertexBufferObject;
+}
+
+int createVertexBufferObjectGridLine()
+{
+	// Cube model (position, colors)
+	glm::vec3 vertexArray[] = {
+		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), // middle, yellow
+		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f) // right, yellow
+	};
+
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
+
+
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
+		3,                   // size
+		GL_FLOAT,            // type
+		GL_FALSE,            // normalized?
+		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
+		(void*)0             // array buffer offset
+	);
+	glEnableVertexAttribArray(0);
+
+
+	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		2 * sizeof(glm::vec3),
+		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
+	);
+	glEnableVertexAttribArray(1);
+
+
+	return vertexBufferObject;
+}
+#pragma endregion
+
 #pragma region cameraInput
 // Camera parameters
 float cameraSpeed = 1.0f;
@@ -850,6 +942,8 @@ int main(int argc, char*argv[])
 	int unitCubeVBO = createUnitCubeVertexBufferObject();    
 	int rainbowCubeVBO = createVertexBufferObjectU3();
     int vao = createVertexArrayObjectR4();
+	int gridVBO = createVertexBufferObjectGridLine();
+	int xyzVBO = createVertexBufferObjectCoordinateXYZ();
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -880,7 +974,48 @@ int main(int argc, char*argv[])
 		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
 
 		//Set your flag to draw or hide your alphanumerical model
-		bool drawL9 = true, drawI9 = true, drawU3 = true, drawAA = true, drawC4 = true;
+		bool drawL9 = true, drawI9 = true, drawU3 = true, drawAA = true, drawC4 = true, drawGrid = true, drawCoordinates = true;
+
+#pragma region Grid and Coordinate Axis
+		if (drawGrid) {
+			// Draw ground using Hierarchical Modeling
+			glBindVertexArray(gridVBO);
+
+			// Variable Used for rotation
+			float angle = 90;
+			// Initialize variables for grid size
+			int gridSize = 100;
+			glm::mat4 Grid = translate(mat4(1.0f), vec3(-gridSize / 2, 0.0f, -gridSize / 2));
+			glm::mat4 GridPart;
+
+			for (int i = 0; i <= gridSize; ++i)
+			{
+				glm::mat4 GridX = translate(mat4(1.0f), vec3(0.0f, 0.0f, 1.0f * i)) * scale(glm::mat4(1.0f), glm::vec3(gridSize, 1.0f, 1.0f));
+				GridPart = Grid * GridX;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridPart[0][0]);
+				glLineWidth(1.0f);
+				glDrawArrays(GL_LINES, 0, 2);
+
+				glm::mat4 GridZ = translate(mat4(1.0f), vec3(1.0f * i, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(-angle), vec3(0.0f, 1.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(gridSize, 1.0f, 1.0f));
+				GridPart = Grid * GridZ;
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridPart[0][0]);
+				glLineWidth(1.0f);
+				glDrawArrays(GL_LINES, 0, 2);
+			}
+		}
+		
+		if (drawCoordinates) {// Set up Coordinate Axis Matrix using Hierarchical Modeling
+			glm::mat4 Coordinates = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
+
+			int numLines = 3;
+			glBindVertexArray(xyzVBO);
+
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Coordinates[0][0]);
+			glLineWidth(5.0f);
+			glDrawArrays(GL_LINES, 0, 2 * numLines);
+		}
+#pragma endregion
+
 #pragma region L9
 		if (drawL9) {
 			glBindVertexArray(unitCubeVBO);
