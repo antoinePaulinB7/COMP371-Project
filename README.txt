@@ -4,7 +4,7 @@ Nicole Parmentier -
 Laura Wheatley - 40034960
 Melissa - 
 Antoine Paulin-Bessette -
-Bria
+Briana -
 
 
 The controls in our project meet the specified requirements, with the following points of note:
