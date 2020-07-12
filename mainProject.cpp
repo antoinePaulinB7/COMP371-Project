@@ -72,7 +72,7 @@ int createUnitCubeVertexBufferObject()
 		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
 		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f)
 	};
-  
+
 	// Create a vertex array
 	GLuint vertexArrayObject;
 	glGenVertexArrays(1, &vertexArrayObject);
@@ -336,6 +336,9 @@ int createVertexBufferObjectCoordinateXYZ()
 	return vertexBufferObject;
 }
 
+// Initialize variables for grid size
+int gridSize = 100;
+float halfGridSize = gridSize / 2.0f;
 int createVertexBufferObjectGridLine()
 {
 	// Initialize variables for grid size
@@ -426,10 +429,9 @@ int createVertexBufferObjectGridLine()
 float cameraSpeed = 1.0f;
 float cameraFastSpeed = 2 * cameraSpeed;
 float cameraHorizontalAngle = 90.0f;
-float cameraVerticalAngle = 0.0f;
-float FOV = 70.0f;
+float cameraVerticalAngle = -30.0f;
 const float cameraAngularSpeed = 60.0f;
-float magnificationFactor = 1.0f;
+float magnificationFactor = 0.25f;
 bool cameraFirstPerson = true, panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
 
 void handleCameraFlagInputs(GLFWwindow* window) {
@@ -476,6 +478,51 @@ void handleCameraFlagInputs(GLFWwindow* window) {
 		zoomMoveMode = false;
 	}
 
+}
+
+// Camera parameters for view transform
+glm::vec3 cameraPosition(0.0f, 15.0f, 30.0f);
+int xShift = 12, zShift = 4;
+vec3 presetCameraPositions[] = { glm::vec3(0.0f, 15.0f, 30.0f), glm::vec3(-xShift, 5.0f, -zShift),
+glm::vec3(xShift, 5.0f, -zShift), glm::vec3(0.0f, 5.0f, xShift), glm::vec3(-xShift, 5.0f, 5 * zShift),
+glm::vec3(xShift, 5.0f, 5 * zShift) };
+int cameraPresetPosCount = 6;
+int currentCamPresetPositionIndex = 0;
+
+//Add a delay of 10 frames between camera angle changes, otherwise is can change every
+//frame which is pretty chaotic and confusing
+int changeDelay = 10;
+void handleCameraPositionInputs(GLFWwindow* window) {
+	if (changeDelay <= 0) {
+		if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS)
+		{
+			currentCamPresetPositionIndex++;
+			if (currentCamPresetPositionIndex >= cameraPresetPosCount) {
+				currentCamPresetPositionIndex = 0;
+			}
+			cameraPosition = presetCameraPositions[currentCamPresetPositionIndex];
+			changeDelay = 10;
+			cameraHorizontalAngle = 90.0f;
+			cameraVerticalAngle = -30.0f;
+			magnificationFactor = 0.25f;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
+		{
+			currentCamPresetPositionIndex--;
+			if (currentCamPresetPositionIndex < 0) {
+				currentCamPresetPositionIndex = cameraPresetPosCount - 1;
+			}
+			cameraPosition = presetCameraPositions[currentCamPresetPositionIndex];
+			changeDelay = 10;
+			cameraHorizontalAngle = 90.0f;
+			cameraVerticalAngle = -30.0f;
+			magnificationFactor = 0.25f;
+		}
+	}
+	else {
+		changeDelay--;
+	}
 }
 #pragma endregion
 
@@ -914,50 +961,49 @@ int main(int argc, char*argv[])
 	checkErrors();
 
 #pragma region windowSetUp
-    // Initialize GLFW and OpenGL version
-    glfwInit();
+	// Initialize GLFW and OpenGL version
+	glfwInit();
 
 #if defined(PLATFORM_OSX)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #else
-    // On windows, we set OpenGL version to 2.1, to support more hardware
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	// On windows, we set OpenGL version to 2.1, to support more hardware
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 #endif
 
-    // Create Window and rendering context using GLFW, resolution is 800x600
-    GLFWwindow* window = glfwCreateWindow(1024, 764, "Comp371 - Group 14 P1", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cerr << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
+	// Create Window and rendering context using GLFW, resolution is 800x600
+	GLFWwindow* window = glfwCreateWindow(1024, 764, "Comp371 - Group 14 P1", NULL, NULL);
+	if (window == NULL)
+	{
+		std::cerr << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
 
-    // Initialize GLEW
-    glewExperimental = true; // Needed for core profile
-    if (glewInit() != GLEW_OK) {
-        std::cerr << "Failed to create GLEW" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
+	// Initialize GLEW
+	glewExperimental = true; // Needed for core profile
+	if (glewInit() != GLEW_OK) {
+		std::cerr << "Failed to create GLEW" << std::endl;
+		glfwTerminate();
+		return -1;
+	}
 
-    // Black background
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	// Black background
+	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
 
-    // Compile and link shaders here ...
+	// Compile and link shaders here ...
 	GLuint shaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
-  
+
 	// We can set the shader once, since we have only one
 	glUseProgram(shaderProgram);
 #pragma endregion windowSetUp
 
 	// Camera parameters for view transform
-	glm::vec3 cameraPosition(0.0f, 1.0f, 15.0f);
 	glm::vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
 	glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
@@ -976,13 +1022,13 @@ int main(int argc, char*argv[])
 
 	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
- 
+
 	// Define and upload geometry to the GPU here ...
 	//We have a few different cubes since some people did fun colors,
 	//And some are centered on origin while others have origin in a corner
-	int unitCubeVBO = createUnitCubeVertexBufferObject();    
+	int unitCubeVBO = createUnitCubeVertexBufferObject();
 	int rainbowCubeVBO = createVertexBufferObjectU3();
-    int vao = createVertexArrayObjectR4();
+	int vao = createVertexArrayObjectR4();
 	int gridVBO = createVertexBufferObjectGridLine();
 	int xyzVBO = createVertexBufferObjectCoordinateXYZ();
 
@@ -996,16 +1042,18 @@ int main(int argc, char*argv[])
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
-    // Entering Main Loop
-    while (!glfwWindowShouldClose(window))
-    {
+	glPointSize(3.0f);
+
+	// Entering Main Loop
+	while (!glfwWindowShouldClose(window))
+	{
 		// Frame time calculation
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
-        // Each frame, reset color of each pixel to glClearColor
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-      
+		// Each frame, reset color of each pixel to glClearColor
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
 		// Model Matrices - they control the transformations of the letters model
@@ -1014,42 +1062,36 @@ int main(int argc, char*argv[])
 		modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
 		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
 
-		//Set your flag to draw or hide your alphanumerical model
-		bool drawL9 = true, drawI9 = true, drawU3 = true, drawAA = true, drawC4 = true, drawGrid = true, drawCoordinates = true;
-
 #pragma region Grid and Coordinate Axis
-		if (drawGrid) {
-			// Draw ground using Hierarchical Modeling
-			glBindVertexArray(gridVBO);
+		// Draw ground using Hierarchical Modeling
+		glBindVertexArray(gridVBO);
 
-			// Initialize variables for grid size
-			int gridNum = 200;
-			glm::mat4 GridX = translate(mat4(1.0f), vec3(-1.0f * gridNum / 4, 0.0f, -1.0f * gridNum / 4));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridX[0][0]);
-			glLineWidth(1.0f);
-			glDrawArrays(GL_LINES, 0, 2 * gridNum);
-		}
-		
-		if (drawCoordinates) {
-			// Set up Coordinate Axis Matrix using Hierarchical Modeling
-			glm::mat4 Coordinates = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
+		// Initialize variables for grid size
+		int gridNum = 200;
+		glm::mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridNum / 4, 0.0f, -1.0f * gridNum / 4));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridX[0][0]);
+		glLineWidth(1.0f);
+		glDrawArrays(GL_LINES, 0, 2 * gridNum);
 
-			int numLines = 3;
-			glBindVertexArray(xyzVBO);
 
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Coordinates[0][0]);
-			glLineWidth(5.0f);
-			glDrawArrays(GL_LINES, 0, 2 * numLines);
-		}
+		// Set up Coordinate Axis Matrix using Hierarchical Modeling
+		glm::mat4 Coordinates = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
+
+		int numLines = 3;
+		glBindVertexArray(xyzVBO);
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Coordinates[0][0]);
+		glLineWidth(5.0f);
+		glDrawArrays(GL_LINES, 0, 2 * numLines);
 #pragma endregion
 
 #pragma region L9
-		if (drawL9) {
-			glBindVertexArray(unitCubeVBO);
+		glBindVertexArray(unitCubeVBO);
 
 		// Draw L9 using hierarchical modeling
 		// Setting up the L9 Matrix - Changing the values of the translation of L9 will change its position in the world
-		glm::mat4 L9Matrix = translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0.0f, -10.0f)) * sharedModelMatrix;
+		// The rightmost translation matrix ensures the model's Y-rotation axis is centered
+		glm::mat4 L9Matrix = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize)) * sharedModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-3.5f, 0.0f, 0.0f));
 
 		// Setting up the letter L
 		glm::mat4 LMatrix = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
@@ -1058,7 +1100,7 @@ int main(int argc, char*argv[])
 		glm::mat4 Lpart = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
 
 		glm::mat4 Lpart1 = L9Matrix * LMatrix * Lpart;
-		
+
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart1[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
 
@@ -1104,210 +1146,208 @@ int main(int argc, char*argv[])
 
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part4[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
-		}
 #pragma endregion
 
 #pragma region I9
-		if (drawI9) {
-			glBindVertexArray(unitCubeVBO);
+		glBindVertexArray(unitCubeVBO);
 
-			//define identity matrices to translate, rotate and scale I9 model
-			//used for hierarchical modeling 
-			mat4 translateI9Model = translate(mat4(1.0f), vec3(10.0f, 0.0f, -10.0f));
-			mat4 scaleI9Model(1.0f);
-			mat4 rotateI9Model = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 90.0f, 0.0f));
+		//define identity matrices to translate, rotate and scale I9 model
+		//used for hierarchical modeling 
+		mat4 translateI9Model = translate(mat4(1.0f), vec3(halfGridSize, 2.5f, -halfGridSize));
 
-			//----------------------------------------------------------------------------------
-			//get the worldview of the model within the scene
-			mat4 WorldView_Model = translateI9Model * scaleI9Model * rotateI9Model * sharedModelMatrix;
+		//----------------------------------------------------------------------------------
+		//get the worldview of the model within the scene
+		mat4 I9_Model = worldOrientationModelMatrix * translateI9Model * sharedModelMatrix * translate(mat4(1.0f), vec3(0.0f, -2.5f, 0.0f));
 
-			//topI
-			mat4 topI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, -3.f))* scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &topI[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
+		//topI
+		mat4 topI = I9_Model * translate(mat4(1.0f), vec3(-3.0f, 4.5f, 0.0f))* scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &topI[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
 
+		//middleI
+		mat4 middleI = I9_Model * translate(mat4(1.0f), vec3(-3.0f, 2.5f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &middleI[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
 
-			//middleI
-			mat4 middleI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.5f, -3.f)) * scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &middleI[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
+		//bottomI
+		mat4 bottomI = I9_Model * translate(mat4(1.0f), vec3(-3.0f, 0.5f, 0.0f)) * scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &bottomI[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
 
-			//bottomI
-			mat4 bottomI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 0.5f, -3.f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &bottomI[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
+		//top9
+		mat4 top9 = I9_Model * translate(mat4(1.0f), vec3(2.75f, 4.5f, 0.0f)) * scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &top9[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
 
-			//top9
-			mat4 top9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, 2.75f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.5f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &top9[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
+		//left9
+		mat4 left9 = I9_Model * translate(mat4(1.0f), vec3(1.5f, 3.25f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &left9[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
 
-
-			//left9
-			mat4 left9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 3.25f, 1.5f)) * scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &left9[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-
-
-			//bottom9
-			mat4 bottom9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.0f, 2.75f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.5f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &bottom9[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
+		//bottom9
+		mat4 bottom9 = I9_Model * translate(mat4(1.0f), vec3(2.75f, 2.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &bottom9[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
 
 
-			//right9
-			mat4 right9 = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 2.51f, 4.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &right9[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			//----------------------------------------------------------------------------------
-		}
+		//right9
+		mat4 right9 = I9_Model * translate(mat4(1.0f), vec3(4.0f, 2.51f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &right9[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
+		//----------------------------------------------------------------------------------
 #pragma endregion
 
 #pragma region U3
-		if (drawU3) {
-			glBindVertexArray(rainbowCubeVBO);
+		glBindVertexArray(rainbowCubeVBO);
 
-			/* Transforming the Unit Triangle - La(u)ra Wheatley 400(3)4960 */
+		/* Transforming the Unit Triangle - La(u)ra Wheatley 400(3)4960 */
 
-			// Creating U from unit cube
-			glm::mat4 uLeft = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uLeft[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glm::mat4 uBottom = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uBottom[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glm::mat4 uRight = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uRight[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
+		mat4 translateU3Model = translate(mat4(1.0f), vec3(0.0f, 2.5f, 0.0f));
+		mat4 scaleU3Model(1.0f);
 
+		mat4 WorldView_Model = worldOrientationModelMatrix * translateU3Model * scaleU3Model * sharedModelMatrix * translate(mat4(1.0f), vec3(-1.0f, 0.0f, 0.0f));
 
-			// Creating 3 from unit cube
-			glm::mat4 threeBase = translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeBase[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glm::mat4 threeArm1 = translate(glm::mat4(1.0f), glm::vec3(2.5f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm1[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glm::mat4 threeArm2 = translate(glm::mat4(1.0f), glm::vec3(2.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm2[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glm::mat4 threeArm3 = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm3[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-		}
+		// Creating U from unit cube
+
+		mat4 uLeft = WorldView_Model * translate(mat4(1.0f), vec3(-3.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uLeft[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
+
+		mat4 uBottom = WorldView_Model * translate(mat4(1.0f), vec3(-1.5f, -2.0f, 0.0f)) * scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uBottom[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
+
+		mat4 uRight = WorldView_Model * translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uRight[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
+
+		// Creating 3 from unit cube
+
+		mat4 threeBase = WorldView_Model * translate(mat4(1.0f), vec3(4.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeBase[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
+
+		mat4 threeArm1 = WorldView_Model * translate(mat4(1.0f), vec3(2.5f, 2.0f, 0.0f)) * scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm1[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
+
+		mat4 threeArm2 = WorldView_Model * translate(mat4(1.0f), vec3(2.5f, -2.0f, 0.0f)) * scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm2[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
+
+		mat4 threeArm3 = WorldView_Model * translate(mat4(1.0f), vec3(3.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm3[0][0]);
+		glDrawArrays(renderingMode, 0, 36);
 #pragma endregion
 
 #pragma region AA?
-		if (drawAA) {
-			// Draw geometry
-			glBindVertexArray(vao);
+		// Draw geometry
+		glBindVertexArray(vao);
 
-			mat4 translateAAModel = translate(mat4(1.0f), vec3(-10.0f, 0.0f, 2.0f));
+		mat4 translateAAModel = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, halfGridSize));
 
-			drawLetter('A', 0, translateAAModel * sharedModelMatrix, worldMatrixLocation);
-			drawLetter('A', 1, translateAAModel * sharedModelMatrix, worldMatrixLocation);
-		}
+		drawLetter('A', 0, translateAAModel * sharedModelMatrix, worldMatrixLocation);
+		drawLetter('A', 1, translateAAModel * sharedModelMatrix, worldMatrixLocation);
 #pragma endregion
 
 #pragma region C4
-		if (drawC4) {
-			glBindVertexArray(vao);
-			int numFaces = 6, numTrianglesPerFace = 2, numVerticesPerTriangle = 3;
-			int numTriangles = numFaces * numTrianglesPerFace;
+		glBindVertexArray(vao);
+		int numFaces = 6, numTrianglesPerFace = 2, numVerticesPerTriangle = 3;
+		int numTriangles = numFaces * numTrianglesPerFace;
 
-			// controls model hierarchy movement and orientation	
-			glm::mat4 groupTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 2.5f, +2.5f));
-			glm::mat4 groupMatrix = groupTranslationMatrix * sharedModelMatrix;
-			glm::mat4 cMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -2.5f, 0.5f));
-			glm::mat4 fourMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, -2.5f, 0.5f));
+		// controls model hierarchy movement and orientation	
+		glm::mat4 groupTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(halfGridSize, 2.5f, halfGridSize));
+		glm::mat4 groupMatrix = worldOrientationModelMatrix * groupTranslationMatrix * sharedModelMatrix * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		glm::mat4 cMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-4.5f, -2.5f, 0.5f));
+		glm::mat4 fourMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.5f, -2.5f, 0.5f));
 
-			//C
-			glm::mat4 cBarMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-			glm::mat4 modelMatrix = groupMatrix * cMatrix * cBarMatrix;
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-			glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
+		//C
+		glm::mat4 cBarMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+		glm::mat4 modelMatrix = groupMatrix * cMatrix * cBarMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
 
-			glm::mat4 cBaseTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-			glm::mat4 cBaseScaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-			glm::mat4 cBaseMatrix = cBaseTranslationMatrix * cBaseScaleMatrix;
-			modelMatrix = groupMatrix * cMatrix * cBaseMatrix;
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-			glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
+		glm::mat4 cBaseTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat4 cBaseScaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+		glm::mat4 cBaseMatrix = cBaseTranslationMatrix * cBaseScaleMatrix;
+		modelMatrix = groupMatrix * cMatrix * cBaseMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
 
-			glm::mat4 cTopTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 0.0f));
-			glm::mat4 cTopMatrix = cTopTranslationMatrix * cBaseScaleMatrix;
-			modelMatrix = groupMatrix * cMatrix * cTopMatrix;
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-			glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
+		glm::mat4 cTopTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 0.0f));
+		glm::mat4 cTopMatrix = cTopTranslationMatrix * cBaseScaleMatrix;
+		modelMatrix = groupMatrix * cMatrix * cTopMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
 
-			glm::mat4 freshWorld = glm::mat4(1.0f);
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &freshWorld[0][0]);
+		glm::mat4 freshWorld = glm::mat4(1.0f);
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &freshWorld[0][0]);
 
-			//4
-			glm::mat4 fourBarMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-			modelMatrix = groupMatrix * fourMatrix * fourBarMatrix;
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-			glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
+		//4
+		glm::mat4 fourBarMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+		modelMatrix = groupMatrix * fourMatrix * fourBarMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
 
-			glm::mat4 fourMiddleTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.0f, 0.0f));
-			glm::mat4 fourMiddleScaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-			glm::mat4 fourMiddleMatrix = fourMiddleTranslationMatrix * fourMiddleScaleMatrix;
-			modelMatrix = groupMatrix * fourMatrix * fourMiddleMatrix;
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-			glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
+		glm::mat4 fourMiddleTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.0f, 0.0f));
+		glm::mat4 fourMiddleScaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+		glm::mat4 fourMiddleMatrix = fourMiddleTranslationMatrix * fourMiddleScaleMatrix;
+		modelMatrix = groupMatrix * fourMatrix * fourMiddleMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
 
-			glm::mat4 fourLeftTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 3.0f, 0.0f));
-			glm::mat4 fourLeftScaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-			glm::mat4 fourLeftMatrix = fourLeftTranslationMatrix * fourLeftScaleMatrix;
-			modelMatrix = groupMatrix * fourMatrix * fourLeftMatrix;
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-			glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
-		}
+		glm::mat4 fourLeftTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 3.0f, 0.0f));
+		glm::mat4 fourLeftScaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+		glm::mat4 fourLeftMatrix = fourLeftTranslationMatrix * fourLeftScaleMatrix;
+		modelMatrix = groupMatrix * fourMatrix * fourLeftMatrix;
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
 #pragma endregion
 
-      	// End Frame, include swap interval to prevent blurriness
+		// End Frame, include swap interval to prevent blurriness
 		glfwSwapBuffers(window);
 		glfwSwapInterval(1);
 		glfwPollEvents();
 
-        // Handle inputs
+		// Handle inputs
 		handleCameraFlagInputs(window);
 		handleRenderingModeInput(window);
 		handleWorldOrientationInput(window, dt);
 		handleExitInput(window);
+		handleCameraPositionInputs(window);
 
 
-        float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
+		float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
 
-        // Retrieving mouse coordinates
-        double mousePosX, mousePosY;
-        glfwGetCursorPos(window, &mousePosX, &mousePosY);
+		// Retrieving mouse coordinates
+		double mousePosX, mousePosY;
+		glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
-        // Calculating directional movement
-        double dx = mousePosX - lastMousePosX;
-        double dy = mousePosY - lastMousePosY;
+		// Calculating directional movement
+		double dx = mousePosX - lastMousePosX;
+		double dy = mousePosY - lastMousePosY;
 
-        // Update last position coordinates
-        lastMousePosX = mousePosX;
-        lastMousePosY = mousePosY;
+		// Update last position coordinates
+		lastMousePosX = mousePosX;
+		lastMousePosY = mousePosY;
 
-        cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
-        if (cameraHorizontalAngle > 360)
-        {
-            cameraHorizontalAngle -= 360;
-        }
-        else if (cameraHorizontalAngle < -360)
-        {
-            cameraHorizontalAngle += 360;
-        }
+		cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
+		if (cameraHorizontalAngle > 360)
+		{
+			cameraHorizontalAngle -= 360;
+		}
+		else if (cameraHorizontalAngle < -360)
+		{
+			cameraHorizontalAngle += 360;
+		}
 
-        float theta = glm::radians(cameraHorizontalAngle);
-        float phi = glm::radians(cameraVerticalAngle);
+		float theta = glm::radians(cameraHorizontalAngle);
+		float phi = glm::radians(cameraVerticalAngle);
 
-        cameraLookAt = glm::vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
+		cameraLookAt = glm::vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
 		glm::vec3 cameraSideVector = glm::cross(cameraLookAt, glm::vec3(0.0f, 1.0f, 0.0f));
 
-        glm::normalize(cameraSideVector);
+		glm::normalize(cameraSideVector);
 
 #pragma region mouseCameraMovement
 		/* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
@@ -1355,11 +1395,11 @@ int main(int argc, char*argv[])
 		/* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 #pragma endregion
 
-    }
+	}
 
-    // Shutdown GLFW
-    glfwTerminate();
+	// Shutdown GLFW
+	glfwTerminate();
 
-    return 0;
+	return 0;
 }
 
