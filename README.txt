@@ -1,6 +1,6 @@
 Group 14
 
-Nicole Parmentier - 
+Nicole Parmentier - 40040213
 Laura Wheatley - 40034960
 Melissa Lim - 
 Antoine Paulin-Bessette -
