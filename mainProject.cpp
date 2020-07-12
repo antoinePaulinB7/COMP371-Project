@@ -336,6 +336,9 @@ int createVertexBufferObjectCoordinateXYZ()
 	return vertexBufferObject;
 }
 
+// Initialize variables for grid size
+int gridSize = 100;
+float halfGridSize = gridSize / 2.0f;
 int createVertexBufferObjectGridLine()
 {
 	// Cube model (position, colors)
@@ -385,10 +388,9 @@ int createVertexBufferObjectGridLine()
 float cameraSpeed = 1.0f;
 float cameraFastSpeed = 2 * cameraSpeed;
 float cameraHorizontalAngle = 90.0f;
-float cameraVerticalAngle = 0.0f;
-float FOV = 70.0f;
+float cameraVerticalAngle = -30.0f;
 const float cameraAngularSpeed = 60.0f;
-float magnificationFactor = 1.0f;
+float magnificationFactor = 0.25f;
 bool cameraFirstPerson = true, panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
 
 void handleCameraFlagInputs(GLFWwindow* window) {
@@ -435,6 +437,51 @@ void handleCameraFlagInputs(GLFWwindow* window) {
 		zoomMoveMode = false;
 	}
 
+}
+
+// Camera parameters for view transform
+glm::vec3 cameraPosition(0.0f, 15.0f, 30.0f);
+int xShift = 12, zShift = 4;
+vec3 presetCameraPositions[] = { glm::vec3(0.0f, 15.0f, 30.0f), glm::vec3(-xShift, 5.0f, -zShift), 
+glm::vec3(xShift, 5.0f, -zShift), glm::vec3(0.0f, 5.0f, xShift), glm::vec3(-xShift, 5.0f, 5*zShift), 
+glm::vec3(xShift, 5.0f, 5 * zShift) };
+int cameraPresetPosCount = 6;
+int currentCamPresetPositionIndex = 0;
+
+//Add a delay of 10 frames between camera angle changes, otherwise is can change every
+//frame which is pretty chaotic and confusing
+int changeDelay = 10;
+void handleCameraPositionInputs(GLFWwindow* window) {
+	if (changeDelay <= 0) {
+		if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS)
+		{
+			currentCamPresetPositionIndex++;
+			if (currentCamPresetPositionIndex >= cameraPresetPosCount) {
+				currentCamPresetPositionIndex = 0;
+			}
+			cameraPosition = presetCameraPositions[currentCamPresetPositionIndex];
+			changeDelay = 10;
+			cameraHorizontalAngle = 90.0f;
+			cameraVerticalAngle = -30.0f;
+			magnificationFactor = 0.25f;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
+		{
+			currentCamPresetPositionIndex--;
+			if (currentCamPresetPositionIndex < 0) {
+				currentCamPresetPositionIndex = cameraPresetPosCount - 1;
+			}
+			cameraPosition = presetCameraPositions[currentCamPresetPositionIndex];
+			changeDelay = 10;
+			cameraHorizontalAngle = 90.0f;
+			cameraVerticalAngle = -30.0f;
+			magnificationFactor = 0.25f;
+		}
+	}
+	else {
+		changeDelay--;
+	}
 }
 #pragma endregion
 
@@ -906,7 +953,7 @@ int main(int argc, char*argv[])
 	}
 
 	// Black background
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
 
 	// Compile and link shaders here ...
 	GLuint shaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
@@ -916,7 +963,6 @@ int main(int argc, char*argv[])
 #pragma endregion windowSetUp
 
 	// Camera parameters for view transform
-	glm::vec3 cameraPosition(0.0f, 1.0f, 15.0f);
 	glm::vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
 	glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
@@ -981,9 +1027,7 @@ int main(int argc, char*argv[])
 
 		// Variable Used for rotation
 		float angle = 90;
-		// Initialize variables for grid size
-		int gridSize = 100;
-		float halfGridSize = gridSize / 2.0f;
+
 		glm::mat4 Grid = translate(mat4(1.0f), vec3(-halfGridSize, 0.0f, -halfGridSize));
 		glm::mat4 GridPart;
 
@@ -1247,6 +1291,7 @@ int main(int argc, char*argv[])
 		handleRenderingModeInput(window);
 		handleWorldOrientationInput(window, dt);
 		handleExitInput(window);
+		handleCameraPositionInputs(window);
 
 
 		float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
