@@ -1,4 +1,4 @@
-## Group 14
+Group 14
 
 Nicole Parmentier - 
 Laura Wheatley - 40034960
