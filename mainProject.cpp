@@ -289,96 +289,14 @@ int createVertexArrayObjectR4()
 #pragma endregion
 
 #pragma region lines
-int createVertexBufferObjectCoordinateX()
+int createVertexBufferObjectCoordinateXYZ()
 {
 	// Cube model (position, colors)
 	glm::vec3 vertexArray[] = {
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), // middle, red
-		glm::vec3(5.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) // right, red
-	};
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		2 * sizeof(glm::vec3),
-		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-
-	return vertexBufferObject;
-}
-
-int createVertexBufferObjectCoordinateY()
-{
-	// Cube model (position, colors)
-	glm::vec3 vertexArray[] = {
+		glm::vec3(5.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), // right, red
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), // middle, green
-		glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f) // up, green
-	};
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		2 * sizeof(glm::vec3),
-		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-
-	return vertexBufferObject;
-}
-
-int createVertexBufferObjectCoordinateZ()
-{
-	// Cube model (position, colors)
-	glm::vec3 vertexArray[] = {
+		glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), // up, green
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), // middle, blue
 		glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f) // front, blue
 	};
@@ -1025,9 +943,7 @@ int main(int argc, char*argv[])
 	int rainbowCubeVBO = createVertexBufferObjectU3();
     int vao = createVertexArrayObjectR4();
 	int gridVBO = createVertexBufferObjectGridLine();
-	int xVBO = createVertexBufferObjectCoordinateX();
-	int yVBO = createVertexBufferObjectCoordinateY();
-	int zVBO = createVertexBufferObjectCoordinateZ();
+	int xyzVBO = createVertexBufferObjectCoordinateXYZ();
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -1091,32 +1007,12 @@ int main(int argc, char*argv[])
 		if (drawCoordinates) {// Set up Coordinate Axis Matrix using Hierarchical Modeling
 			glm::mat4 Coordinates = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
 
-			// Y Direction
-			glBindVertexArray(xVBO);
-			glm::mat4 LineY = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-			glm::mat4 LinePart = Coordinates * LineY;
+			int numLines = 3;
+			glBindVertexArray(xyzVBO);
 
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &LinePart[0][0]);
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Coordinates[0][0]);
 			glLineWidth(5.0f);
-			glDrawArrays(GL_LINES, 0, 2);
-
-			// X Direction
-			glBindVertexArray(yVBO);
-			glm::mat4 LineX = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));;
-			LinePart = Coordinates * LineX;
-
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &LinePart[0][0]);
-			glLineWidth(5.0f);
-			glDrawArrays(GL_LINES, 0, 2);
-
-			// Z Direction
-			glBindVertexArray(zVBO);
-			glm::mat4 LineZ = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));;
-			LinePart = Coordinates * LineZ;
-
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &LinePart[0][0]);
-			glLineWidth(5.0f);
-			glDrawArrays(GL_LINES, 0, 2);
+			glDrawArrays(GL_LINES, 0, 2 * numLines);
 		}
 #pragma endregion
 
