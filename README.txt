@@ -1,3 +1,12 @@
+The controls in our project meet the specified requirements, with the following points of note:
+• Using WASD while holding a shift key moves the models in the world, and using WASD without
+	holding a shift key rotates the models.
+• The camera has preset positions to view each model or the whole scene, use the < > keys 
+	(or really , . ) to flip between the various views.
+
+
+The functionality of the project was distributed into roles as follows:
+
 Everyone:
 • Create a letter & digit model by transforming a unit cube
 • Organize the model using hierarchical modelling
@@ -37,6 +46,7 @@ Nicole - Role 5:
 • Place the virtual camera with the world space origin as the point of focus, with
 the coordinate axis, ground and all the models in the window.
 • Place the models in the corners and center of the grid as described in the project.
+• Implement preset camera positions to focus on each model or the whole scene
 • Organize the work from the other Roles within the single project.
 • Double-check that all project requirements are met.
 • Package the submission according to specifications, with the required readme file.
