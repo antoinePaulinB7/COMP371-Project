@@ -337,19 +337,19 @@ int createVertexBufferObjectCoordinateXYZ()
 }
 
 // Initialize variables for grid size
-int gridSize = 100;
+int gridSize = 101;
 float halfGridSize = gridSize / 2.0f;
 int createVertexBufferObjectGridLine()
 {
 	// Initialize variables for grid size
-	const int fullGridSize = 800;
-	int lineLength = fullGridSize / 8;
+	const int fullGridSize = 808;
+	int lineLength = 100;
 
 	// Line Vertices Array containing position & colors
 	glm::vec3 vertexArray[fullGridSize];
 
 	// For loops to add every vertex of position and color of X lines to the grid in the vertex array
-	for (int i = 0; i < fullGridSize / 2; ++i)
+	for (int i = 0; i < fullGridSize / 2.0f; ++i)
 	{
 		if (i % 4 == 1 || i % 4 == 3) {
 			vertexArray[i] = {
@@ -358,12 +358,12 @@ int createVertexBufferObjectGridLine()
 		}
 		else if (i % 4 == 0) {
 			vertexArray[i] = {
-				glm::vec3(0.0f, 0.0f, 1.0f * i / 4) // First vertex of position
+				glm::vec3(0.0f, 0.0f, 1.0f * i / 4.0f) // First vertex of position
 			};
 		}
 		else {
 			vertexArray[i] = {
-				glm::vec3(1.0f * lineLength, 0.0f, 1.0f * ((i - 2) / 4)) // Last vertex of position
+				glm::vec3(1.0f * lineLength, 0.0f, 1.0f * ((i - 2) / 4.0f)) // Last vertex of position
 			};
 		}
 	}
@@ -429,7 +429,7 @@ int createVertexBufferObjectGridLine()
 float cameraSpeed = 1.0f;
 float cameraFastSpeed = 2 * cameraSpeed;
 float cameraHorizontalAngle = 90.0f;
-float cameraVerticalAngle = -30.0f;
+float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
 float magnificationFactor = 0.25f;
 bool cameraFirstPerson = true, panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
@@ -484,7 +484,7 @@ void handleCameraFlagInputs(GLFWwindow* window) {
 glm::vec3 cameraPosition(0.0f, 15.0f, 30.0f);
 int xShift = 12, zShift = 4;
 vec3 presetCameraPositions[] = { glm::vec3(0.0f, 15.0f, 30.0f), glm::vec3(-xShift, 5.0f, -zShift),
-glm::vec3(xShift, 5.0f, -zShift), glm::vec3(0.0f, 5.0f, xShift), glm::vec3(-xShift, 5.0f, 5 * zShift),
+glm::vec3(xShift, 5.0f, -zShift), glm::vec3(0.0f, 5.0f, 8.0f), glm::vec3(-xShift, 5.0f, 5 * zShift),
 glm::vec3(xShift, 5.0f, 5 * zShift) };
 int cameraPresetPosCount = 6;
 int currentCamPresetPositionIndex = 0;
@@ -503,7 +503,7 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 			cameraPosition = presetCameraPositions[currentCamPresetPositionIndex];
 			changeDelay = 10;
 			cameraHorizontalAngle = 90.0f;
-			cameraVerticalAngle = -30.0f;
+			cameraVerticalAngle = -25.0f;
 			magnificationFactor = 0.25f;
 		}
 
@@ -516,7 +516,7 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 			cameraPosition = presetCameraPositions[currentCamPresetPositionIndex];
 			changeDelay = 10;
 			cameraHorizontalAngle = 90.0f;
-			cameraVerticalAngle = -30.0f;
+			cameraVerticalAngle = -25.0f;
 			magnificationFactor = 0.25f;
 		}
 	}
@@ -613,42 +613,50 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		modelScaleFactor -= scaleSpeed * dt;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
 	{
 		modelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
 	{
 		modelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move left
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+		&& glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move left 
 	{
 		modelPosition += vec3(-1.0f, 0.0f, 0.0f) * moveSpeed * dt;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move right 
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+		&& glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move right 
 	{
 		modelPosition += vec3(1.0f, 0.0f, 0.0f) * moveSpeed * dt;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
+		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		modelXRotationAngle -= rotationSpeed * dt;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
+		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) 
 	{
 		modelXRotationAngle += rotationSpeed * dt;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
+		&& glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
 		modelYRotationAngle += rotationSpeed * dt;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
+		&& glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
 		modelYRotationAngle -= rotationSpeed * dt;
 	}
@@ -1067,10 +1075,9 @@ int main(int argc, char*argv[])
 		glBindVertexArray(gridVBO);
 
 		// Initialize variables for grid size
-		int gridNum = 200;
-		glm::mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridNum / 4, 0.0f, -1.0f * gridNum / 4));
+		int gridNum = 202;
+		glm::mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridNum / 4.0f, 0.0f, -1.0f * gridNum / 4.0f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridX[0][0]);
-		glLineWidth(1.0f);
 		glDrawArrays(GL_LINES, 0, 2 * gridNum);
 
 
@@ -1084,6 +1091,8 @@ int main(int argc, char*argv[])
 		glLineWidth(5.0f);
 		glDrawArrays(GL_LINES, 0, 2 * numLines);
 #pragma endregion
+
+		glLineWidth(1.0f);
 
 #pragma region L9
 		glBindVertexArray(unitCubeVBO);
@@ -1153,7 +1162,7 @@ int main(int argc, char*argv[])
 
 		//define identity matrices to translate, rotate and scale I9 model
 		//used for hierarchical modeling 
-		mat4 translateI9Model = translate(mat4(1.0f), vec3(halfGridSize, 2.5f, -halfGridSize));
+		mat4 translateI9Model = translate(mat4(1.0f), vec3(halfGridSize-1, 2.5f, -halfGridSize));
 
 		//----------------------------------------------------------------------------------
 		//get the worldview of the model within the scene
@@ -1240,14 +1249,14 @@ int main(int argc, char*argv[])
 		glDrawArrays(renderingMode, 0, 36);
 #pragma endregion
 
-#pragma region AA?
+#pragma region T9
 		// Draw geometry
 		glBindVertexArray(vao);
 
 		mat4 translateAAModel = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, halfGridSize));
 
-		drawLetter('A', 0, translateAAModel * sharedModelMatrix, worldMatrixLocation);
-		drawLetter('A', 1, translateAAModel * sharedModelMatrix, worldMatrixLocation);
+		drawLetter('T', 0, translateAAModel * sharedModelMatrix, worldMatrixLocation);
+		drawLetter('9', 1, translateAAModel * sharedModelMatrix, worldMatrixLocation);
 #pragma endregion
 
 #pragma region C4
@@ -1256,7 +1265,7 @@ int main(int argc, char*argv[])
 		int numTriangles = numFaces * numTrianglesPerFace;
 
 		// controls model hierarchy movement and orientation	
-		glm::mat4 groupTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(halfGridSize, 2.5f, halfGridSize));
+		glm::mat4 groupTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(halfGridSize-1, 2.5f, halfGridSize));
 		glm::mat4 groupMatrix = worldOrientationModelMatrix * groupTranslationMatrix * sharedModelMatrix * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 		glm::mat4 cMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-4.5f, -2.5f, 0.5f));
 		glm::mat4 fourMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.5f, -2.5f, 0.5f));
