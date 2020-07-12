@@ -298,7 +298,7 @@ int createVertexBufferObjectCoordinateXYZ()
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), // middle, green
 		glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), // up, green
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), // middle, blue
-		glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f) // front, blue
+		glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f) // near, blue
 	};
 
 	// Create a vertex array
@@ -341,11 +341,52 @@ int gridSize = 100;
 float halfGridSize = gridSize / 2.0f;
 int createVertexBufferObjectGridLine()
 {
-	// Cube model (position, colors)
-	glm::vec3 vertexArray[] = {
-		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), // middle, yellow
-		glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f) // right, yellow
-	};
+	// Initialize variables for grid size
+	const int fullGridSize = 800;
+	int lineLength = fullGridSize / 8;
+
+	// Line Vertices Array containing position & colors
+	glm::vec3 vertexArray[fullGridSize];
+
+	// For loops to add every vertex of position and color of X lines to the grid in the vertex array
+	for (int i = 0; i < fullGridSize / 2; ++i)
+	{
+		if (i % 4 == 1 || i % 4 == 3) {
+			vertexArray[i] = {
+				glm::vec3(1.0f, 1.0f, 0.0f) // Color vertex (yellow)
+			};
+		}
+		else if (i % 4 == 0) {
+			vertexArray[i] = {
+				glm::vec3(0.0f, 0.0f, 1.0f * i / 4) // First vertex of position
+			};
+		}
+		else {
+			vertexArray[i] = {
+				glm::vec3(1.0f * lineLength, 0.0f, 1.0f * ((i - 2) / 4)) // Last vertex of position
+			};
+		}
+	}
+
+	// For loops to add every vertex of position and color of Z lines to the grid in the vertex array starting at index 400
+	for (int i = 0; i < fullGridSize / 2; ++i)
+	{
+		if (i % 4 == 1 || i % 4 == 3) {
+			vertexArray[i + fullGridSize / 2] = {
+				glm::vec3(1.0f, 1.0f, 0.0f) // Color vertex (yellow)
+			};
+		}
+		else if (i % 4 == 0) {
+			vertexArray[i + fullGridSize / 2] = {
+				glm::vec3(1.0f * i / 4, 0.0f, 0.0f) // First vertex of position
+			};
+		}
+		else {
+			vertexArray[i + fullGridSize / 2] = {
+				glm::vec3(1.0f * ((i - 2) / 4), 0.0f, 1.0f * lineLength) // Last vertex of position
+			};
+		}
+	}
 
 	// Create a vertex array
 	GLuint vertexArrayObject;
@@ -1025,26 +1066,13 @@ int main(int argc, char*argv[])
 		// Draw ground using Hierarchical Modeling
 		glBindVertexArray(gridVBO);
 
-		// Variable Used for rotation
-		float angle = 90;
+		// Initialize variables for grid size
+		int gridNum = 200;
+		glm::mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridNum / 4, 0.0f, -1.0f * gridNum / 4));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridX[0][0]);
+		glLineWidth(1.0f);
+		glDrawArrays(GL_LINES, 0, 2 * gridNum);
 
-		glm::mat4 Grid = translate(mat4(1.0f), vec3(-halfGridSize, 0.0f, -halfGridSize));
-		glm::mat4 GridPart;
-
-		for (int i = 0; i <= gridSize; ++i)
-		{
-			glm::mat4 GridX = translate(mat4(1.0f), vec3(0.0f, 0.0f, 1.0f * i)) * scale(glm::mat4(1.0f), glm::vec3(gridSize, 1.0f, 1.0f));
-			GridPart = worldOrientationModelMatrix * Grid * GridX;
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridPart[0][0]);
-			glLineWidth(1.0f);
-			glDrawArrays(GL_LINES, 0, 2);
-
-			glm::mat4 GridZ = translate(mat4(1.0f), vec3(1.0f * i, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(-angle), vec3(0.0f, 1.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(gridSize, 1.0f, 1.0f));
-			GridPart = worldOrientationModelMatrix * Grid * GridZ;
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridPart[0][0]);
-			glLineWidth(1.0f);
-			glDrawArrays(GL_LINES, 0, 2);
-		}
 
 		// Set up Coordinate Axis Matrix using Hierarchical Modeling
 		glm::mat4 Coordinates = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
