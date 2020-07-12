@@ -991,13 +991,13 @@ int main(int argc, char*argv[])
 			for (int i = 0; i <= gridSize; ++i)
 			{
 				glm::mat4 GridX = translate(mat4(1.0f), vec3(0.0f, 0.0f, 1.0f * i)) * scale(glm::mat4(1.0f), glm::vec3(gridSize, 1.0f, 1.0f));
-				GridPart = Grid * GridX;
+				GridPart = worldOrientationModelMatrix * Grid * GridX;
 				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridPart[0][0]);
 				glLineWidth(1.0f);
 				glDrawArrays(GL_LINES, 0, 2);
 
 				glm::mat4 GridZ = translate(mat4(1.0f), vec3(1.0f * i, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(-angle), vec3(0.0f, 1.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(gridSize, 1.0f, 1.0f));
-				GridPart = Grid * GridZ;
+				GridPart = worldOrientationModelMatrix * Grid * GridZ;
 				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridPart[0][0]);
 				glLineWidth(1.0f);
 				glDrawArrays(GL_LINES, 0, 2);
@@ -1005,7 +1005,7 @@ int main(int argc, char*argv[])
 		}
 		
 		if (drawCoordinates) {// Set up Coordinate Axis Matrix using Hierarchical Modeling
-			glm::mat4 Coordinates = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
+			glm::mat4 Coordinates = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
 
 			int numLines = 3;
 			glBindVertexArray(xyzVBO);
@@ -1022,7 +1022,7 @@ int main(int argc, char*argv[])
 
 		// Draw L9 using hierarchical modeling
 		// Setting up the L9 Matrix - Changing the values of the translation of L9 will change its position in the world
-		glm::mat4 L9Matrix = translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0.0f, -10.0f)) * sharedModelMatrix;
+		glm::mat4 L9Matrix = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0.0f, -10.0f)) * sharedModelMatrix;
 
 		// Setting up the letter L
 		glm::mat4 LMatrix = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
@@ -1092,7 +1092,7 @@ int main(int argc, char*argv[])
 
 			//----------------------------------------------------------------------------------
 			//get the worldview of the model within the scene
-			mat4 WorldView_Model = translateI9Model * scaleI9Model * rotateI9Model * sharedModelMatrix;
+			mat4 WorldView_Model = worldOrientationModelMatrix * translateI9Model * scaleI9Model * rotateI9Model * sharedModelMatrix;
 
 			//topI
 			mat4 topI = WorldView_Model * translate(mat4(1.0f), vec3(0.f, 4.5f, -3.f))* scale(mat4(1.0f), vec3(1.0f, 1.0f, 4.0f));
@@ -1145,7 +1145,7 @@ int main(int argc, char*argv[])
 			mat4 translateU3Model = translate(mat4(1.0f), vec3(00.0f, 0.0f, 0.0f));
 			mat4 scaleU3Model(1.0f);
 
-			mat4 WorldView_Model = translateU3Model * scaleU3Model * sharedModelMatrix;
+			mat4 WorldView_Model = worldOrientationModelMatrix * translateU3Model * scaleU3Model * sharedModelMatrix;
 
 			// Creating U from unit cube
 
@@ -1187,7 +1187,7 @@ int main(int argc, char*argv[])
 			// Draw geometry
 			glBindVertexArray(vao);
 
-			mat4 translateAAModel = translate(mat4(1.0f), vec3(-10.0f, 0.0f, 2.0f));
+			mat4 translateAAModel = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-10.0f, 0.0f, 2.0f));
 
 			drawLetter('A', 0, translateAAModel * sharedModelMatrix, worldMatrixLocation);
 			drawLetter('A', 1, translateAAModel * sharedModelMatrix, worldMatrixLocation);
@@ -1202,7 +1202,7 @@ int main(int argc, char*argv[])
 
 			// controls model hierarchy movement and orientation	
 			glm::mat4 groupTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 2.5f, +2.5f));
-			glm::mat4 groupMatrix = groupTranslationMatrix * sharedModelMatrix;
+			glm::mat4 groupMatrix = worldOrientationModelMatrix * groupTranslationMatrix * sharedModelMatrix;
 			glm::mat4 cMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -2.5f, 0.5f));
 			glm::mat4 fourMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, -2.5f, 0.5f));
 
