@@ -338,7 +338,7 @@ int createVertexBufferObjectCoordinateXYZ()
 // Initialize variables for grid size
 const int gridSize = 101; // Change only this value to change the grid size. If gridSize is 101 it Will make 100 x 100 squares in a grid
 float halfGridSize = gridSize / 2.0f;
-float lineLength = gridSize - 1.0f; // Change according to grid size (if gridSize = 201, line length should be 200)
+float lineLength = gridSize - 1.0f;
 int createVertexBufferObjectGridLine()
 {
 	// Line Vertices Array containing position & colors 
