@@ -9,7 +9,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
-#include "vertices.h"
 #include "shaders.h"
 #include <time.h>
 #include <algorithm>
