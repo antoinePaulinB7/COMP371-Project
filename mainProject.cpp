@@ -337,19 +337,17 @@ int createVertexBufferObjectCoordinateXYZ()
 }
 
 // Initialize variables for grid size
-int gridSize = 101;
+const int gridSize = 101; // Change only this value to change the grid size. If gridSize is 101 it Will make 100 x 100 squares in a grid
 float halfGridSize = gridSize / 2.0f;
+float lineLength = gridSize - 1.0f; // Change according to grid size (if gridSize = 201, line length should be 200)
 int createVertexBufferObjectGridLine()
 {
-	// Initialize variables for grid size
-	const int fullGridSize = 808;
-	int lineLength = 100;
-
-	// Line Vertices Array containing position & colors
-	glm::vec3 vertexArray[fullGridSize];
+	// Line Vertices Array containing position & colors 
+	// One line is drawn by 4 vertices and it's doubled because we need lines in X and in Z therefore it's gridSize * 8
+	glm::vec3 vertexArray[gridSize * 8];
 
 	// For loops to add every vertex of position and color of X lines to the grid in the vertex array
-	for (int i = 0; i < fullGridSize / 2.0f; ++i)
+	for (int i = 0; i < (gridSize * 8) / 2.0f; ++i)
 	{
 		if (i % 4 == 1 || i % 4 == 3) {
 			vertexArray[i] = {
@@ -369,20 +367,20 @@ int createVertexBufferObjectGridLine()
 	}
 
 	// For loops to add every vertex of position and color of Z lines to the grid in the vertex array starting at index 400
-	for (int i = 0; i < fullGridSize / 2; ++i)
+	for (int i = 0; i < (gridSize * 8) / 2.0f; ++i)
 	{
 		if (i % 4 == 1 || i % 4 == 3) {
-			vertexArray[i + fullGridSize / 2] = {
+			vertexArray[i + (gridSize * 8) / 2] = {
 				glm::vec3(1.0f, 1.0f, 0.0f) // Color vertex (yellow)
 			};
 		}
 		else if (i % 4 == 0) {
-			vertexArray[i + fullGridSize / 2] = {
+			vertexArray[i + (gridSize * 8) / 2] = {
 				glm::vec3(1.0f * i / 4, 0.0f, 0.0f) // First vertex of position
 			};
 		}
 		else {
-			vertexArray[i + fullGridSize / 2] = {
+			vertexArray[i + (gridSize * 8) / 2] = {
 				glm::vec3(1.0f * ((i - 2) / 4), 0.0f, 1.0f * lineLength) // Last vertex of position
 			};
 		}
@@ -1075,10 +1073,9 @@ int main(int argc, char*argv[])
 		glBindVertexArray(gridVBO);
 
 		// Initialize variables for grid size
-		int gridNum = 202;
-		glm::mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridNum / 4.0f, 0.0f, -1.0f * gridNum / 4.0f));
+		glm::mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridSize / 2.0f, 0.0f, -1.0f * gridSize / 2.0f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridX[0][0]);
-		glDrawArrays(GL_LINES, 0, 2 * gridNum);
+		glDrawArrays(GL_LINES, 0, 2 * (gridSize * 2));
 
 
 		// Set up Coordinate Axis Matrix using Hierarchical Modeling
