@@ -20,8 +20,6 @@ Model::Model(int vao, int numberOfVertices, vector<Model*> children, mat4 transl
 	this->scaling = scaling;
 }
 
-//draw function which takes a shader class / program in order to write to its uniforms
-//draw is recursive, draw self(multiply recieved TRS with own) then draw children(passing along its TRS)
 void const Model::draw(mat4 parentTRS, int renderingMode, GLuint worldMatrixLocation) {
 	glBindVertexArray(vao);
 	mat4 currentTRS = parentTRS * translation * rotation * scaling;
@@ -32,10 +30,8 @@ void const Model::draw(mat4 parentTRS, int renderingMode, GLuint worldMatrixLoca
 		glDrawArrays(renderingMode, 0, numberOfVertices);
 	}
 
-	//if (children != null) {
 	for (vector<Model*>::iterator it = children.begin(); it != children.end(); ++it)
 	{
 		(*it)->draw(currentTRS, renderingMode, worldMatrixLocation);
 	}
-	//}
 }

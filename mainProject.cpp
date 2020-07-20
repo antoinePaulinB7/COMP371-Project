@@ -961,7 +961,7 @@ Model* makeL9Model(int vao) {
 
                 modelL                                         model9
 
-			/            \                       /           /       	\          \
+            /            \                       /           /           \          \
 
      modelLbottomBar modelLverticalBar      model9top  model9right   model9left  model9bottom
 
