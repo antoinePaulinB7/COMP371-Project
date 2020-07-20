@@ -10,16 +10,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
 #include "shaders.h"
+#include "Model.h"
 #include <time.h>
 #include <algorithm>
 #include <list>
+#include <vector>
 
 //define namespaces for glm and c++ std
 using namespace glm;
 using namespace std;
 
 #pragma region unitCubes
-int createUnitCubeVertexBufferObject()
+int createUnitCubeVertexArrayObject()
 {
 	// Cube model (position, colors)
 	glm::vec3 vertexArray[] = {
@@ -108,7 +110,7 @@ int createUnitCubeVertexBufferObject()
 	return vertexArrayObject;
 }
 
-int createVertexBufferObjectU3()
+int createVertexArrayObjectU3()
 {
 	glm::vec3 vertexArray[] = {
 		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
@@ -288,7 +290,7 @@ int createVertexArrayObjectR4()
 #pragma endregion
 
 #pragma region lines
-int createVertexBufferObjectCoordinateXYZ()
+int createVertexArrayObjectCoordinateXYZ()
 {
 	// Cube model (position, colors)
 	glm::vec3 vertexArray[] = {
@@ -339,7 +341,7 @@ int createVertexBufferObjectCoordinateXYZ()
 const int gridSize = 101; // Change only this value to change the grid size. If gridSize is 101 it Will make 100 x 100 squares in a grid
 float halfGridSize = gridSize / 2.0f;
 float lineLength = gridSize - 1.0f;
-int createVertexBufferObjectGridLine()
+int createVertexArrayObjectGridLine()
 {
 	// Line Vertices Array containing position & colors 
 	// One line is drawn by 4 vertices and it's doubled because we need lines in X and in Z therefore it's gridSize * 8
@@ -949,6 +951,95 @@ void drawLetter(char c, int index, mat4 modelMatrix, GLuint worldMatrixLocation)
 }
 #pragma endregion
 
+int numVerticesPerCube = 36;
+Model* makeL9Model(int vao) {
+	/*  This is the hierarchy for L9, built with Model objects holding other Model objects:
+
+									   modelL9
+
+							/							\
+
+				modelL											model9
+
+			/			\							/		/			\		\
+
+	modelLbottomBar modelLverticalBar		model9top	model9right	model9left	model9bottom
+
+	Each model applies its own TRS transformations to its children recursively, achieving the same affect
+	we used to get by multiplying out each matrix many times over, like so:
+			glm::mat4 Lpart = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+			glm::mat4 modelLbottomBar = L9Matrix * LMatrix * Lpart;
+	The recursive calls in draw() now do the above matrix multiplication without us having to specify them for each piece.
+	*/
+
+
+	// Draw L9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	glm::mat4 setUpScaling = mat4(1.0f);
+	glm::mat4 setUpRotation = mat4(1.0f);
+	glm::mat4 setUpTranslation = mat4(1.0f);
+
+
+	// Creating left-part of the letter L
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+
+	// Creating right-part of the letter L
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.5f, -2.0f, 0.0f));
+	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Setting up the letter L
+	vector<Model*> LChildren = vector<Model*>();
+	LChildren.push_back(modelLbottomBar);
+	LChildren.push_back(modelLverticalBar);
+	//The pieces of the L are placed such that the entire L is centered at origin on all axes
+	//We can then very simply manipulate this modelL to transform the entire L
+	//for example, to scoot the L left to make room for the number, making the entire L9 centered.
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+	Model* modelL = new Model(vao, 0, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Creating top-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating right-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating left-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating bottom-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
+	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+	// Setting up the number 9
+	vector<Model*> nineChildren = vector<Model*>();
+	nineChildren.push_back(model9top);
+	nineChildren.push_back(model9right);
+	nineChildren.push_back(model9left);
+	nineChildren.push_back(model9bottom);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f));
+	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Setting up the entire L9
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> L9Children = vector<Model*>();
+	L9Children.push_back(modelL);
+	L9Children.push_back(model9);
+	Model* modelL9 = new Model(vao, 0, L9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	return modelL9;
+}
+
 void handleExitInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -1031,11 +1122,15 @@ int main(int argc, char*argv[])
 	// Define and upload geometry to the GPU here ...
 	//We have a few different cubes since some people did fun colors,
 	//And some are centered on origin while others have origin in a corner
-	int unitCubeVBO = createUnitCubeVertexBufferObject();
-	int rainbowCubeVBO = createVertexBufferObjectU3();
+	int unitCubeVAO = createUnitCubeVertexArrayObject();
+	int rainbowCubeVAO = createVertexArrayObjectU3();
 	int vao = createVertexArrayObjectR4();
-	int gridVBO = createVertexBufferObjectGridLine();
-	int xyzVBO = createVertexBufferObjectCoordinateXYZ();
+	int gridVAO = createVertexArrayObjectGridLine();
+	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
+
+	//Create hierarchical models
+	mat4 L9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
+	Model* l9Model = makeL9Model(unitCubeVAO);
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -1069,7 +1164,7 @@ int main(int argc, char*argv[])
 
 #pragma region Grid and Coordinate Axis
 		// Draw ground using Hierarchical Modeling
-		glBindVertexArray(gridVBO);
+		glBindVertexArray(gridVAO);
 
 		// Initialize variables for grid size
 		glm::mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridSize / 2.0f, 0.0f, -1.0f * gridSize / 2.0f));
@@ -1081,7 +1176,7 @@ int main(int argc, char*argv[])
 		glm::mat4 Coordinates = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
 
 		int numLines = 3;
-		glBindVertexArray(xyzVBO);
+		glBindVertexArray(xyzVAO);
 
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Coordinates[0][0]);
 		glLineWidth(5.0f);
@@ -1090,75 +1185,16 @@ int main(int argc, char*argv[])
 
 		glLineWidth(1.0f);
 
-#pragma region L9
-		glBindVertexArray(unitCubeVBO);
-
-		// Draw L9 using hierarchical modeling
-		// Setting up the L9 Matrix - Changing the values of the translation of L9 will change its position in the world
-		// The rightmost translation matrix ensures the model's Y-rotation axis is centered
-		glm::mat4 L9Matrix = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize)) * sharedModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-3.5f, 0.0f, 0.0f));
-
-		// Setting up the letter L
-		glm::mat4 LMatrix = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-
-		// Creating left-part of the letter L
-		glm::mat4 Lpart = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-
-		glm::mat4 Lpart1 = L9Matrix * LMatrix * Lpart;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart1[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Creating right-part of the letter L
-		Lpart = translate(glm::mat4(1.0f), glm::vec3(1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-
-		glm::mat4 Lpart2 = L9Matrix * LMatrix * Lpart;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart2[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Setting up the number 9
-		glm::mat4 Num9Matrix = translate(glm::mat4(1.0f), glm::vec3(4.5f, 0.0f, 0.0f));
-
-		// Creating top-part of the number 9
-		glm::mat4 Num9part = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-
-		glm::mat4 Num9part1 = L9Matrix * Num9Matrix * Num9part;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part1[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Creating right-part of the number 9
-		Num9part = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-
-		glm::mat4 Num9part2 = L9Matrix * Num9Matrix * Num9part;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part2[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Creating left-part of the number 9
-		Num9part = translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-
-		glm::mat4 Num9part3 = L9Matrix * Num9Matrix * Num9part;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part3[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Creating bottom-part of the number 9
-		Num9part = translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
-
-		glm::mat4 Num9part4 = L9Matrix * Num9Matrix * Num9part;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part4[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-#pragma endregion
+		//Draw L9
+		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
+		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
 
 #pragma region I9
-		glBindVertexArray(unitCubeVBO);
+		glBindVertexArray(unitCubeVAO);
 
 		//define identity matrices to translate, rotate and scale I9 model
 		//used for hierarchical modeling 
-		mat4 translateI9Model = translate(mat4(1.0f), vec3(halfGridSize-1, 2.5f, -halfGridSize));
+		mat4 translateI9Model = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, -halfGridSize));
 
 		//----------------------------------------------------------------------------------
 		//get the worldview of the model within the scene
@@ -1203,7 +1239,7 @@ int main(int argc, char*argv[])
 #pragma endregion
 
 #pragma region U3
-		glBindVertexArray(rainbowCubeVBO);
+		glBindVertexArray(rainbowCubeVAO);
 
 		/* Transforming the Unit Triangle - La(u)ra Wheatley 400(3)4960 */
 
@@ -1261,7 +1297,7 @@ int main(int argc, char*argv[])
 		int numTriangles = numFaces * numTrianglesPerFace;
 
 		// controls model hierarchy movement and orientation	
-		glm::mat4 groupTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(halfGridSize-1, 2.5f, halfGridSize));
+		glm::mat4 groupTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, halfGridSize));
 		glm::mat4 groupMatrix = worldOrientationModelMatrix * groupTranslationMatrix * sharedModelMatrix * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 		glm::mat4 cMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-4.5f, -2.5f, 0.5f));
 		glm::mat4 fourMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.5f, -2.5f, 0.5f));
