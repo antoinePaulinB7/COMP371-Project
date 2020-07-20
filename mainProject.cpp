@@ -955,15 +955,15 @@ int numVerticesPerCube = 36;
 Model* makeL9Model(int vao) {
 	/*  This is the hierarchy for L9, built with Model objects holding other Model objects:
 
-									   modelL9
+                                      modelL9
 
-							/							\
+                            /                           \
 
-				modelL											model9
+                modelL                                         model9
 
-			/			\							/		/			\		\
+			/            \                       /           /       	\          \
 
-	modelLbottomBar modelLverticalBar		model9top	model9right	model9left	model9bottom
+     modelLbottomBar modelLverticalBar      model9top  model9right   model9left  model9bottom
 
 	Each model applies its own TRS transformations to its children recursively, achieving the same affect
 	we used to get by multiplying out each matrix many times over, like so:
