@@ -21,55 +21,60 @@ using namespace std;
 #pragma region unitCubes
 int createUnitCubeVertexBufferObject()
 {
+	vec3 whiteColor = glm::vec3(1.0f, 0.8f, 0.8f);
+	vec3 posX = glm::vec3(1.0f, 0.0f, 0.0f);
+	vec3 posY = glm::vec3(0.0f, 1.0f, 0.0f);
+	vec3 posZ = glm::vec3(0.0f, 0.0f, 1.0f);
+
 	// Cube model (position, colors)
 	glm::vec3 vertexArray[] = {
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f), //left - grey
-		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posX, //left 
+		glm::vec3(-0.5f,-0.5f, 0.5f), whiteColor, -posX,
+		glm::vec3(-0.5f, 0.5f, 0.5f), whiteColor, -posX,
 
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posX,
+		glm::vec3(-0.5f, 0.5f, 0.5f), whiteColor, -posX,
+		glm::vec3(-0.5f, 0.5f,-0.5f), whiteColor, -posX,
 
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f), // far - white
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(0.5f, 0.5f,-0.5f), whiteColor, -posZ, // far
+		glm::vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posZ,
+		glm::vec3(-0.5f, 0.5f,-0.5f), whiteColor, -posZ,
 
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(0.5f, 0.5f,-0.5f),whiteColor, -posZ,
+		glm::vec3(0.5f,-0.5f,-0.5f),whiteColor, -posZ,
+		glm::vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posZ,
 
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f), // bottom - grey
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.5f,-0.5f, 0.5f), whiteColor, -posY, // bottom 
+		glm::vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posY,
+		glm::vec3(0.5f,-0.5f,-0.5f), whiteColor, -posY,
 
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.5f,-0.5f, 0.5f), whiteColor, -posY,
+		glm::vec3(-0.5f,-0.5f, 0.5f), whiteColor, -posY,
+		glm::vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posY,
 
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f), // near - white
-		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(-0.5f, 0.5f, 0.5f), whiteColor, posZ, // near
+		glm::vec3(-0.5f,-0.5f, 0.5f), whiteColor, posZ,
+		glm::vec3(0.5f,-0.5f, 0.5f), whiteColor, posZ,
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(0.5f, 0.5f, 0.5f),whiteColor, posZ,
+		glm::vec3(-0.5f, 0.5f, 0.5f), whiteColor, posZ,
+		glm::vec3(0.5f,-0.5f, 0.5f), whiteColor, posZ,
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f), // right - grey
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.5f, 0.5f, 0.5f), whiteColor, posX, // right 
+		glm::vec3(0.5f,-0.5f,-0.5f), whiteColor, posX,
+		glm::vec3(0.5f, 0.5f,-0.5f), whiteColor, posX,
 
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.5f,-0.5f,-0.5f), whiteColor, posX,
+		glm::vec3(0.5f, 0.5f, 0.5f),whiteColor, posX,
+		glm::vec3(0.5f,-0.5f, 0.5f), whiteColor, posX,
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f), // top - grey
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		glm::vec3(0.5f, 0.5f, 0.5f), whiteColor, posY, // top 
+		glm::vec3(0.5f, 0.5f,-0.5f), whiteColor, posY,
+		glm::vec3(-0.5f, 0.5f,-0.5f), whiteColor, posY,
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f)
+		glm::vec3(0.5f, 0.5f, 0.5f), whiteColor, posY,
+		glm::vec3(-0.5f, 0.5f,-0.5f), whiteColor, posY,
+		glm::vec3(-0.5f, 0.5f, 0.5f), whiteColor, posY
 	};
 
 	// Create a vertex array
@@ -87,7 +92,7 @@ int createUnitCubeVertexBufferObject()
 		3,                   // size
 		GL_FLOAT,            // type
 		GL_FALSE,            // normalized?
-		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
+		3 * sizeof(glm::vec3), // stride - each vertex contain 3 vec3 (position, color, normal)
 		(void*)0             // array buffer offset
 	);
 	glEnableVertexAttribArray(0);
@@ -97,10 +102,20 @@ int createUnitCubeVertexBufferObject()
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		2 * sizeof(glm::vec3),
+		3 * sizeof(glm::vec3),
 		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
 	);
 	glEnableVertexAttribArray(1);
+
+	
+	glVertexAttribPointer(2,                            // attribute 2 matches aNormal in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		3 * sizeof(glm::vec3),
+		(void*)(2 * sizeof(glm::vec3))      // normal is offseted 2 vec3 (comes after position and color)
+	);
+	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -283,6 +298,9 @@ int createVertexArrayObjectR4()
 	);
 	glEnableVertexAttribArray(1);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 	return vertexArrayObject;
 }
 #pragma endregion
@@ -331,6 +349,8 @@ int createVertexBufferObjectCoordinateXYZ()
 	);
 	glEnableVertexAttribArray(1);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	return vertexBufferObject;
 }
@@ -416,6 +436,8 @@ int createVertexBufferObjectGridLine()
 	);
 	glEnableVertexAttribArray(1);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	return vertexBufferObject;
 }
@@ -961,6 +983,44 @@ void checkErrors() {
 	}
 }
 
+void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
+	glUseProgram(shaderProgram);
+
+	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+
+	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+}
+
+void useStandardShader(int defaultShaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
+	useShader(defaultShaderProgram, projectionMatrix, viewMatrix);
+}
+
+void useLightingShader(int phongLightShaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
+	useShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
+
+	//Set up vertex shader uniforms
+	GLuint lightCamPosLocation = glGetUniformLocation(phongLightShaderProgram, "cameraPosition");
+	glUniform3f(lightCamPosLocation, cameraPosition.x, cameraPosition.y, cameraPosition.z);
+	GLuint lightPosLocation = glGetUniformLocation(phongLightShaderProgram, "lightPosition");
+	glUniform3f(lightPosLocation, 0.0f, 30.0f, 0.0f);
+
+	//Set up fragment shader uniforms
+	float kCoefficients = 0.9f, lightCoefficients = 0.3f, lightAttenuationConstants = 1.0f;
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "matCoefficientKa"), kCoefficients, kCoefficients, kCoefficients);
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "matCoefficientKd"), kCoefficients, kCoefficients, kCoefficients);
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "matCoefficientKs"), kCoefficients, kCoefficients, kCoefficients);
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "matCoefficientShininessA"), kCoefficients, kCoefficients, kCoefficients);
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientColor"), lightCoefficients, lightCoefficients, lightCoefficients);
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightComponentAmbientLa"), lightCoefficients, lightCoefficients, lightCoefficients);
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightComponentDiffuseLd"), lightCoefficients, lightCoefficients, lightCoefficients);
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightComponentSpecularLs"), lightCoefficients, lightCoefficients, lightCoefficients);
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantA"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantB"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
+	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantC"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
+}
+
 int main(int argc, char*argv[])
 {
 	checkErrors();
@@ -1002,10 +1062,9 @@ int main(int argc, char*argv[])
 	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
 
 	// Compile and link shaders here ...
-	GLuint shaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
+	GLuint defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
+	GLuint phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
 
-	// We can set the shader once, since we have only one
-	glUseProgram(shaderProgram);
 #pragma endregion windowSetUp
 
 	// Camera parameters for view transform
@@ -1017,17 +1076,12 @@ int main(int argc, char*argv[])
 		1024.0f / 768.0f,  // aspect ratio
 		0.01f, 100.0f);   // near and far (near > 0)
 
-	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-
-	// Set initial view matrix
+		// Set initial view matrix
 	glm::mat4 viewMatrix = lookAt(cameraPosition,  // eye
 		cameraPosition + cameraLookAt,  // center
 		cameraUp); // up
 
-	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
+	   
 	// Define and upload geometry to the GPU here ...
 	//We have a few different cubes since some people did fun colors,
 	//And some are centered on origin while others have origin in a corner
@@ -1059,7 +1113,9 @@ int main(int argc, char*argv[])
 		// Each frame, reset color of each pixel to glClearColor
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+		useStandardShader(defaultShaderProgram, projectionMatrix, viewMatrix);
+
+		GLuint worldMatrixLocation = glGetUniformLocation(defaultShaderProgram, "worldMatrix");
 
 		// Model Matrices - they control the transformations of the letters model
 		modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
@@ -1086,9 +1142,14 @@ int main(int argc, char*argv[])
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Coordinates[0][0]);
 		glLineWidth(5.0f);
 		glDrawArrays(GL_LINES, 0, 2 * numLines);
+
 #pragma endregion
 
 		glLineWidth(1.0f);
+
+		useLightingShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
+		worldMatrixLocation = glGetUniformLocation(phongLightShaderProgram, "worldMatrix");
+
 
 #pragma region L9
 		glBindVertexArray(unitCubeVBO);
@@ -1096,7 +1157,8 @@ int main(int argc, char*argv[])
 		// Draw L9 using hierarchical modeling
 		// Setting up the L9 Matrix - Changing the values of the translation of L9 will change its position in the world
 		// The rightmost translation matrix ensures the model's Y-rotation axis is centered
-		glm::mat4 L9Matrix = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize)) * sharedModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-3.5f, 0.0f, 0.0f));
+		//glm::mat4 L9Matrix = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize)) * sharedModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-3.5f, 0.0f, 0.0f));
+		glm::mat4 L9Matrix = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.5f, 0.0f)) * sharedModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
 		// Setting up the letter L
 		glm::mat4 LMatrix = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
@@ -1151,8 +1213,9 @@ int main(int argc, char*argv[])
 
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part4[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
-#pragma endregion
 
+#pragma endregion
+/*
 #pragma region I9
 		glBindVertexArray(unitCubeVBO);
 
@@ -1205,7 +1268,7 @@ int main(int argc, char*argv[])
 #pragma region U3
 		glBindVertexArray(rainbowCubeVBO);
 
-		/* Transforming the Unit Triangle - La(u)ra Wheatley 400(3)4960 */
+		// Transforming the Unit Triangle - La(u)ra Wheatley 400(3)4960
 
 		mat4 translateU3Model = translate(mat4(1.0f), vec3(0.0f, 2.5f, 0.0f));
 		mat4 scaleU3Model(1.0f);
@@ -1308,7 +1371,7 @@ int main(int argc, char*argv[])
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
 #pragma endregion
-
+*/
 		// End Frame, include swap interval to prevent blurriness
 		glfwSwapBuffers(window);
 		glfwSwapInterval(1);
@@ -1388,16 +1451,12 @@ int main(int argc, char*argv[])
 				magnificationFactor = magnificationFactor / 1.5f;
 			}
 		}
-
-		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+		/* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 
 		// Update viewMatrix
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		viewMatrix = glm::scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
 
-		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
-		/* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 #pragma endregion
 
 	}
