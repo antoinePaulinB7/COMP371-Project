@@ -21,6 +21,67 @@ using namespace glm;
 using namespace std;
 
 #pragma region unitCubes
+int createPlaneVertexArrayObject()
+{
+	vec3 whiteColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	vec3 posY = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	glm::vec3 vertexArray[] = {
+		glm::vec3(-0.5f, 0.0f,-0.5f), whiteColor, posY, 
+		glm::vec3(-0.5f, 0.0f, 0.5f), whiteColor, posY,
+		glm::vec3(0.5f, 0.0f, 0.5f), whiteColor, posY,
+
+		glm::vec3(0.5f, 0.0f, 0.5f), whiteColor, posY,
+		glm::vec3(0.5f, 0.0f, -0.5f), whiteColor, posY,
+		glm::vec3(-0.5f, 0.0f, -0.5f), whiteColor, posY
+	};
+
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
+
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
+		3,                   // size
+		GL_FLOAT,            // type
+		GL_FALSE,            // normalized?
+		3 * sizeof(glm::vec3), // stride - each vertex contain 3 vec3 (position, color, normal)
+		(void*)0             // array buffer offset
+	);
+	glEnableVertexAttribArray(0);
+
+
+	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		3 * sizeof(glm::vec3),
+		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
+	);
+	glEnableVertexAttribArray(1);
+
+
+	glVertexAttribPointer(2,                            // attribute 2 matches aNormal in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		3 * sizeof(glm::vec3),
+		(void*)(2 * sizeof(glm::vec3))      // normal is offseted 2 vec3 (comes after position and color)
+	);
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	return vertexArrayObject;
+}
+
 int createUnitCubeVertexArrayObject()
 {
 	vec3 whiteColor = glm::vec3(1.0f, 0.8f, 0.8f);
@@ -1181,9 +1242,11 @@ int main(int argc, char*argv[])
 	int vao = createVertexArrayObjectR4();
 	int gridVAO = createVertexArrayObjectGridLine();
 	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
+	int planeVAO = createPlaneVertexArrayObject();
 
 	//Create hierarchical models
-	mat4 L9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
+	//mat4 L9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
+	mat4 L9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-0.0f, 2.5f, -0.0f));
 	Model* l9Model = makeL9Model(unitCubeVAO);
 
 	// For frame time
@@ -1242,80 +1305,19 @@ int main(int argc, char*argv[])
 
 		glLineWidth(1.0f);
 
-<<<<<<< HEAD
 		useLightingShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
 		worldMatrixLocation = glGetUniformLocation(phongLightShaderProgram, "worldMatrix");
 
+		//Draw plane
+		glBindVertexArray(planeVAO);
+		mat4 planeStretcher = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(0.0f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(20.0f, 1.0f, 20.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &planeStretcher[0][0]);
+		glDrawArrays(renderingMode, 0, 6);
 
-#pragma region L9
-		glBindVertexArray(unitCubeVBO);
-
-		// Draw L9 using hierarchical modeling
-		// Setting up the L9 Matrix - Changing the values of the translation of L9 will change its position in the world
-		// The rightmost translation matrix ensures the model's Y-rotation axis is centered
-		//glm::mat4 L9Matrix = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize)) * sharedModelMatrix * translate(glm::mat4(1.0f), glm::vec3(-3.5f, 0.0f, 0.0f));
-		glm::mat4 L9Matrix = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.5f, 0.0f)) * sharedModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-
-		// Setting up the letter L
-		glm::mat4 LMatrix = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-
-		// Creating left-part of the letter L
-		glm::mat4 Lpart = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-
-		glm::mat4 Lpart1 = L9Matrix * LMatrix * Lpart;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart1[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Creating right-part of the letter L
-		Lpart = translate(glm::mat4(1.0f), glm::vec3(1.5f, -2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-
-		glm::mat4 Lpart2 = L9Matrix * LMatrix * Lpart;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Lpart2[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Setting up the number 9
-		glm::mat4 Num9Matrix = translate(glm::mat4(1.0f), glm::vec3(4.5f, 0.0f, 0.0f));
-
-		// Creating top-part of the number 9
-		glm::mat4 Num9part = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-
-		glm::mat4 Num9part1 = L9Matrix * Num9Matrix * Num9part;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part1[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Creating right-part of the number 9
-		Num9part = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-
-		glm::mat4 Num9part2 = L9Matrix * Num9Matrix * Num9part;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part2[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Creating left-part of the number 9
-		Num9part = translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f)) * scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-
-		glm::mat4 Num9part3 = L9Matrix * Num9Matrix * Num9part;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part3[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Creating bottom-part of the number 9
-		Num9part = translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
-
-		glm::mat4 Num9part4 = L9Matrix * Num9Matrix * Num9part;
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Num9part4[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-=======
 		//Draw L9
 		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
->>>>>>> role3NP
 
-#pragma endregion
 /*
 #pragma region I9
 		glBindVertexArray(unitCubeVAO);
