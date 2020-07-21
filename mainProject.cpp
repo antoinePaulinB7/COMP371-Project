@@ -1040,6 +1040,224 @@ Model* makeL9Model(int vao) {
 	return modelL9;
 }
 
+Model* makeI9Model(int vao) {
+	// Draw I9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	glm::mat4 setUpScaling = mat4(1.0f);
+	glm::mat4 setUpRotation = mat4(1.0f);
+	glm::mat4 setUpTranslation = mat4(1.0f);
+
+	// Creating top-part of the letter I
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 4.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
+	Model* modelItopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+
+	// Creating middlet-part of the letter I
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 3.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.5f, 0.0f));
+	Model* modelImiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating bottom-part of the letter I
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.5f, 0.0f));
+	Model* modelIbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Setting up the letter I
+	vector<Model*> IChildren = vector<Model*>();
+	IChildren.push_back(modelItopBar);
+	IChildren.push_back(modelImiddleBar);
+	IChildren.push_back(modelIbottomBar);
+	//The pieces of the I are placed such that the entire I is centered at origin on all axes
+	//We can then very simply manipulate this modelI to transform the entire I
+	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	Model* modelI = new Model(vao, 0, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Creating top-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.75f, 4.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.0f, 1.0f));
+	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating left-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 3.25f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 3.5f, 1.0f));
+	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating bottom-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.75f, 2.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating right-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 2.51f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+
+	// Setting up the number 9
+	vector<Model*> nineChildren = vector<Model*>();
+	nineChildren.push_back(model9top);
+	nineChildren.push_back(model9right);
+	nineChildren.push_back(model9left);
+	nineChildren.push_back(model9bottom);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Setting up the entire I9
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> I9Children = vector<Model*>();
+	I9Children.push_back(modelI);
+	I9Children.push_back(model9);
+	Model* modelI9 = new Model(vao, 0, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	return modelI9; 
+}
+
+Model* makeU3Model(int vao) {
+	// Draw U3 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	glm::mat4 setUpScaling = mat4(1.0f);
+	glm::mat4 setUpRotation = mat4(1.0f);
+	glm::mat4 setUpTranslation = mat4(1.0f);
+
+	// Creating left-part of the letter U
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	Model* modelUleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+
+	// Creating bottom-part of the letter U
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -2.0f, 0.0f));
+	Model* modelUbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating right-part of the letter U
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	Model* modelUrightBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Setting up the letter U
+	vector<Model*> UChildren = vector<Model*>();
+	UChildren.push_back(modelUleftBar);
+	UChildren.push_back(modelUbottomBar);
+	UChildren.push_back(modelUrightBar);
+	//The pieces of the U are placed such that the entire U is centered at origin on all axes
+	//We can then very simply manipulate this modelU to transform the entire U
+	//for example, to scoot the U left to make room for the number, making the entire U3 centered.
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+	Model* modelU = new Model(vao, 0, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Creating base-part of the number 3
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	Model* model3base = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating topArm-part of the number 3
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.5f, 2.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	Model* model3topArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating middleArm-part of the number 3
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.5f, -2.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	Model* model3middleArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating bottomArm-part of the number 3
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	Model* model3bottomArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+
+	// Setting up the number 3
+	vector<Model*> threeChildren = vector<Model*>();
+	threeChildren.push_back(model3base);
+	threeChildren.push_back(model3topArm);
+	threeChildren.push_back(model3middleArm);
+	threeChildren.push_back(model3bottomArm);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	Model* model3 = new Model(vao, 0, threeChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Setting up the entire U3
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> U3Children = vector<Model*>();
+	U3Children.push_back(modelU);
+	U3Children.push_back(model3);
+	Model* modelU3 = new Model(vao, 0, U3Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	return modelU3;
+}
+
+Model* makeC4Model(int vao) {
+	// Draw C4 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	glm::mat4 setUpScaling = mat4(1.0f);
+	glm::mat4 setUpRotation = mat4(1.0f);
+	glm::mat4 setUpTranslation = mat4(1.0f);
+
+	// Creating left-part of the letter C
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	Model* modelCleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating bottom-part of the letter C
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	Model* modelCbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating top-part of the letter C
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 0.0f));
+	Model* modelCtopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Setting up the letter C
+	vector<Model*> CChildren = vector<Model*>();
+	CChildren.push_back(modelCleftBar);
+	CChildren.push_back(modelCbottomBar);
+	CChildren.push_back(modelCtopBar);
+	//The pieces of the C are placed such that the entire C is centered at origin on all axes
+	//We can then very simply manipulate this modelC to transform the entire C
+	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-9.0f, 0.0f, 0.0f));
+	Model* modelC = new Model(vao, 0, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+	
+	// Creating right-part of the number 4
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	Model* model4right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating middle-part of the number 4
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+	Model* model4middle = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating left-part of the number 4
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 3.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+	Model* model4left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Setting up the number 4
+	vector<Model*> fourChildren = vector<Model*>();
+	fourChildren.push_back(model4left);
+	fourChildren.push_back(model4middle);
+	fourChildren.push_back(model4right);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	Model* model4 = new Model(vao, 0, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Setting up the entire C4
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> C4Children = vector<Model*>();
+	C4Children.push_back(modelC);
+	C4Children.push_back(model4);
+	Model* modelC4 = new Model(vao, 0, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	return modelC4; 
+}
+
+
 void handleExitInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -1131,6 +1349,18 @@ int main(int argc, char*argv[])
 	//Create hierarchical models
 	mat4 L9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
 	Model* l9Model = makeL9Model(unitCubeVAO);
+	
+	mat4 I9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize -1, 2.5f, -halfGridSize));	//Model's start pos doesn't change
+	Model* i9Model = makeI9Model(unitCubeVAO);
+
+	mat4 U3BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));	//Model's start pos doesn't change
+	Model* u3Model = makeU3Model(rainbowCubeVAO);
+
+	//mat4 T9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, halfGridSize));	//Model's start pos doesn't change
+	//Model* t9Model = makeT9Model(vao);
+
+	mat4 C4BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
+	Model* c4Model = makeC4Model(vao);
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -1188,98 +1418,22 @@ int main(int argc, char*argv[])
 		//Draw L9
 		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
+		
+		//Draw I9
+		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
+		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
 
-#pragma region I9
-		glBindVertexArray(unitCubeVAO);
+		//Draw U3
+		mat4 U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix;
+		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
 
-		//define identity matrices to translate, rotate and scale I9 model
-		//used for hierarchical modeling 
-		mat4 translateI9Model = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, -halfGridSize));
+		//Draw T9
+		//mat4 T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix;
+		//t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
 
-		//----------------------------------------------------------------------------------
-		//get the worldview of the model within the scene
-		mat4 I9_Model = worldOrientationModelMatrix * translateI9Model * sharedModelMatrix * translate(mat4(1.0f), vec3(0.0f, -2.5f, 0.0f));
-
-		//topI
-		mat4 topI = I9_Model * translate(mat4(1.0f), vec3(-3.0f, 4.5f, 0.0f))* scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &topI[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		//middleI
-		mat4 middleI = I9_Model * translate(mat4(1.0f), vec3(-3.0f, 2.5f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &middleI[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		//bottomI
-		mat4 bottomI = I9_Model * translate(mat4(1.0f), vec3(-3.0f, 0.5f, 0.0f)) * scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &bottomI[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		//top9
-		mat4 top9 = I9_Model * translate(mat4(1.0f), vec3(2.75f, 4.5f, 0.0f)) * scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &top9[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		//left9
-		mat4 left9 = I9_Model * translate(mat4(1.0f), vec3(1.5f, 3.25f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &left9[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		//bottom9
-		mat4 bottom9 = I9_Model * translate(mat4(1.0f), vec3(2.75f, 2.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &bottom9[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-
-		//right9
-		mat4 right9 = I9_Model * translate(mat4(1.0f), vec3(4.0f, 2.51f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &right9[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-		//----------------------------------------------------------------------------------
-#pragma endregion
-
-#pragma region U3
-		glBindVertexArray(rainbowCubeVAO);
-
-		/* Transforming the Unit Triangle - La(u)ra Wheatley 400(3)4960 */
-
-		mat4 translateU3Model = translate(mat4(1.0f), vec3(0.0f, 2.5f, 0.0f));
-		mat4 scaleU3Model(1.0f);
-
-		mat4 WorldView_Model = worldOrientationModelMatrix * translateU3Model * scaleU3Model * sharedModelMatrix * translate(mat4(1.0f), vec3(-1.0f, 0.0f, 0.0f));
-
-		// Creating U from unit cube
-
-		mat4 uLeft = WorldView_Model * translate(mat4(1.0f), vec3(-3.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uLeft[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		mat4 uBottom = WorldView_Model * translate(mat4(1.0f), vec3(-1.5f, -2.0f, 0.0f)) * scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uBottom[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		mat4 uRight = WorldView_Model * translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &uRight[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		// Creating 3 from unit cube
-
-		mat4 threeBase = WorldView_Model * translate(mat4(1.0f), vec3(4.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeBase[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		mat4 threeArm1 = WorldView_Model * translate(mat4(1.0f), vec3(2.5f, 2.0f, 0.0f)) * scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm1[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		mat4 threeArm2 = WorldView_Model * translate(mat4(1.0f), vec3(2.5f, -2.0f, 0.0f)) * scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm2[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-
-		mat4 threeArm3 = WorldView_Model * translate(mat4(1.0f), vec3(3.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &threeArm3[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-#pragma endregion
+		//Draw C4
+		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
+		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
 
 #pragma region T9
 		// Draw geometry
@@ -1289,60 +1443,6 @@ int main(int argc, char*argv[])
 
 		drawLetter('T', 0, translateAAModel * sharedModelMatrix, worldMatrixLocation);
 		drawLetter('9', 1, translateAAModel * sharedModelMatrix, worldMatrixLocation);
-#pragma endregion
-
-#pragma region C4
-		glBindVertexArray(vao);
-		int numFaces = 6, numTrianglesPerFace = 2, numVerticesPerTriangle = 3;
-		int numTriangles = numFaces * numTrianglesPerFace;
-
-		// controls model hierarchy movement and orientation	
-		glm::mat4 groupTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, halfGridSize));
-		glm::mat4 groupMatrix = worldOrientationModelMatrix * groupTranslationMatrix * sharedModelMatrix * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-		glm::mat4 cMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-4.5f, -2.5f, 0.5f));
-		glm::mat4 fourMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(3.5f, -2.5f, 0.5f));
-
-		//C
-		glm::mat4 cBarMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		glm::mat4 modelMatrix = groupMatrix * cMatrix * cBarMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
-
-		glm::mat4 cBaseTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		glm::mat4 cBaseScaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-		glm::mat4 cBaseMatrix = cBaseTranslationMatrix * cBaseScaleMatrix;
-		modelMatrix = groupMatrix * cMatrix * cBaseMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
-
-		glm::mat4 cTopTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 0.0f));
-		glm::mat4 cTopMatrix = cTopTranslationMatrix * cBaseScaleMatrix;
-		modelMatrix = groupMatrix * cMatrix * cTopMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
-
-		glm::mat4 freshWorld = glm::mat4(1.0f);
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &freshWorld[0][0]);
-
-		//4
-		glm::mat4 fourBarMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-		modelMatrix = groupMatrix * fourMatrix * fourBarMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
-
-		glm::mat4 fourMiddleTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.0f, 0.0f));
-		glm::mat4 fourMiddleScaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-		glm::mat4 fourMiddleMatrix = fourMiddleTranslationMatrix * fourMiddleScaleMatrix;
-		modelMatrix = groupMatrix * fourMatrix * fourMiddleMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
-
-		glm::mat4 fourLeftTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 3.0f, 0.0f));
-		glm::mat4 fourLeftScaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-		glm::mat4 fourLeftMatrix = fourLeftTranslationMatrix * fourLeftScaleMatrix;
-		modelMatrix = groupMatrix * fourMatrix * fourLeftMatrix;
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
 #pragma endregion
 
 		// End Frame, include swap interval to prevent blurriness
