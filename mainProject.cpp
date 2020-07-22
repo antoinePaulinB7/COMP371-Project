@@ -21,70 +21,9 @@ using namespace glm;
 using namespace std;
 
 const int windowWidth = 1024, windowHeight = 764;
-const float depthWidth = 1024, depthHeight = 1024;
+const float shadowMapWidth = 1024, shadowMapHeight = 1024;
 
 #pragma region unitCubes
-int createPlaneVertexArrayObject()
-{
-	vec3 whiteColor = vec3(1.0f, 1.0f, 1.0f);
-	vec3 posY = vec3(0.0f, 1.0f, 0.0f);
-
-	vec3 vertexArray[] = {
-		vec3(-0.5f, 0.0f,-0.5f), whiteColor, posY,
-		vec3(-0.5f, 0.0f, 0.5f), whiteColor, posY,
-		vec3(0.5f, 0.0f, 0.5f), whiteColor, posY,
-
-		vec3(0.5f, 0.0f, 0.5f), whiteColor, posY,
-		vec3(0.5f, 0.0f, -0.5f), whiteColor, posY,
-		vec3(-0.5f, 0.0f, -0.5f), whiteColor, posY
-	};
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		3 * sizeof(vec3), // stride - each vertex contain 3 vec3 (position, color, normal)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		3 * sizeof(vec3),
-		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-
-	glVertexAttribPointer(2,                            // attribute 2 matches aNormal in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		3 * sizeof(vec3),
-		(void*)(2 * sizeof(vec3))      // normal is offseted 2 vec3 (comes after position and color)
-	);
-	glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	return vertexArrayObject;
-}
-
 int createUnitCubeVertexArrayObject()
 {
 	vec3 whiteColor = vec3(1.0f, 1.0f, 1.0f);
@@ -1392,31 +1331,14 @@ void useLightingShader() {
 	useShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
 
 	//Set up vertex shader uniforms
-	GLuint lightCamPosLocation = glGetUniformLocation(phongLightShaderProgram, "cameraPosition");
-	glUniform3f(lightCamPosLocation, cameraPosition.x, cameraPosition.y, cameraPosition.z);
-	GLuint lightPosLocation = glGetUniformLocation(phongLightShaderProgram, "lightPosition");
-	glUniform3f(lightPosLocation, 0.0f, 30.0f, 0.0f);
-
 	GLuint depthVPLocation = glGetUniformLocation(phongLightShaderProgram, "depthVP");
 	mat4 depthVP = lightProjectionMatrix * lightViewMatrix;
 	glUniformMatrix4fv(depthVPLocation, 1, GL_FALSE, &depthVP[0][0]);
 
 
 	//Set up fragment shader uniforms
-	float kCoefficients = 0.9f, lightCoefficients = 0.3f, lightAttenuationConstants = 1.0f;
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "matCoefficientKa"), kCoefficients, kCoefficients, kCoefficients);
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "matCoefficientKd"), kCoefficients, kCoefficients, kCoefficients);
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "matCoefficientKs"), kCoefficients, kCoefficients, kCoefficients);
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "matCoefficientShininessA"), kCoefficients, kCoefficients, kCoefficients);
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientColor"), lightCoefficients, lightCoefficients, lightCoefficients);
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightComponentAmbientLa"), lightCoefficients, lightCoefficients, lightCoefficients);
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightComponentDiffuseLd"), lightCoefficients, lightCoefficients, lightCoefficients);
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightComponentSpecularLs"), lightCoefficients, lightCoefficients, lightCoefficients);
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantA"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantB"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
-	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantC"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
-}
 
+}
 
 //The buffer is the memory that backs up the shadowMap texture, like how the VBO is the memory that backs up the VAO
 // referenced this tutorial which was suggested in the labs https://learnopengl.com/Getting-started/Textures
@@ -1431,7 +1353,7 @@ GLuint createShadowMapBuffer(GLuint& shadowMap)
 	glGenTextures(1, &shadowMap);
 	glBindTexture(GL_TEXTURE_2D, shadowMap);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, depthWidth, depthHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);	//Set up an empty border, instead of having the default repeating texture
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);	//which lead to duplicate shadows out of place!
@@ -1509,7 +1431,6 @@ int main(int argc, char*argv[])
 	int vao = createVertexArrayObjectR4();
 	int gridVAO = createVertexArrayObjectGridLine();
 	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
-	int planeVAO = createPlaneVertexArrayObject();
 
 	//Create hierarchical models
 	mat4 L9BaseTranslation = translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
@@ -1558,19 +1479,14 @@ int main(int argc, char*argv[])
 
 #pragma region shadowPass1
 		//bind and clear the shadow buffer, set viewport to shadowMap dimensions
-		glViewport(0, 0, depthWidth, depthHeight);
+		glViewport(0, 0, shadowMapWidth, shadowMapHeight);
 		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapBuffer);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		//use the shadow shader, draw all objects
 		useShadowShader();
 
-		//Draw plane and L9 for the shadow map
-		glBindVertexArray(planeVAO);
-		mat4 planeStretcher = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(0.0f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(100.0f, 1.0f, 100.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &planeStretcher[0][0]);
-		glDrawArrays(renderingMode, 0, 6);
-
+		//Draw scene for the shadow map
 		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
 		//Draw I9
@@ -1593,11 +1509,6 @@ int main(int argc, char*argv[])
 		glBindTexture(GL_TEXTURE_2D, shadowMap);
 
 		
-		//Draw plane
-		glBindVertexArray(planeVAO);
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &planeStretcher[0][0]);
-		glDrawArrays(renderingMode, 0, 6);
-
 		//Draw L9
 		L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);

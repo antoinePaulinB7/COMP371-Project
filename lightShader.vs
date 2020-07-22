@@ -11,10 +11,7 @@
 	uniform mat4 depthVP;
 
     out vec3 vertexColor;
-    out vec3 normalN;		//surface normal vector
-    out vec3 lightVectorL;	//unit vector to light source
-    out vec3 eyeVectorV;	//unit vector to viewer
-    out float distanceToLightSource;
+
 		
     out vec4 shadowCoordinate;
 
@@ -25,15 +22,6 @@
 		//Transform vertex positions to Clip Space
 		mat4 mvp = projectionMatrix * viewMatrix * worldMatrix;
         gl_Position = mvp * vec4(aPos, 1.0f);
-
-		//Calculate the distance to the light source
-		vec3 posToLight = lightPosition - vec3(worldMatrix * vec4(aPos, 1.0f));
-		distanceToLightSource = length(posToLight);
-
-		//Transform lighting data to View Space
-		normalN = normalize(vec3(viewMatrix * worldMatrix * vec4(aNormal, 0.0f)));
-		lightVectorL = normalize(vec3(viewMatrix * vec4(posToLight, 0.0f))); 
-		eyeVectorV = normalize(vec3(viewMatrix * vec4((cameraPosition - vec3(worldMatrix * vec4(aPos, 1.0f))), 0.0f)));
 
 
 		//Shadow math
