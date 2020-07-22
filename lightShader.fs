@@ -27,13 +27,13 @@
 		//Calculate and add ambient, diffuse and specular components
 
 		//ambient
-		vec3 ambientIntensity = vec3(1.0f);
+		vec3 ambientIntensity = vec3(0.3f);
 
 		//diffuse
-		vec3 diffuseIntensity = vec3(1.0f);
+		vec3 diffuseIntensity = vec3(0.3f);
 
 		//specular
-		vec3 specularIntensity = vec3(1.0f);
+		vec3 specularIntensity = vec3(0.3f);
 		
 
 		vec3 totalIntensity = ambientIntensity + (visibility * diffuseIntensity) + (visibility * specularIntensity);
