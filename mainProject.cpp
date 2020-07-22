@@ -980,6 +980,7 @@ void drawLetter(char c, int index, mat4 modelMatrix, GLuint worldMatrixLocation)
 }
 #pragma endregion
 
+#pragma region makeModels
 int numVerticesPerCube = 36;
 Model* makeL9Model(int vao) {
 	/*  This is the hierarchy for L9, built with Model objects holding other Model objects:
@@ -1285,7 +1286,7 @@ Model* makeC4Model(int vao) {
 
 	return modelC4; 
 }
-
+#pragma endregion
 
 void handleExitInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
