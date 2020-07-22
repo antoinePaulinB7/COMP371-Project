@@ -8,12 +8,15 @@
     uniform mat4 worldMatrix;
 	uniform mat4 viewMatrix = mat4(1.0);
 	uniform mat4 projectionMatrix = mat4(1.0);
+	uniform mat4 depthVP;
 
     out vec3 vertexColor;
     out vec3 normalN;		//surface normal vector
     out vec3 lightVectorL;	//unit vector to light source
     out vec3 eyeVectorV;	//unit vector to viewer
     out float distanceToLightSource;
+		
+    out vec4 shadowCoordinate;
 
     void main()
     {
@@ -31,5 +34,9 @@
 		normalN = normalize(vec3(viewMatrix * worldMatrix * vec4(aNormal, 0.0f)));
 		lightVectorL = normalize(vec3(viewMatrix * vec4(posToLight, 0.0f))); 
 		eyeVectorV = normalize(vec3(viewMatrix * vec4((cameraPosition - vec3(worldMatrix * vec4(aPos, 1.0f))), 0.0f)));
-		
+
+
+		//Shadow math
+		//Transform points in shadow map
+		shadowCoordinate = depthVP * worldMatrix * vec4(aPos, 1.0f);
     }

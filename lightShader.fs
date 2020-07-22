@@ -5,6 +5,8 @@
     in vec3 eyeVectorV;
     in float distanceToLightSource;
 
+	in vec4 shadowCoordinate;
+
 	uniform vec3 matCoefficientKa;	//ambient reflection: 0 <= Ka <= 1
 	uniform vec3 matCoefficientKd;	//diffuse reflection: 0 <= Kd <= 1
 	uniform vec3 matCoefficientKs;	//specular reflection: 0 <= Ks <= 1
@@ -16,6 +18,8 @@
 	uniform float lightCoefficientAttenuationConstantA;
 	uniform float lightCoefficientAttenuationConstantB;
 	uniform float lightCoefficientAttenuationConstantC;
+	
+	uniform sampler2D shadowMap;
 
 	out vec4 fragmentColor;
 
@@ -31,6 +35,17 @@
 
 	void main()
 	{
+		//Shadow math
+		vec3 shadowCoord = (shadowCoordinate.xyz / shadowCoordinate.w) * 0.5 + 0.5; 
+		float visibility = 1.0f;
+		float depthVal = texture(shadowMap, shadowCoord.xy).z;
+		float dist = shadowCoord.z;
+		float bias = 0.000001f;
+		if (dist > depthVal + bias) {
+			visibility = 0.0f;
+		}
+
+
 		//Calculate and add ambient, diffuse and specular components
 
 		//ambient
@@ -51,7 +66,8 @@
 			specularIntensity = vec3(0.0f);
 		}
 		
-		vec3 totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
+		vec3 totalIntensity = ambientIntensity + (visibility * diffuseIntensity);
+		//vec3 totalIntensity = ambientIntensity + (visibility * diffuseIntensity) + (visibility * specularIntensity);
 
 
 		//Calculate each color channel  (R,G,B) separately
@@ -64,4 +80,5 @@
 			vertexColor.g * totalIntensityG, 
 			vertexColor.b * totalIntensityB,
 			1.0f);
+
 	}

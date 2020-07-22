@@ -20,6 +20,9 @@
 using namespace glm;
 using namespace std;
 
+const int windowWidth = 1024, windowHeight = 764;
+const float depthWidth = 1024, depthHeight = 1024;
+
 #pragma region unitCubes
 int createPlaneVertexArrayObject()
 {
@@ -27,7 +30,7 @@ int createPlaneVertexArrayObject()
 	vec3 posY = glm::vec3(0.0f, 1.0f, 0.0f);
 
 	glm::vec3 vertexArray[] = {
-		glm::vec3(-0.5f, 0.0f,-0.5f), whiteColor, posY, 
+		glm::vec3(-0.5f, 0.0f,-0.5f), whiteColor, posY,
 		glm::vec3(-0.5f, 0.0f, 0.5f), whiteColor, posY,
 		glm::vec3(0.5f, 0.0f, 0.5f), whiteColor, posY,
 
@@ -84,7 +87,7 @@ int createPlaneVertexArrayObject()
 
 int createUnitCubeVertexArrayObject()
 {
-	vec3 whiteColor = glm::vec3(1.0f, 0.8f, 0.8f);
+	vec3 whiteColor = glm::vec3(1.0f, 1.0f, 1.0f);
 	vec3 posX = glm::vec3(1.0f, 0.0f, 0.0f);
 	vec3 posY = glm::vec3(0.0f, 1.0f, 0.0f);
 	vec3 posZ = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -170,7 +173,7 @@ int createUnitCubeVertexArrayObject()
 	);
 	glEnableVertexAttribArray(1);
 
-	
+
 	glVertexAttribPointer(2,                            // attribute 2 matches aNormal in Vertex Shader
 		3,
 		GL_FLOAT,
@@ -726,7 +729,7 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	}
 
 	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) 
+		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
 		modelXRotationAngle += rotationSpeed * dt;
 	}
@@ -1038,15 +1041,15 @@ int numVerticesPerCube = 36;
 Model* makeL9Model(int vao) {
 	/*  This is the hierarchy for L9, built with Model objects holding other Model objects:
 
-                                      modelL9
+									  modelL9
 
-                            /                           \
+							/                           \
 
-                modelL                                         model9
+				modelL                                         model9
 
-            /            \                       /           /           \          \
+			/            \                       /           /           \          \
 
-     modelLbottomBar modelLverticalBar      model9top  model9right   model9left  model9bottom
+	 modelLbottomBar modelLverticalBar      model9top  model9right   model9left  model9bottom
 
 	Each model applies its own TRS transformations to its children recursively, achieving the same affect
 	we used to get by multiplying out each matrix many times over, like so:
@@ -1135,8 +1138,11 @@ void checkErrors() {
 	}
 }
 
+GLuint worldMatrixLocation;
 void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 	glUseProgram(shaderProgram);
+
+	worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
 	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
@@ -1158,6 +1164,15 @@ void useLightingShader(int phongLightShaderProgram, mat4 projectionMatrix, mat4 
 	GLuint lightPosLocation = glGetUniformLocation(phongLightShaderProgram, "lightPosition");
 	glUniform3f(lightPosLocation, 0.0f, 30.0f, 0.0f);
 
+	GLuint depthVPLocation = glGetUniformLocation(phongLightShaderProgram, "depthVP");
+	glm::mat4 lightProjectionMatrix = glm::perspective(70.0f, (float)depthWidth / depthHeight, 0.01f, 100.0f);
+	glm::mat4 lightViewMatrix = lookAt(vec3(0.0f, 30.0f, 0.0f),  // eye
+		vec3(0.0f, 0.0f, 0.0f),  // center
+		vec3(1.0f, 0.0f, 0.0f)); // up
+	glm::mat4 depthVP = lightProjectionMatrix * lightViewMatrix;
+	glUniformMatrix4fv(depthVPLocation, 1, GL_FALSE, &depthVP[0][0]);
+
+
 	//Set up fragment shader uniforms
 	float kCoefficients = 0.9f, lightCoefficients = 0.3f, lightAttenuationConstants = 1.0f;
 	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "matCoefficientKa"), kCoefficients, kCoefficients, kCoefficients);
@@ -1171,6 +1186,52 @@ void useLightingShader(int phongLightShaderProgram, mat4 projectionMatrix, mat4 
 	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantA"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
 	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantB"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
 	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantC"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
+}
+
+void useShadowShader(int shadowShaderProgram) {
+	float aspectRatio = (float)depthWidth / depthHeight;
+	glm::mat4 lightProjectionMatrix = glm::perspective(70.0f, aspectRatio, 0.01f, 100.0f);
+	glm::mat4 lightViewMatrix = lookAt(vec3(0.0f, 30.0f, 0.0f),  // eye
+		vec3(0.0f, 0.0f, 0.0f),  // center
+		vec3(1.0f, 0.0f, 0.0f)); // up
+	useShader(shadowShaderProgram, lightProjectionMatrix, lightViewMatrix);
+}
+
+
+//The buffer is the memory that backs up the shadowMap texture, like how the VBO is the memory that backs up the VAO
+// referenced this tutorial which was suggested in the labs https://learnopengl.com/Getting-started/Textures
+// which lead to this tutorial https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+// referenced the opengl docs for framebuffer info https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glFramebufferTexture2D.xml
+GLuint createShadowMapBuffer(GLuint& shadowMap)
+{
+	//create a frame buffer to hold the shadow map data
+	GLuint frameBufferObject;
+	glGenFramebuffers(1, &frameBufferObject);
+
+	glGenTextures(1, &shadowMap);
+	glBindTexture(GL_TEXTURE_2D, shadowMap);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, depthWidth, depthHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);	//Set up an empty border, instead of having the default repeating texture
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);	//which lead to duplicate shadows out of place!
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		cerr << "error generating shadow map buffer" << endl;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return frameBufferObject;
 }
 
 int main(int argc, char*argv[])
@@ -1193,7 +1254,7 @@ int main(int argc, char*argv[])
 #endif
 
 	// Create Window and rendering context using GLFW, resolution is 800x600
-	GLFWwindow* window = glfwCreateWindow(1024, 764, "Comp371 - Group 14 P1", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Comp371 - Group 14 P1", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cerr << "Failed to create GLFW window" << std::endl;
@@ -1216,6 +1277,7 @@ int main(int argc, char*argv[])
 	// Compile and link shaders here ...
 	GLuint defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
 	GLuint phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
+	GLuint shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
 
 #pragma endregion windowSetUp
 
@@ -1225,7 +1287,7 @@ int main(int argc, char*argv[])
 
 	// Set projection matrix for shader, this won't change
 	glm::mat4 projectionMatrix = glm::perspective(70.0f, // field of view in degrees
-		1024.0f / 768.0f,  // aspect ratio
+		(float)windowWidth / windowHeight,  // aspect ratio
 		0.01f, 100.0f);   // near and far (near > 0)
 
 		// Set initial view matrix
@@ -1233,7 +1295,7 @@ int main(int argc, char*argv[])
 		cameraPosition + cameraLookAt,  // center
 		cameraUp); // up
 
-	   
+
 	// Define and upload geometry to the GPU here ...
 	//We have a few different cubes since some people did fun colors,
 	//And some are centered on origin while others have origin in a corner
@@ -1246,7 +1308,7 @@ int main(int argc, char*argv[])
 
 	//Create hierarchical models
 	//mat4 L9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
-	mat4 L9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-0.0f, 2.5f, -0.0f));
+	mat4 L9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-0.0f, 3.5f, -0.0f));
 	Model* l9Model = makeL9Model(unitCubeVAO);
 
 	// For frame time
@@ -1261,6 +1323,10 @@ int main(int argc, char*argv[])
 
 	glPointSize(3.0f);
 
+	//Shadow setup
+	GLuint shadowMap;
+	GLuint shadowMapBuffer = createShadowMapBuffer(shadowMap);
+
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -1268,62 +1334,59 @@ int main(int argc, char*argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
-		// Each frame, reset color of each pixel to glClearColor
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		useStandardShader(defaultShaderProgram, projectionMatrix, viewMatrix);
-
-		GLuint worldMatrixLocation = glGetUniformLocation(defaultShaderProgram, "worldMatrix");
-
 		// Model Matrices - they control the transformations of the letters model
 		modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
 		modelRotationMatrix = rotate(mat4(1.0f), radians(modelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(modelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
 		modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
 		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
 
-#pragma region Grid and Coordinate Axis
-		// Draw ground using Hierarchical Modeling
-		glBindVertexArray(gridVAO);
 
-		// Initialize variables for grid size
-		glm::mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridSize / 2.0f, 0.0f, -1.0f * gridSize / 2.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridX[0][0]);
-		glDrawArrays(GL_LINES, 0, 2 * (gridSize * 2));
+		//bind and clear the shadow buffer, set viewport to shadowMap dimensions
+		glViewport(0, 0, depthWidth, depthHeight);
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapBuffer);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		//use the shadow shader, draw all objects
+		useShadowShader(shadowShaderProgram);
+
+		//Draw plane and L9 for the shadow map
+		glBindVertexArray(planeVAO);
+		mat4 planeStretcher = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(0.0f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(50.0f, 1.0f, 50.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &planeStretcher[0][0]);
+		glDrawArrays(renderingMode, 0, 6);
+
+		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
+		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
 
 
-		// Set up Coordinate Axis Matrix using Hierarchical Modeling
-		glm::mat4 Coordinates = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
+		//bind and clear the default (screen) framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, windowWidth, windowHeight);
 
-		int numLines = 3;
-		glBindVertexArray(xyzVAO);
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Coordinates[0][0]);
-		glLineWidth(5.0f);
-		glDrawArrays(GL_LINES, 0, 2 * numLines);
-
-#pragma endregion
-
-		glLineWidth(1.0f);
+		// Each frame, reset color of each pixel to glClearColor
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		useLightingShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
-		worldMatrixLocation = glGetUniformLocation(phongLightShaderProgram, "worldMatrix");
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, shadowMap);
 
+		
 		//Draw plane
 		glBindVertexArray(planeVAO);
-		mat4 planeStretcher = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(0.0f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(20.0f, 1.0f, 20.0f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &planeStretcher[0][0]);
 		glDrawArrays(renderingMode, 0, 6);
 
 		//Draw L9
-		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
+		L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
+		
 
-/*
+		/*
 #pragma region I9
 		glBindVertexArray(unitCubeVAO);
 
 		//define identity matrices to translate, rotate and scale I9 model
-		//used for hierarchical modeling 
+		//used for hierarchical modeling
 		mat4 translateI9Model = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, -halfGridSize));
 
 		//----------------------------------------------------------------------------------
@@ -1426,7 +1489,7 @@ int main(int argc, char*argv[])
 		int numFaces = 6, numTrianglesPerFace = 2, numVerticesPerTriangle = 3;
 		int numTriangles = numFaces * numTrianglesPerFace;
 
-		// controls model hierarchy movement and orientation	
+		// controls model hierarchy movement and orientation
 		glm::mat4 groupTranslationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, halfGridSize));
 		glm::mat4 groupMatrix = worldOrientationModelMatrix * groupTranslationMatrix * sharedModelMatrix * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 		glm::mat4 cMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-4.5f, -2.5f, 0.5f));
@@ -1475,6 +1538,32 @@ int main(int argc, char*argv[])
 		glDrawArrays(renderingMode, 0, numTriangles * numVerticesPerTriangle);
 #pragma endregion
 */
+
+		useStandardShader(defaultShaderProgram, projectionMatrix, viewMatrix);
+
+#pragma region Grid and Coordinate Axis
+		// Draw ground using Hierarchical Modeling
+		glBindVertexArray(gridVAO);
+
+		// Initialize variables for grid size
+		glm::mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridSize / 2.0f, 0.0f, -1.0f * gridSize / 2.0f));
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridX[0][0]);
+		glDrawArrays(GL_LINES, 0, 2 * (gridSize * 2));
+
+
+		// Set up Coordinate Axis Matrix using Hierarchical Modeling
+		glm::mat4 Coordinates = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
+
+		int numLines = 3;
+		glBindVertexArray(xyzVAO);
+
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Coordinates[0][0]);
+		glLineWidth(5.0f);
+		glDrawArrays(GL_LINES, 0, 2 * numLines);
+
+		glLineWidth(1.0f);
+#pragma endregion
+
 		// End Frame, include swap interval to prevent blurriness
 		glfwSwapBuffers(window);
 		glfwSwapInterval(1);
