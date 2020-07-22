@@ -517,19 +517,24 @@ float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
 float magnificationFactor = 0.25f;
-bool cameraFirstPerson = true, panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
+bool panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
+
+// Camera parameters for view transform
+vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
+vec3 cameraUp(0.0f, 1.0f, 0.0f);
+vec3 cameraPosition(0.0f, 15.0f, 30.0f);
+
+// Set projection matrix for shader, this won't change
+mat4 projectionMatrix = perspective(70.0f, // field of view in degrees
+(float)windowWidth / windowHeight,  // aspect ratio
+0.01f, 100.0f);   // near and far (near > 0)
+
+// Set initial view matrix
+mat4 viewMatrix = lookAt(cameraPosition,  // eye
+	cameraPosition + cameraLookAt,  // center
+	cameraUp); // up
 
 void handleCameraFlagInputs(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) // move camera down
-	{
-		cameraFirstPerson = true;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) // move camera down
-	{
-		cameraFirstPerson = false;
-	}
-
 	fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
 
 	// On key up, set movement mode flag
@@ -566,7 +571,6 @@ void handleCameraFlagInputs(GLFWwindow* window) {
 }
 
 // Camera parameters for view transform
-vec3 cameraPosition(0.0f, 15.0f, 30.0f);
 int xShift = 12, zShift = 4;
 vec3 presetCameraPositions[] = { vec3(0.0f, 15.0f, 30.0f), vec3(-xShift, 5.0f, -zShift),
 vec3(xShift, 5.0f, -zShift), vec3(0.0f, 5.0f, 8.0f), vec3(-xShift, 5.0f, 5 * zShift),
@@ -1357,6 +1361,9 @@ void checkErrors() {
 }
 
 GLuint worldMatrixLocation;
+GLuint defaultShaderProgram;
+GLuint phongLightShaderProgram;
+GLuint shadowShaderProgram;
 void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 	glUseProgram(shaderProgram);
 
@@ -1369,11 +1376,19 @@ void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 }
 
-void useStandardShader(int defaultShaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
+void useStandardShader() {
 	useShader(defaultShaderProgram, projectionMatrix, viewMatrix);
 }
 
-void useLightingShader(int phongLightShaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
+mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 100.0f);
+mat4 lightViewMatrix = lookAt(vec3(0.0f, 30.0f, 0.0f),  // eye
+	vec3(0.0f, 0.0f, 0.0f),  // center
+	vec3(1.0f, 0.0f, 0.0f)); // up
+void useShadowShader() {
+	useShader(shadowShaderProgram, lightProjectionMatrix, lightViewMatrix);
+}
+
+void useLightingShader() {
 	useShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
 
 	//Set up vertex shader uniforms
@@ -1383,10 +1398,6 @@ void useLightingShader(int phongLightShaderProgram, mat4 projectionMatrix, mat4 
 	glUniform3f(lightPosLocation, 0.0f, 30.0f, 0.0f);
 
 	GLuint depthVPLocation = glGetUniformLocation(phongLightShaderProgram, "depthVP");
-	mat4 lightProjectionMatrix = perspective(70.0f, (float)depthWidth / depthHeight, 0.01f, 100.0f);
-	mat4 lightViewMatrix = lookAt(vec3(0.0f, 30.0f, 0.0f),  // eye
-		vec3(0.0f, 0.0f, 0.0f),  // center
-		vec3(1.0f, 0.0f, 0.0f)); // up
 	mat4 depthVP = lightProjectionMatrix * lightViewMatrix;
 	glUniformMatrix4fv(depthVPLocation, 1, GL_FALSE, &depthVP[0][0]);
 
@@ -1404,15 +1415,6 @@ void useLightingShader(int phongLightShaderProgram, mat4 projectionMatrix, mat4 
 	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantA"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
 	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantB"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
 	glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightCoefficientAttenuationConstantC"), lightAttenuationConstants, lightAttenuationConstants, lightAttenuationConstants);
-}
-
-void useShadowShader(int shadowShaderProgram) {
-	float aspectRatio = (float)depthWidth / depthHeight;
-	mat4 lightProjectionMatrix = perspective(70.0f, aspectRatio, 0.01f, 100.0f);
-	mat4 lightViewMatrix = lookAt(vec3(0.0f, 30.0f, 0.0f),  // eye
-		vec3(0.0f, 0.0f, 0.0f),  // center
-		vec3(1.0f, 0.0f, 0.0f)); // up
-	useShader(shadowShaderProgram, lightProjectionMatrix, lightViewMatrix);
 }
 
 
@@ -1493,26 +1495,11 @@ int main(int argc, char*argv[])
 	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
 
 	// Compile and link shaders here ...
-	GLuint defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
-	GLuint phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
-	GLuint shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
+	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
+	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
+	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
 
 #pragma endregion windowSetUp
-
-	// Camera parameters for view transform
-	vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
-	vec3 cameraUp(0.0f, 1.0f, 0.0f);
-
-	// Set projection matrix for shader, this won't change
-	mat4 projectionMatrix = perspective(70.0f, // field of view in degrees
-		(float)windowWidth / windowHeight,  // aspect ratio
-		0.01f, 100.0f);   // near and far (near > 0)
-
-		// Set initial view matrix
-	mat4 viewMatrix = lookAt(cameraPosition,  // eye
-		cameraPosition + cameraLookAt,  // center
-		cameraUp); // up
-
 
 	// Define and upload geometry to the GPU here ...
 	//We have a few different cubes since some people did fun colors,
@@ -1569,14 +1556,14 @@ int main(int argc, char*argv[])
 		modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
 		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
 
-
+#pragma region shadowPass1
 		//bind and clear the shadow buffer, set viewport to shadowMap dimensions
 		glViewport(0, 0, depthWidth, depthHeight);
 		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapBuffer);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		//use the shadow shader, draw all objects
-		useShadowShader(shadowShaderProgram);
+		useShadowShader();
 
 		//Draw plane and L9 for the shadow map
 		glBindVertexArray(planeVAO);
@@ -1590,7 +1577,9 @@ int main(int argc, char*argv[])
 		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
 		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
 
+#pragma endRegion
 
+#pragma region shadowPass2
 
 		//bind and clear the default (screen) framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1599,7 +1588,7 @@ int main(int argc, char*argv[])
 		// Each frame, reset color of each pixel to glClearColor
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		useLightingShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
+		useLightingShader();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, shadowMap);
 
@@ -1625,7 +1614,9 @@ int main(int argc, char*argv[])
 		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
 
-		useStandardShader(defaultShaderProgram, projectionMatrix, viewMatrix);
+#pragma endregion
+
+		useStandardShader();
 
 #pragma region Grid and Coordinate Axis
 		// Draw ground using Hierarchical Modeling
