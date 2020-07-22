@@ -1305,7 +1305,7 @@ Model* makeC4Model(int vao) {
 	//The pieces of the C are placed such that the entire C is centered at origin on all axes
 	//We can then very simply manipulate this modelC to transform the entire C
 	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
-	setUpTranslation = translate(mat4(1.0f), vec3(-9.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-4.5f, 0.0f, 0.0f));
 	Model* modelC = new Model(vao, 0, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	
@@ -1329,7 +1329,7 @@ Model* makeC4Model(int vao) {
 	fourChildren.push_back(model4left);
 	fourChildren.push_back(model4middle);
 	fourChildren.push_back(model4right);
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(4.5f, 0.0f, 0.0f));
 	Model* model4 = new Model(vao, 0, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
@@ -1537,8 +1537,7 @@ int main(int argc, char*argv[])
 	//mat4 T9BaseTranslation = translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, halfGridSize));	//Model's start pos doesn't change
 	//Model* t9Model = makeT9Model(vao);
 
-	//mat4 C4BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
-	mat4 C4BaseTranslation = translate(mat4(1.0f), vec3(0.0f, 2.5f, 0.0f));	//Model's start pos doesn't change
+	mat4 C4BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
 	Model* c4Model = makeC4Model(vao);
 
 	// For frame time
@@ -1581,12 +1580,16 @@ int main(int argc, char*argv[])
 
 		//Draw plane and L9 for the shadow map
 		glBindVertexArray(planeVAO);
-		mat4 planeStretcher = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(0.0f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(50.0f, 1.0f, 50.0f));
+		mat4 planeStretcher = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(0.0f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(100.0f, 1.0f, 100.0f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &planeStretcher[0][0]);
 		glDrawArrays(renderingMode, 0, 6);
 
 		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
+		//Draw I9
+		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
+		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
+
 
 
 		//bind and clear the default (screen) framebuffer
@@ -1611,12 +1614,16 @@ int main(int argc, char*argv[])
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
 		
 		//Draw I9
-		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
+		I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
 		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
 
 		//Draw U3
 		mat4 U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix;
 		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
+
+		//Draw C4
+		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
+		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
 
 		useStandardShader(defaultShaderProgram, projectionMatrix, viewMatrix);
 
