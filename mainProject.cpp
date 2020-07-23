@@ -847,6 +847,41 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		}
 
 	}
+
+	/* Simultaneously pressing X + (1 OR 2 OR 3 OR 4 OR 5) will change chars location to a random spot*/
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+	{
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			float randl9_x = rand() % (90 - 0 + 1) + 0;
+			float randl9_z = rand() % (90 - 0 + 1) + 0;
+			l9ModelPosition = vec3(randl9_x, 1.0f, randl9_z);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			float randt9_x = rand() % (90 - 0 + 1) + 0;
+			float randt9_z = rand() % (90 - 0 + 1) + 0;
+			t9ModelPosition = vec3(randt9_x, 1.0f, -randt9_z);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			float randu3_x = rand() % (40 - (-40) + 1) + (-40);
+			float randu3_z = rand() % (40 - (-40) + 1) + (-40);
+			u3ModelPosition = vec3(randu3_x, 1.0f, randu3_z);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			float randi9_x = rand() % (90 - 0 + 1) + 0;
+			float randi9_z = rand() % (90 - 0 + 1) + 0;
+			i9ModelPosition = vec3(-randi9_x, 1.0f, randi9_z);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			float randc4_x = rand() % (90 - 0 + 1) + 0;
+			float randc4_z = rand() % (90 - 0 + 1) + 0;
+			c4ModelPosition = vec3(-randc4_x, 1.0f, -randc4_z);
+		}
+	}
 }
 #pragma endregion
 
