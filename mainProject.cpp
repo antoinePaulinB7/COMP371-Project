@@ -926,32 +926,44 @@ std::map<char, char*> alphabet = {
  * It picks a letter from the alphabet and draws it according to the
  * modelMatrix transform
  */
-void drawLetter(char c, int index, mat4 modelMatrix, GLuint worldMatrixLocation)
+
+int numVerticesPerCube = 36;
+
+Model* drawLetter(char c, int index, int vao)
 {
 	char* letter = alphabet[c];
 
-	// The primitive matrices (They place each cube to form the letters -- you could actually make all the cubes spin :) )
-	mat4 primitiveScalingMatrix = scale(mat4(1.0f), vec3(1.0f)); // You can modify this make the letters thicker (but < 1 is bad, cuz they won't connect anymore)
-	mat4 primitiveRotationMatrix = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
-	mat4 primitiveTranslationMatrix;
-
-	mat4 worldMatrix;
+	// Draw using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	glm::mat4 setUpScaling = mat4(1.0f);
+	glm::mat4 setUpRotation = mat4(1.0f);
+	glm::mat4 setUpTranslation = mat4(1.0f);
+	
+	// Setting up the model
+	vector<Model*> modelChildren = vector<Model*>();
 
 	for (int i = 0; i < 15; i++)
 	{
 		if (letter[i] == '*')
 		{
-			primitiveTranslationMatrix = translate(mat4(1.0f), vec3(-3.5f + (index * 4.0f) + (i % 3)*1.0f, 1.5 + (ceil(i / 3)*-1.0f), -0.5f));
-			worldMatrix = modelMatrix * primitiveTranslationMatrix * primitiveRotationMatrix * primitiveScalingMatrix;
+			// Creating part of the model
+			setUpTranslation = translate(mat4(1.0f), vec3(-3.5f + (index * 4.0f) + (i % 3)*1.0f, 1.5 + (ceil(i / 3)*-1.0f), -0.5f));
+			Model* modelPart = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), mat4(1.0));
 
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-			glDrawArrays(renderingMode, 0, 36); // 36 vertices (because cube), starting at index 0
+			// Setting up the model
+			modelChildren.push_back(modelPart);
 		}
 	}
+	//The pieces of part of a model (letter or number) are placed such that the entire model (letter or number) 
+	//is centered at origin on all axes
+	//We can then very simply manipulate this model to transform the entire model (letter or number)
+	//for example, to scoot the letter left to make room for the number, making the entire model centered.
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+	Model* model = new Model(vao, 0, modelChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+	return model;
 }
 #pragma endregion
 
-int numVerticesPerCube = 36;
 Model* makeL9Model(int vao) {
 	/*  This is the hierarchy for L9, built with Model objects holding other Model objects:
 
@@ -1190,6 +1202,21 @@ Model* makeU3Model(int vao) {
 	return modelU3;
 }
 
+Model* makeT9Model(int vao) {
+	
+	Model* modelT = drawLetter('T', 0, vao);
+	Model* model9 = drawLetter('9', 1, vao);
+
+	// Setting up the entireT9
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> T9Children = vector<Model*>();
+	T9Children.push_back(modelT);
+	T9Children.push_back(model9);
+	Model* modelT9 = new Model(vao, 0, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	return modelT9;
+}
+
 Model* makeC4Model(int vao) {
 	// Draw C4 using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	glm::mat4 setUpScaling = mat4(1.0f);
@@ -1356,8 +1383,8 @@ int main(int argc, char*argv[])
 	mat4 U3BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));	//Model's start pos doesn't change
 	Model* u3Model = makeU3Model(rainbowCubeVAO);
 
-	//mat4 T9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, halfGridSize));	//Model's start pos doesn't change
-	//Model* t9Model = makeT9Model(vao);
+	mat4 T9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, halfGridSize));	//Model's start pos doesn't change
+	Model* t9Model = makeT9Model(vao);
 
 	mat4 C4BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
 	Model* c4Model = makeC4Model(vao);
@@ -1428,22 +1455,13 @@ int main(int argc, char*argv[])
 		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
 
 		//Draw T9
-		//mat4 T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix;
-		//t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
+		mat4 T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix;
+		t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
 
 		//Draw C4
 		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
 
-#pragma region T9
-		// Draw geometry
-		glBindVertexArray(vao);
-
-		mat4 translateAAModel = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, halfGridSize));
-
-		drawLetter('T', 0, translateAAModel * sharedModelMatrix, worldMatrixLocation);
-		drawLetter('9', 1, translateAAModel * sharedModelMatrix, worldMatrixLocation);
-#pragma endregion
 
 		// End Frame, include swap interval to prevent blurriness
 		glfwSwapBuffers(window);
