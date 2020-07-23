@@ -1227,18 +1227,18 @@ Model* makeC4Model(int vao) {
 	mat4 setUpTranslation = mat4(1.0f);
 
 	// Creating left-part of the letter C
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.5f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	Model* modelCleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating bottom-part of the letter C
 	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
-	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, -2.0f, 0.0f));
 	Model* modelCbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating top-part of the letter C
 	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
-	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 4.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 2.0f, 0.0f));
 	Model* modelCtopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Setting up the letter C
@@ -1249,22 +1249,21 @@ Model* makeC4Model(int vao) {
 	//The pieces of the C are placed such that the entire C is centered at origin on all axes
 	//We can then very simply manipulate this modelC to transform the entire C
 	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
-	setUpTranslation = translate(mat4(1.0f), vec3(-4.5f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.5f, 0.0f, 0.0f));
 	Model* modelC = new Model(vao, 0, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
-	
 	// Creating right-part of the number 4
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	Model* model4right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating middle-part of the number 4
-	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
 	Model* model4middle = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating left-part of the number 4
-	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 3.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.5f, 1.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 2.0f, 1.0f));
 	Model* model4left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
@@ -1273,9 +1272,8 @@ Model* makeC4Model(int vao) {
 	fourChildren.push_back(model4left);
 	fourChildren.push_back(model4middle);
 	fourChildren.push_back(model4right);
-	setUpTranslation = translate(mat4(1.0f), vec3(4.5f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 0.0f, 0.0f));
 	Model* model4 = new Model(vao, 0, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
-
 
 	// Setting up the entire C4
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -1447,7 +1445,7 @@ int main(int argc, char*argv[])
 	//Model* t9Model = makeT9Model(vao);
 
 	mat4 C4BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
-	Model* c4Model = makeC4Model(vao);
+	Model* c4Model = makeC4Model(unitCubeVAO);
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -1490,9 +1488,10 @@ int main(int argc, char*argv[])
 		//Draw scene for the shadow map
 		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
-		//Draw I9
 		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
 		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
+		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
+		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
 
 #pragma endRegion
 
@@ -1523,7 +1522,7 @@ int main(int argc, char*argv[])
 		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
 
 		//Draw C4
-		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
+		C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
 
 #pragma endregion
