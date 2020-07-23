@@ -848,8 +848,8 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 
 	}
 
-	/* Simultaneously pressing X + (1 OR 2 OR 3 OR 4 OR 5) will change chars location to a random spot*/
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+	/* Simultaneously pressing SPACE + (1 OR 2 OR 3 OR 4 OR 5) will change chars location to a random spot*/
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 		{
