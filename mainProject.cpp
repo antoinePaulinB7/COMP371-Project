@@ -647,34 +647,25 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	{
 		worldOrientationModelMatrix = mat4(1.0f);
 		modelScaleFactor = 1.0f;
+		l9ModelScaleFactor = 1.0f;
+		t9ModelScaleFactor = 1.0f;
+		u3ModelScaleFactor = 1.0f;
+		i9ModelScaleFactor = 1.0f;
+		c4ModelScaleFactor = 1.0f;
 		modelPosition = vec3(0.0f);
+		l9ModelPosition = vec3(0.0f);
+		t9ModelPosition = vec3(0.0f);
+		u3ModelPosition = vec3(0.0f);
+		i9ModelPosition = vec3(0.0f);
+		c4ModelPosition = vec3(0.0f);
 		modelXRotationAngle = 0.0f;
 		modelYRotationAngle = 0.0f;
-	}
+		l9ModelYRotationAngle = 0.0f;
+		t9ModelYRotationAngle = 0.0f;
+		u3ModelYRotationAngle = 0.0f;
+		i9ModelYRotationAngle = 0.0f;
+		c4ModelYRotationAngle = 0.0f;
 
-	// Role 4 input handling
-	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-	{
-		// scale up
-		modelScaleFactor += scaleSpeed * dt;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-	{
-		// scale down
-		modelScaleFactor -= scaleSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
-	{
-		modelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
-	{
-		modelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
 	}
 
 	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
@@ -701,22 +692,10 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		modelXRotationAngle += rotationSpeed * dt;
 	}
 
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	{
-		modelYRotationAngle += rotationSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-	{
-		modelYRotationAngle -= rotationSpeed * dt;
-	}
-
 	/* INDIVIDUAL MOVEMENT CONTROLS */
 
-	// INDIVICDUAL CHARACTER ROTATION CONTROLS
-	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
+		&& glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 		{
@@ -738,14 +717,45 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		{
 			c4ModelYRotationAngle += rotationSpeed * dt;
 		}
+		else {
+			modelYRotationAngle += rotationSpeed * dt;
+		}
 
+	}
+
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
+		&& glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelYRotationAngle -= rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelYRotationAngle -= rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelYRotationAngle -= rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelYRotationAngle -= rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelYRotationAngle -= rotationSpeed * dt;
+		}
+		else {
+			modelYRotationAngle -= rotationSpeed * dt;
+		}
 	}
 
 	// INDIVICDUAL CHARACTER SCALE CONTROLS
 
-	/* Simultaneously pressing T + (1 OR 2 OR 3 OR 4 OR 5) will scale UP the chosen character*/
+	/* Simultaneously pressing U + (1 OR 2 OR 3 OR 4 OR 5) will scale UP the chosen character*/
 
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
 	{
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 		{
@@ -767,11 +777,14 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		{
 			c4ModelScaleFactor += scaleSpeed * dt;
 		}
+		else {
+			modelScaleFactor += scaleSpeed * dt;
+		}
 
 	}
 
-	/* Simultaneously pressing G + (1 OR 2 OR 3 OR 4 OR 5) will scale DOWN the chosen character*/
-	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+	/* Simultaneously pressing J + (1 OR 2 OR 3 OR 4 OR 5) will scale DOWN the chosen character*/
+	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
 	{
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 		{
@@ -793,11 +806,15 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		{
 			c4ModelScaleFactor -= scaleSpeed * dt;
 		}
+		else {
+			modelScaleFactor -= scaleSpeed * dt;
+		}
 
 	}
 
 	/* Simultaneously pressing T + (1 OR 2 OR 3 OR 4 OR 5) will translate the chosen character on Y*/
-	if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
 	{
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 		{
@@ -819,11 +836,15 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		{
 			c4ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
 		}
+		else {
+			modelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
+		}
 
 	}
 
-	/* Simultaneously pressing T + (1 OR 2 OR 3 OR 4 OR 5 OR 6 ) will translate the chosen character on Y*/
-	if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
+	/* Simultaneously pressing S + (1 OR 2 OR 3 OR 4 OR 5 OR 6 ) will translate the chosen character on Y*/
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
 	{
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 		{
@@ -844,6 +865,9 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
 		{
 			c4ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else {
+			modelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
 		}
 
 	}
@@ -1473,7 +1497,6 @@ Model* makeC4Model(int vao) {
 	// Setting up the entire C4
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 
-	// THIS IS WHAT NEEDS THE INDIVIDUAL PARTS
 	vector<Model*> C4Children = vector<Model*>();
 	C4Children.push_back(modelC);
 	C4Children.push_back(model4);
