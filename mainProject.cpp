@@ -20,58 +20,66 @@
 using namespace glm;
 using namespace std;
 
+const int windowWidth = 1024, windowHeight = 764;
+const float shadowMapWidth = 1024, shadowMapHeight = 1024;
+
 #pragma region unitCubes
 int createUnitCubeVertexArrayObject()
 {
-	// Cube model (position, colors)
-	glm::vec3 vertexArray[] = {
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f), //left - grey
-		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+	vec3 whiteColor = vec3(1.0f, 1.0f, 1.0f);
+	vec3 posX = vec3(1.0f, 0.0f, 0.0f);
+	vec3 posY = vec3(0.0f, 1.0f, 0.0f);
+	vec3 posZ = vec3(0.0f, 0.0f, 1.0f);
 
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+	// Cube model (position, colors, normals)
+	vec3 vertexArray[] = {
+		vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posX, //left 
+		vec3(-0.5f,-0.5f, 0.5f), whiteColor, -posX,
+		vec3(-0.5f, 0.5f, 0.5f), whiteColor, -posX,
 
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f), // far - white
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posX,
+		vec3(-0.5f, 0.5f, 0.5f), whiteColor, -posX,
+		vec3(-0.5f, 0.5f,-0.5f), whiteColor, -posX,
 
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		vec3(0.5f, 0.5f,-0.5f), whiteColor, -posZ, // far
+		vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posZ,
+		vec3(-0.5f, 0.5f,-0.5f), whiteColor, -posZ,
 
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f), // bottom - grey
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		vec3(0.5f, 0.5f,-0.5f),whiteColor, -posZ,
+		vec3(0.5f,-0.5f,-0.5f),whiteColor, -posZ,
+		vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posZ,
 
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		vec3(0.5f,-0.5f, 0.5f), whiteColor, -posY, // bottom 
+		vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posY,
+		vec3(0.5f,-0.5f,-0.5f), whiteColor, -posY,
 
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f), // near - white
-		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), whiteColor, -posY,
+		vec3(-0.5f,-0.5f, 0.5f), whiteColor, -posY,
+		vec3(-0.5f,-0.5f,-0.5f), whiteColor, -posY,
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), whiteColor, posZ, // near
+		vec3(-0.5f,-0.5f, 0.5f), whiteColor, posZ,
+		vec3(0.5f,-0.5f, 0.5f), whiteColor, posZ,
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f), // right - grey
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		vec3(0.5f, 0.5f, 0.5f),whiteColor, posZ,
+		vec3(-0.5f, 0.5f, 0.5f), whiteColor, posZ,
+		vec3(0.5f,-0.5f, 0.5f), whiteColor, posZ,
 
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		vec3(0.5f, 0.5f, 0.5f), whiteColor, posX, // right 
+		vec3(0.5f,-0.5f,-0.5f), whiteColor, posX,
+		vec3(0.5f, 0.5f,-0.5f), whiteColor, posX,
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f), // top - grey
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
+		vec3(0.5f,-0.5f,-0.5f), whiteColor, posX,
+		vec3(0.5f, 0.5f, 0.5f),whiteColor, posX,
+		vec3(0.5f,-0.5f, 0.5f), whiteColor, posX,
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.7f, 0.7f, 0.7f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.7f, 0.7f, 0.7f)
+		vec3(0.5f, 0.5f, 0.5f), whiteColor, posY, // top 
+		vec3(0.5f, 0.5f,-0.5f), whiteColor, posY,
+		vec3(-0.5f, 0.5f,-0.5f), whiteColor, posY,
+
+		vec3(0.5f, 0.5f, 0.5f), whiteColor, posY,
+		vec3(-0.5f, 0.5f,-0.5f), whiteColor, posY,
+		vec3(-0.5f, 0.5f, 0.5f), whiteColor, posY
 	};
 
 	// Create a vertex array
@@ -89,7 +97,7 @@ int createUnitCubeVertexArrayObject()
 		3,                   // size
 		GL_FLOAT,            // type
 		GL_FALSE,            // normalized?
-		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
+		3 * sizeof(vec3), // stride - each vertex contain 3 vec3 (position, color, normal)
 		(void*)0             // array buffer offset
 	);
 	glEnableVertexAttribArray(0);
@@ -99,10 +107,20 @@ int createUnitCubeVertexArrayObject()
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		2 * sizeof(glm::vec3),
-		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
+		3 * sizeof(vec3),
+		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
 	);
 	glEnableVertexAttribArray(1);
+
+
+	glVertexAttribPointer(2,                            // attribute 2 matches aNormal in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		3 * sizeof(vec3),
+		(void*)(2 * sizeof(vec3))      // normal is offseted 2 vec3 (comes after position and color)
+	);
+	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -112,54 +130,54 @@ int createUnitCubeVertexArrayObject()
 
 int createVertexArrayObjectU3()
 {
-	glm::vec3 vertexArray[] = {
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+	vec3 vertexArray[] = {
+		vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+		vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f,-0.5f), vec3(0.2f, 0.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(0.2f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(0.2f, 0.0f, 0.0f),
 
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(0.2f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f,-0.5f), vec3(0.2f, 0.0f, 0.0f),
+		vec3(0.5f,-0.5f,-0.5f), vec3(0.2f, 0.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(0.2f, 0.0f, 0.0f),
 
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f),
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
 
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+		vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f),
+		vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f),
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f),
+		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 1.0f, 1.0f),
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(0.0f, 0.1f, 0.0f),
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
+		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.1f, 0.0f),
+		vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-		glm::vec3(0.5f,-0.5f,-0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 0.1f, 0.0f),
-		glm::vec3(0.5f,-0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
+		vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+		vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 0.1f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 0.0f, 1.0f),
-		glm::vec3(0.5f, 0.5f,-0.5f), glm::vec3(0.0f, 0.1f, 0.0f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.0f, 1.0f, 1.0f),
+		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+		vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.1f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
 
-		glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f),
-		glm::vec3(-0.5f, 0.5f,-0.5f), glm::vec3(0.0f, 0.0f, 1.0f),
-		glm::vec3(-0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 1.0f, 0.0f)
+		vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f)
 	};
 
 	// Create a vertex array
@@ -177,7 +195,7 @@ int createVertexArrayObjectU3()
 		3,                   // size
 		GL_FLOAT,            // type
 		GL_FALSE,            // normalized?
-		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
+		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
 		(void*)0             // array buffer offset
 	);
 	glEnableVertexAttribArray(0);
@@ -187,8 +205,8 @@ int createVertexArrayObjectU3()
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		2 * sizeof(glm::vec3),
-		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
+		2 * sizeof(vec3),
+		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
 	);
 	glEnableVertexAttribArray(1);
 
@@ -285,6 +303,9 @@ int createVertexArrayObjectR4()
 	);
 	glEnableVertexAttribArray(1);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 	return vertexArrayObject;
 }
 #pragma endregion
@@ -293,13 +314,13 @@ int createVertexArrayObjectR4()
 int createVertexArrayObjectCoordinateXYZ()
 {
 	// Cube model (position, colors)
-	glm::vec3 vertexArray[] = {
-		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), // middle, red
-		glm::vec3(5.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), // right, red
-		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), // middle, green
-		glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), // up, green
-		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), // middle, blue
-		glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f) // near, blue
+	vec3 vertexArray[] = {
+		vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), // middle, red
+		vec3(5.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), // right, red
+		vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), // middle, green
+		vec3(0.0f, 5.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), // up, green
+		vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), // middle, blue
+		vec3(0.0f, 0.0f, 5.0f), vec3(0.0f, 0.0f, 1.0f) // near, blue
 	};
 
 	// Create a vertex array
@@ -318,7 +339,7 @@ int createVertexArrayObjectCoordinateXYZ()
 		3,                   // size
 		GL_FLOAT,            // type
 		GL_FALSE,            // normalized?
-		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
+		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
 		(void*)0             // array buffer offset
 	);
 	glEnableVertexAttribArray(0);
@@ -328,11 +349,13 @@ int createVertexArrayObjectCoordinateXYZ()
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		2 * sizeof(glm::vec3),
-		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
+		2 * sizeof(vec3),
+		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
 	);
 	glEnableVertexAttribArray(1);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	return vertexBufferObject;
 }
@@ -345,24 +368,24 @@ int createVertexArrayObjectGridLine()
 {
 	// Line Vertices Array containing position & colors 
 	// One line is drawn by 4 vertices and it's doubled because we need lines in X and in Z therefore it's gridSize * 8
-	glm::vec3 vertexArray[gridSize * 8];
+	vec3 vertexArray[gridSize * 8];
 
 	// For loops to add every vertex of position and color of X lines to the grid in the vertex array
 	for (int i = 0; i < (gridSize * 8) / 2.0f; ++i)
 	{
 		if (i % 4 == 1 || i % 4 == 3) {
 			vertexArray[i] = {
-				glm::vec3(1.0f, 1.0f, 0.0f) // Color vertex (yellow)
+				vec3(1.0f, 1.0f, 0.0f) // Color vertex (yellow)
 			};
 		}
 		else if (i % 4 == 0) {
 			vertexArray[i] = {
-				glm::vec3(0.0f, 0.0f, 1.0f * i / 4.0f) // First vertex of position
+				vec3(0.0f, 0.0f, 1.0f * i / 4.0f) // First vertex of position
 			};
 		}
 		else {
 			vertexArray[i] = {
-				glm::vec3(1.0f * lineLength, 0.0f, 1.0f * ((i - 2) / 4.0f)) // Last vertex of position
+				vec3(1.0f * lineLength, 0.0f, 1.0f * ((i - 2) / 4.0f)) // Last vertex of position
 			};
 		}
 	}
@@ -372,17 +395,17 @@ int createVertexArrayObjectGridLine()
 	{
 		if (i % 4 == 1 || i % 4 == 3) {
 			vertexArray[i + (gridSize * 8) / 2] = {
-				glm::vec3(1.0f, 1.0f, 0.0f) // Color vertex (yellow)
+				vec3(1.0f, 1.0f, 0.0f) // Color vertex (yellow)
 			};
 		}
 		else if (i % 4 == 0) {
 			vertexArray[i + (gridSize * 8) / 2] = {
-				glm::vec3(1.0f * i / 4, 0.0f, 0.0f) // First vertex of position
+				vec3(1.0f * i / 4, 0.0f, 0.0f) // First vertex of position
 			};
 		}
 		else {
 			vertexArray[i + (gridSize * 8) / 2] = {
-				glm::vec3(1.0f * ((i - 2) / 4), 0.0f, 1.0f * lineLength) // Last vertex of position
+				vec3(1.0f * ((i - 2) / 4), 0.0f, 1.0f * lineLength) // Last vertex of position
 			};
 		}
 	}
@@ -403,7 +426,7 @@ int createVertexArrayObjectGridLine()
 		3,                   // size
 		GL_FLOAT,            // type
 		GL_FALSE,            // normalized?
-		2 * sizeof(glm::vec3), // stride - each vertex contain 2 vec3 (position, color)
+		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
 		(void*)0             // array buffer offset
 	);
 	glEnableVertexAttribArray(0);
@@ -413,11 +436,13 @@ int createVertexArrayObjectGridLine()
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		2 * sizeof(glm::vec3),
-		(void*)sizeof(glm::vec3)      // color is offseted a vec3 (comes after position)
+		2 * sizeof(vec3),
+		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
 	);
 	glEnableVertexAttribArray(1);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	return vertexBufferObject;
 }
@@ -431,19 +456,24 @@ float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
 float magnificationFactor = 0.25f;
-bool cameraFirstPerson = true, panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
+bool panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
+
+// Camera parameters for view transform
+vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
+vec3 cameraUp(0.0f, 1.0f, 0.0f);
+vec3 cameraPosition(0.0f, 15.0f, 30.0f);
+
+// Set projection matrix for shader, this won't change
+mat4 projectionMatrix = perspective(70.0f, // field of view in degrees
+(float)windowWidth / windowHeight,  // aspect ratio
+0.01f, 100.0f);   // near and far (near > 0)
+
+// Set initial view matrix
+mat4 viewMatrix = lookAt(cameraPosition,  // eye
+	cameraPosition + cameraLookAt,  // center
+	cameraUp); // up
 
 void handleCameraFlagInputs(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) // move camera down
-	{
-		cameraFirstPerson = true;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) // move camera down
-	{
-		cameraFirstPerson = false;
-	}
-
 	fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
 
 	// On key up, set movement mode flag
@@ -480,11 +510,10 @@ void handleCameraFlagInputs(GLFWwindow* window) {
 }
 
 // Camera parameters for view transform
-glm::vec3 cameraPosition(0.0f, 15.0f, 30.0f);
 int xShift = 12, zShift = 4;
-vec3 presetCameraPositions[] = { glm::vec3(0.0f, 15.0f, 30.0f), glm::vec3(-xShift, 5.0f, -zShift),
-glm::vec3(xShift, 5.0f, -zShift), glm::vec3(0.0f, 5.0f, 8.0f), glm::vec3(-xShift, 5.0f, 5 * zShift),
-glm::vec3(xShift, 5.0f, 5 * zShift) };
+vec3 presetCameraPositions[] = { vec3(0.0f, 15.0f, 30.0f), vec3(-xShift, 5.0f, -zShift),
+vec3(xShift, 5.0f, -zShift), vec3(0.0f, 5.0f, 8.0f), vec3(-xShift, 5.0f, 5 * zShift),
+vec3(xShift, 5.0f, 5 * zShift) };
 int cameraPresetPosCount = 6;
 int currentCamPresetPositionIndex = 0;
 
@@ -643,7 +672,7 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	}
 
 	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) 
+		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
 		modelXRotationAngle += rotationSpeed * dt;
 	}
@@ -666,7 +695,7 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 // font taken from https://fontstruct.com/fontstructions/show/716744/3_by_5_pixel_font
 // I'm really sorry this is all in one file. I am so freakin illiterate in C++, I have no clue what do.
 // But basically, this maps a char to a string that represents a square pattern following the pixel font linked above
-std::map<char, char*> alphabet = {
+map<char, char*> alphabet = {
 	{ 'A',
 		"***"
 		"* *"
@@ -951,43 +980,44 @@ void drawLetter(char c, int index, mat4 modelMatrix, GLuint worldMatrixLocation)
 }
 #pragma endregion
 
+#pragma region makeModels
 int numVerticesPerCube = 36;
 Model* makeL9Model(int vao) {
 	/*  This is the hierarchy for L9, built with Model objects holding other Model objects:
 
-                                      modelL9
+									  modelL9
 
-                            /                           \
+							/                           \
 
-                modelL                                         model9
+				modelL                                         model9
 
-            /            \                       /           /           \          \
+			/            \                       /           /           \          \
 
-     modelLbottomBar modelLverticalBar      model9top  model9right   model9left  model9bottom
+	 modelLbottomBar modelLverticalBar      model9top  model9right   model9left  model9bottom
 
 	Each model applies its own TRS transformations to its children recursively, achieving the same affect
 	we used to get by multiplying out each matrix many times over, like so:
-			glm::mat4 Lpart = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-			glm::mat4 modelLbottomBar = L9Matrix * LMatrix * Lpart;
+			mat4 Lpart = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
+			mat4 modelLbottomBar = L9Matrix * LMatrix * Lpart;
 	The recursive calls in draw() now do the above matrix multiplication without us having to specify them for each piece.
 	*/
 
 
 	// Draw L9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
-	glm::mat4 setUpScaling = mat4(1.0f);
-	glm::mat4 setUpRotation = mat4(1.0f);
-	glm::mat4 setUpTranslation = mat4(1.0f);
+	mat4 setUpScaling = mat4(1.0f);
+	mat4 setUpRotation = mat4(1.0f);
+	mat4 setUpTranslation = mat4(1.0f);
 
 
 	// Creating left-part of the letter L
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 0.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 
 	// Creating right-part of the letter L
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.5f, -2.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, -2.0f, 0.0f));
 	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Setting up the letter L
@@ -997,27 +1027,27 @@ Model* makeL9Model(int vao) {
 	//The pieces of the L are placed such that the entire L is centered at origin on all axes
 	//We can then very simply manipulate this modelL to transform the entire L
 	//for example, to scoot the L left to make room for the number, making the entire L9 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 0.0f, 0.0f));
 	Model* modelL = new Model(vao, 0, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating top-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
 	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 0.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating left-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 0.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 2.0f, 1.0f));
 	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating bottom-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 0.0f, 0.0f));
 	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Setting up the number 9
@@ -1026,7 +1056,7 @@ Model* makeL9Model(int vao) {
 	nineChildren.push_back(model9right);
 	nineChildren.push_back(model9left);
 	nineChildren.push_back(model9bottom);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 0.0f, 0.0f));
 	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
@@ -1042,24 +1072,24 @@ Model* makeL9Model(int vao) {
 
 Model* makeI9Model(int vao) {
 	// Draw I9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
-	glm::mat4 setUpScaling = mat4(1.0f);
-	glm::mat4 setUpRotation = mat4(1.0f);
-	glm::mat4 setUpTranslation = mat4(1.0f);
+	mat4 setUpScaling = mat4(1.0f);
+	mat4 setUpRotation = mat4(1.0f);
+	mat4 setUpTranslation = mat4(1.0f);
 
 	// Creating top-part of the letter I
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 4.5f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 4.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
 	Model* modelItopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 
 	// Creating middlet-part of the letter I
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 3.0f, 1.0f));
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 2.5f, 0.0f));
 	Model* modelImiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating bottom-part of the letter I
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 0.5f, 0.0f));
 	Model* modelIbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Setting up the letter I
@@ -1070,28 +1100,28 @@ Model* makeI9Model(int vao) {
 	//The pieces of the I are placed such that the entire I is centered at origin on all axes
 	//We can then very simply manipulate this modelI to transform the entire I
 	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, -2.0f, 0.0f));
 	Model* modelI = new Model(vao, 0, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating top-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.75f, 4.5f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 4.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
 	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating left-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 3.25f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 3.5f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 3.25f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
 	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating bottom-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.75f, 2.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 2.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
 	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 2.51f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(4.0f, 2.51f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 
@@ -1101,7 +1131,7 @@ Model* makeI9Model(int vao) {
 	nineChildren.push_back(model9right);
 	nineChildren.push_back(model9left);
 	nineChildren.push_back(model9bottom);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, -2.0f, 0.0f));
 	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
@@ -1117,24 +1147,24 @@ Model* makeI9Model(int vao) {
 
 Model* makeU3Model(int vao) {
 	// Draw U3 using hierarchical modeling, start at the lowest model(s) in the hierarchy
-	glm::mat4 setUpScaling = mat4(1.0f);
-	glm::mat4 setUpRotation = mat4(1.0f);
-	glm::mat4 setUpTranslation = mat4(1.0f);
+	mat4 setUpScaling = mat4(1.0f);
+	mat4 setUpRotation = mat4(1.0f);
+	mat4 setUpTranslation = mat4(1.0f);
 
 	// Creating left-part of the letter U
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 0.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	Model* modelUleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 
 	// Creating bottom-part of the letter U
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -2.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.5f, -2.0f, 0.0f));
 	Model* modelUbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating right-part of the letter U
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
 	Model* modelUrightBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Setting up the letter U
@@ -1145,28 +1175,28 @@ Model* makeU3Model(int vao) {
 	//The pieces of the U are placed such that the entire U is centered at origin on all axes
 	//We can then very simply manipulate this modelU to transform the entire U
 	//for example, to scoot the U left to make room for the number, making the entire U3 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 0.0f, 0.0f));
 	Model* modelU = new Model(vao, 0, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating base-part of the number 3
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(4.0f, 0.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	Model* model3base = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating topArm-part of the number 3
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.5f, 2.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 2.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
 	Model* model3topArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating middleArm-part of the number 3
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.5f, -2.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, -2.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
 	Model* model3middleArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating bottomArm-part of the number 3
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(3.0f, 0.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
 	Model* model3bottomArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 
@@ -1176,7 +1206,7 @@ Model* makeU3Model(int vao) {
 	threeChildren.push_back(model3topArm);
 	threeChildren.push_back(model3middleArm);
 	threeChildren.push_back(model3bottomArm);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
 	Model* model3 = new Model(vao, 0, threeChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
@@ -1192,23 +1222,23 @@ Model* makeU3Model(int vao) {
 
 Model* makeC4Model(int vao) {
 	// Draw C4 using hierarchical modeling, start at the lowest model(s) in the hierarchy
-	glm::mat4 setUpScaling = mat4(1.0f);
-	glm::mat4 setUpRotation = mat4(1.0f);
-	glm::mat4 setUpTranslation = mat4(1.0f);
+	mat4 setUpScaling = mat4(1.0f);
+	mat4 setUpRotation = mat4(1.0f);
+	mat4 setUpTranslation = mat4(1.0f);
 
 	// Creating left-part of the letter C
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.5f, 0.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	Model* modelCleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating bottom-part of the letter C
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, -2.0f, 0.0f));
 	Model* modelCbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating top-part of the letter C
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 2.0f, 0.0f));
 	Model* modelCtopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Setting up the letter C
@@ -1219,23 +1249,22 @@ Model* makeC4Model(int vao) {
 	//The pieces of the C are placed such that the entire C is centered at origin on all axes
 	//We can then very simply manipulate this modelC to transform the entire C
 	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-9.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.5f, 0.0f, 0.0f));
 	Model* modelC = new Model(vao, 0, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
-	
 	// Creating right-part of the number 4
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 0.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	Model* model4right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating middle-part of the number 4
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 0.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
 	Model* model4middle = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating left-part of the number 4
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 3.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.5f, 1.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 2.0f, 1.0f));
 	Model* model4left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Setting up the number 4
@@ -1243,9 +1272,8 @@ Model* makeC4Model(int vao) {
 	fourChildren.push_back(model4left);
 	fourChildren.push_back(model4middle);
 	fourChildren.push_back(model4right);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 0.0f, 0.0f));
 	Model* model4 = new Model(vao, 0, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
-
 
 	// Setting up the entire C4
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -1256,7 +1284,7 @@ Model* makeC4Model(int vao) {
 
 	return modelC4; 
 }
-
+#pragma endregion
 
 void handleExitInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -1266,8 +1294,85 @@ void handleExitInput(GLFWwindow* window) {
 void checkErrors() {
 	int errorValue = glGetError();
 	if (errorValue != 0) {
-		std::cout << "error of some sort: " << errorValue << std::endl;
+		cout << "error of some sort: " << errorValue << endl;
 	}
+}
+
+GLuint worldMatrixLocation;
+GLuint defaultShaderProgram;
+GLuint phongLightShaderProgram;
+GLuint shadowShaderProgram;
+void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
+	glUseProgram(shaderProgram);
+
+	worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+
+	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+
+	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+}
+
+void useStandardShader() {
+	useShader(defaultShaderProgram, projectionMatrix, viewMatrix);
+}
+
+mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 100.0f);
+mat4 lightViewMatrix = lookAt(vec3(0.0f, 30.0f, 0.0f),  // eye
+	vec3(0.0f, 0.0f, 0.0f),  // center
+	vec3(1.0f, 0.0f, 0.0f)); // up
+void useShadowShader() {
+	useShader(shadowShaderProgram, lightProjectionMatrix, lightViewMatrix);
+}
+
+void useLightingShader() {
+	useShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
+
+	//Set up vertex shader uniforms
+	GLuint depthVPLocation = glGetUniformLocation(phongLightShaderProgram, "depthVP");
+	mat4 depthVP = lightProjectionMatrix * lightViewMatrix;
+	glUniformMatrix4fv(depthVPLocation, 1, GL_FALSE, &depthVP[0][0]);
+
+
+	//Set up fragment shader uniforms
+
+}
+
+//The buffer is the memory that backs up the shadowMap texture, like how the VBO is the memory that backs up the VAO
+// referenced this tutorial which was suggested in the labs https://learnopengl.com/Getting-started/Textures
+// which lead to this tutorial https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+// referenced the opengl docs for framebuffer info https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glFramebufferTexture2D.xml
+GLuint createShadowMapBuffer(GLuint& shadowMap)
+{
+	//create a frame buffer to hold the shadow map data
+	GLuint frameBufferObject;
+	glGenFramebuffers(1, &frameBufferObject);
+
+	glGenTextures(1, &shadowMap);
+	glBindTexture(GL_TEXTURE_2D, shadowMap);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);	//Set up an empty border, instead of having the default repeating texture
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);	//which lead to duplicate shadows out of place!
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		cerr << "error generating shadow map buffer" << endl;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return frameBufferObject;
 }
 
 int main(int argc, char*argv[])
@@ -1290,10 +1395,10 @@ int main(int argc, char*argv[])
 #endif
 
 	// Create Window and rendering context using GLFW, resolution is 800x600
-	GLFWwindow* window = glfwCreateWindow(1024, 764, "Comp371 - Group 14 P1", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Comp371 - Group 14 P1", NULL, NULL);
 	if (window == NULL)
 	{
-		std::cerr << "Failed to create GLFW window" << std::endl;
+		cerr << "Failed to create GLFW window" << endl;
 		glfwTerminate();
 		return -1;
 	}
@@ -1302,7 +1407,7 @@ int main(int argc, char*argv[])
 	// Initialize GLEW
 	glewExperimental = true; // Needed for core profile
 	if (glewInit() != GLEW_OK) {
-		std::cerr << "Failed to create GLEW" << std::endl;
+		cerr << "Failed to create GLEW" << endl;
 		glfwTerminate();
 		return -1;
 	}
@@ -1311,31 +1416,11 @@ int main(int argc, char*argv[])
 	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
 
 	// Compile and link shaders here ...
-	GLuint shaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
+	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
+	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
+	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
 
-	// We can set the shader once, since we have only one
-	glUseProgram(shaderProgram);
 #pragma endregion windowSetUp
-
-	// Camera parameters for view transform
-	glm::vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
-	glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
-
-	// Set projection matrix for shader, this won't change
-	glm::mat4 projectionMatrix = glm::perspective(70.0f, // field of view in degrees
-		1024.0f / 768.0f,  // aspect ratio
-		0.01f, 100.0f);   // near and far (near > 0)
-
-	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-
-	// Set initial view matrix
-	glm::mat4 viewMatrix = lookAt(cameraPosition,  // eye
-		cameraPosition + cameraLookAt,  // center
-		cameraUp); // up
-
-	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
 	// Define and upload geometry to the GPU here ...
 	//We have a few different cubes since some people did fun colors,
@@ -1347,20 +1432,20 @@ int main(int argc, char*argv[])
 	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
 
 	//Create hierarchical models
-	mat4 L9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
+	mat4 L9BaseTranslation = translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
 	Model* l9Model = makeL9Model(unitCubeVAO);
 	
-	mat4 I9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize -1, 2.5f, -halfGridSize));	//Model's start pos doesn't change
+	mat4 I9BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize -1, 2.5f, -halfGridSize));	//Model's start pos doesn't change
 	Model* i9Model = makeI9Model(unitCubeVAO);
 
-	mat4 U3BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));	//Model's start pos doesn't change
+	mat4 U3BaseTranslation = translate(mat4(1.0f), vec3(0, 2.5f, 0));	//Model's start pos doesn't change
 	Model* u3Model = makeU3Model(rainbowCubeVAO);
 
-	//mat4 T9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, halfGridSize));	//Model's start pos doesn't change
+	//mat4 T9BaseTranslation = translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, halfGridSize));	//Model's start pos doesn't change
 	//Model* t9Model = makeT9Model(vao);
 
-	mat4 C4BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
-	Model* c4Model = makeC4Model(vao);
+	mat4 C4BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
+	Model* c4Model = makeC4Model(unitCubeVAO);
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -1374,6 +1459,10 @@ int main(int argc, char*argv[])
 
 	glPointSize(3.0f);
 
+	//Shadow setup
+	GLuint shadowMap;
+	GLuint shadowMapBuffer = createShadowMapBuffer(shadowMap);
+
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -1381,29 +1470,77 @@ int main(int argc, char*argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
-		// Each frame, reset color of each pixel to glClearColor
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-
 		// Model Matrices - they control the transformations of the letters model
 		modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
 		modelRotationMatrix = rotate(mat4(1.0f), radians(modelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(modelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
 		modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
 		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
 
+#pragma region shadowPass1
+		//bind and clear the shadow buffer, set viewport to shadowMap dimensions
+		glViewport(0, 0, shadowMapWidth, shadowMapHeight);
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapBuffer);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		//use the shadow shader, draw all objects
+		useShadowShader();
+
+		//Draw scene for the shadow map
+		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
+		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
+		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
+		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
+		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
+		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
+
+#pragma endRegion
+
+#pragma region shadowPass2
+
+		//bind and clear the default (screen) framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, windowWidth, windowHeight);
+
+		// Each frame, reset color of each pixel to glClearColor
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		useLightingShader();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, shadowMap);
+
+		
+		//Draw L9
+		L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
+		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
+		
+		//Draw I9
+		I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
+		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
+
+		//Draw U3
+		mat4 U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix;
+		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
+
+		//Draw C4
+		C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
+		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
+
+#pragma endregion
+
+		useStandardShader();
+
 #pragma region Grid and Coordinate Axis
 		// Draw ground using Hierarchical Modeling
 		glBindVertexArray(gridVAO);
 
 		// Initialize variables for grid size
-		glm::mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridSize / 2.0f, 0.0f, -1.0f * gridSize / 2.0f));
+		mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridSize / 2.0f, 0.0f, -1.0f * gridSize / 2.0f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridX[0][0]);
 		glDrawArrays(GL_LINES, 0, 2 * (gridSize * 2));
 
 
 		// Set up Coordinate Axis Matrix using Hierarchical Modeling
-		glm::mat4 Coordinates = worldOrientationModelMatrix * translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.01f, 0.01f));
+		mat4 Coordinates = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(0.0f, 0.01f, 0.01f));
 
 		int numLines = 3;
 		glBindVertexArray(xyzVAO);
@@ -1411,38 +1548,8 @@ int main(int argc, char*argv[])
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Coordinates[0][0]);
 		glLineWidth(5.0f);
 		glDrawArrays(GL_LINES, 0, 2 * numLines);
-#pragma endregion
 
 		glLineWidth(1.0f);
-
-		//Draw L9
-		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
-		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
-		
-		//Draw I9
-		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
-		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
-
-		//Draw U3
-		mat4 U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix;
-		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
-
-		//Draw T9
-		//mat4 T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix;
-		//t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
-
-		//Draw C4
-		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
-		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
-
-#pragma region T9
-		// Draw geometry
-		glBindVertexArray(vao);
-
-		mat4 translateAAModel = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, halfGridSize));
-
-		drawLetter('T', 0, translateAAModel * sharedModelMatrix, worldMatrixLocation);
-		drawLetter('9', 1, translateAAModel * sharedModelMatrix, worldMatrixLocation);
 #pragma endregion
 
 		// End Frame, include swap interval to prevent blurriness
@@ -1472,7 +1579,7 @@ int main(int argc, char*argv[])
 		lastMousePosX = mousePosX;
 		lastMousePosY = mousePosY;
 
-		cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
+		cameraVerticalAngle = glm::max(-85.0f, glm::min(85.0f, cameraVerticalAngle));
 		if (cameraHorizontalAngle > 360)
 		{
 			cameraHorizontalAngle -= 360;
@@ -1482,13 +1589,13 @@ int main(int argc, char*argv[])
 			cameraHorizontalAngle += 360;
 		}
 
-		float theta = glm::radians(cameraHorizontalAngle);
-		float phi = glm::radians(cameraVerticalAngle);
+		float theta = radians(cameraHorizontalAngle);
+		float phi = radians(cameraVerticalAngle);
 
-		cameraLookAt = glm::vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
-		glm::vec3 cameraSideVector = glm::cross(cameraLookAt, glm::vec3(0.0f, 1.0f, 0.0f));
+		cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
+		vec3 cameraSideVector = cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
 
-		glm::normalize(cameraSideVector);
+		normalize(cameraSideVector);
 
 #pragma region mouseCameraMovement
 		/* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
@@ -1524,16 +1631,12 @@ int main(int argc, char*argv[])
 				magnificationFactor = magnificationFactor / 1.5f;
 			}
 		}
-
-		glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+		/* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 
 		// Update viewMatrix
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-		viewMatrix = glm::scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
+		viewMatrix = scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
 
-		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
-		/* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 #pragma endregion
 
 	}
