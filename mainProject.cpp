@@ -595,6 +595,59 @@ mat4 modelScalingMatrix = mat4(1.0f);
 mat4 modelRotationMatrix;
 mat4 modelTranslationMatrix;
 mat4 sharedModelMatrix;
+
+/* declaring individual CHAR matrices values to allow for individual movement */
+
+// L9 PRESETS
+float l9ModelXRotationAngle = 0.0f;
+float l9ModelYRotationAngle = 0.0f;
+float l9ModelScaleFactor = 1.0f;
+mat4 l9ModelScalingMatrix = mat4(1.0f);
+mat4 l9ModelRotationMatrix;
+mat4 l9ModelTranslationMatrix;
+mat4 l9ModelMatrix;
+vec3 l9ModelPosition = vec3(0.0f, 1.0f, 0.0f);
+
+// T9 PRESETS
+float t9ModelXRotationAngle = 0.0f;
+float t9ModelYRotationAngle = 0.0f;
+float t9ModelScaleFactor = 1.0f;
+mat4 t9ModelScalingMatrix = mat4(1.0f);
+mat4 t9ModelRotationMatrix;
+mat4 t9ModelTranslationMatrix;
+mat4 t9ModelMatrix;
+vec3 t9ModelPosition = vec3(0.0f, 1.0f, 0.0f);
+
+// E PRESETS
+float u3ModelXRotationAngle = 0.0f;
+float u3ModelYRotationAngle = 0.0f;
+float u3ModelScaleFactor = 1.0f;
+mat4 u3ModelScalingMatrix = mat4(1.0f);
+mat4 u3ModelRotationMatrix;
+mat4 u3ModelTranslationMatrix;
+mat4 u3ModelMatrix;
+vec3 u3ModelPosition = vec3(0.0f, 1.0f, 0.0f);
+
+// I9 PRESETS
+float i9ModelXRotationAngle = 0.0f;
+float i9ModelYRotationAngle = 0.0f;
+float i9ModelScaleFactor = 1.0f;
+mat4 i9ModelScalingMatrix = mat4(1.0f);
+mat4 i9ModelRotationMatrix;
+mat4 i9ModelTranslationMatrix;
+mat4 i9ModelMatrix;
+vec3 i9ModelPosition = vec3(0.0f, 1.0f, 0.0f);
+
+// C4 PRESETS
+float c4ModelXRotationAngle = 0.0f;
+float c4ModelYRotationAngle = 0.0f;
+float c4ModelScaleFactor = 1.0f;
+mat4 c4ModelScalingMatrix = mat4(1.0f);
+mat4 c4ModelRotationMatrix;
+mat4 c4ModelTranslationMatrix;
+mat4 c4ModelMatrix;
+vec3 c4ModelPosition = vec3(0.0f, 1.0f, 0.0f);
+
 void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	//Changing World Orientation 
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) //rotate X axis in anti-clockwise direction
@@ -623,70 +676,311 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	{
 		worldOrientationModelMatrix = mat4(1.0f);
 		modelScaleFactor = 1.0f;
+		l9ModelScaleFactor = 1.0f;
+		t9ModelScaleFactor = 1.0f;
+		u3ModelScaleFactor = 1.0f;
+		i9ModelScaleFactor = 1.0f;
+		c4ModelScaleFactor = 1.0f;
 		modelPosition = vec3(0.0f);
+		l9ModelPosition = vec3(0.0f);
+		t9ModelPosition = vec3(0.0f);
+		u3ModelPosition = vec3(0.0f);
+		i9ModelPosition = vec3(0.0f);
+		c4ModelPosition = vec3(0.0f);
 		modelXRotationAngle = 0.0f;
 		modelYRotationAngle = 0.0f;
+		l9ModelYRotationAngle = 0.0f;
+		t9ModelYRotationAngle = 0.0f;
+		u3ModelYRotationAngle = 0.0f;
+		i9ModelYRotationAngle = 0.0f;
+		c4ModelYRotationAngle = 0.0f;
+
 	}
 
-	// Role 4 input handling
-	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-	{
-		// scale up
-		modelScaleFactor += scaleSpeed * dt;
-	}
+	/* INDIVIDUAL MOVEMENT CONTROLS */
 
-	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE))
 	{
-		// scale down
-		modelScaleFactor -= scaleSpeed * dt;
-	}
+		float directionOfChange = 0.0f;
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+			directionOfChange = -1.0f;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+			directionOfChange = 1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+		else {
+			modelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
 
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
-	{
-		modelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
-	{
-		modelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move left 
-	{
-		modelPosition += vec3(-1.0f, 0.0f, 0.0f) * moveSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move right 
-	{
-		modelPosition += vec3(1.0f, 0.0f, 0.0f) * moveSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-	{
-		modelXRotationAngle -= rotationSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-	{
-		modelXRotationAngle += rotationSpeed * dt;
 	}
 
 	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
 		&& glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		modelYRotationAngle += rotationSpeed * dt;
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelYRotationAngle += rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelYRotationAngle += rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelYRotationAngle += rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelYRotationAngle += rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelYRotationAngle += rotationSpeed * dt;
+		}
+		else {
+			modelYRotationAngle += rotationSpeed * dt;
+		}
+
 	}
 
 	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
 		&& glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		modelYRotationAngle -= rotationSpeed * dt;
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelYRotationAngle -= rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelYRotationAngle -= rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelYRotationAngle -= rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelYRotationAngle -= rotationSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelYRotationAngle -= rotationSpeed * dt;
+		}
+		else {
+			modelYRotationAngle -= rotationSpeed * dt;
+		}
+	}
+
+	// INDIVICDUAL CHARACTER SCALE CONTROLS
+
+	/* Simultaneously pressing U + (1 OR 2 OR 3 OR 4 OR 5) will scale UP the chosen character*/
+
+	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+	{
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelScaleFactor += scaleSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelScaleFactor += scaleSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelScaleFactor += scaleSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelScaleFactor += scaleSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelScaleFactor += scaleSpeed * dt;
+		}
+		else {
+			modelScaleFactor += scaleSpeed * dt;
+		}
+
+	}
+
+	/* Simultaneously pressing J + (1 OR 2 OR 3 OR 4 OR 5) will scale DOWN the chosen character*/
+	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+	{
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelScaleFactor -= scaleSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelScaleFactor -= scaleSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelScaleFactor -= scaleSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelScaleFactor -= scaleSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelScaleFactor -= scaleSpeed * dt;
+		}
+		else {
+			modelScaleFactor -= scaleSpeed * dt;
+		}
+
+	}
+
+	/* Simultaneously pressing T + (1 OR 2 OR 3 OR 4 OR 5) will translate the chosen character on Y*/
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
+	{
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else {
+			modelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
+		}
+
+	}
+
+	/* Simultaneously pressing S + (1 OR 2 OR 3 OR 4 OR 5 OR 6 ) will translate the chosen character on Y*/
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
+	{
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
+		}
+		else {
+			modelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
+		}
+
+	}
+
+
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
+	{
+		float directionOfChange = 0.0f;
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+			directionOfChange = -1.0f;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+			directionOfChange = 1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+		else {
+			modelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+
+	}
+
+	/* Simultaneously pressing SPACE + (1 OR 2 OR 3 OR 4 OR 5) will change chars location to a random spot*/
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	{
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			float randl9_x = rand() % (90 - 0 + 1) + 0;
+			float randl9_z = rand() % (90 - 0 + 1) + 0;
+			l9ModelPosition = vec3(randl9_x, 1.0f, randl9_z);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			float randt9_x = rand() % (90 - 0 + 1) + 0;
+			float randt9_z = rand() % (90 - 0 + 1) + 0;
+			t9ModelPosition = vec3(randt9_x, 1.0f, -randt9_z);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			float randu3_x = rand() % (40 - (-40) + 1) + (-40);
+			float randu3_z = rand() % (40 - (-40) + 1) + (-40);
+			u3ModelPosition = vec3(randu3_x, 1.0f, randu3_z);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			float randi9_x = rand() % (90 - 0 + 1) + 0;
+			float randi9_z = rand() % (90 - 0 + 1) + 0;
+			i9ModelPosition = vec3(-randi9_x, 1.0f, randi9_z);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			float randc4_x = rand() % (90 - 0 + 1) + 0;
+			float randc4_z = rand() % (90 - 0 + 1) + 0;
+			c4ModelPosition = vec3(-randc4_x, 1.0f, -randc4_z);
+		}
 	}
 }
 #pragma endregion
@@ -970,7 +1264,7 @@ void drawLetter(char c, int index, mat4 modelMatrix, GLuint worldMatrixLocation)
 	{
 		if (letter[i] == '*')
 		{
-			primitiveTranslationMatrix = translate(mat4(1.0f), vec3(-3.5f + (index * 4.0f) + (i % 3)*1.0f, 1.5 + (ceil(i / 3)*-1.0f), -0.5f));
+			primitiveTranslationMatrix = translate(mat4(1.0f), vec3(-3.5f + (index * 4.0f) + (i % 3) * 1.0f, 1.5 + (ceil(i / 3) * -1.0f), -0.5f));
 			worldMatrix = modelMatrix * primitiveTranslationMatrix * primitiveRotationMatrix * primitiveScalingMatrix;
 
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
@@ -1142,7 +1436,7 @@ Model* makeI9Model(int vao) {
 	I9Children.push_back(model9);
 	Model* modelI9 = new Model(vao, 0, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
-	return modelI9; 
+	return modelI9;
 }
 
 Model* makeU3Model(int vao) {
@@ -1277,12 +1571,13 @@ Model* makeC4Model(int vao) {
 
 	// Setting up the entire C4
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+
 	vector<Model*> C4Children = vector<Model*>();
 	C4Children.push_back(modelC);
 	C4Children.push_back(model4);
 	Model* modelC4 = new Model(vao, 0, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
-	return modelC4; 
+	return modelC4;
 }
 #pragma endregion
 
@@ -1375,7 +1670,7 @@ GLuint createShadowMapBuffer(GLuint& shadowMap)
 	return frameBufferObject;
 }
 
-int main(int argc, char*argv[])
+int main(int argc, char* argv[])
 {
 	checkErrors();
 
@@ -1434,7 +1729,7 @@ int main(int argc, char*argv[])
 	//Create hierarchical models
 	mat4 L9BaseTranslation = translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
 	Model* l9Model = makeL9Model(unitCubeVAO);
-	
+
 	mat4 I9BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize -1, 2.5f, -halfGridSize));	//Model's start pos doesn't change
 	Model* i9Model = makeI9Model(unitCubeVAO);
 
@@ -1485,44 +1780,69 @@ int main(int argc, char*argv[])
 		//use the shadow shader, draw all objects
 		useShadowShader();
 
+#pragma region buildTransformMatrices
+		// Building L9 scalable/translatable/rotateable matrix for individual letter
+		l9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * l9ModelScaleFactor);
+		l9ModelRotationMatrix = rotate(mat4(1.0f), radians(l9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(l9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
+		l9ModelTranslationMatrix = translate(mat4(1.0f), l9ModelPosition);
+		l9ModelMatrix = l9ModelTranslationMatrix * l9ModelScalingMatrix * l9ModelRotationMatrix;
+
+		// Building I9 scalable/translatable/rotateable matrix for individual letter
+		i9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * i9ModelScaleFactor);
+		i9ModelRotationMatrix = rotate(mat4(1.0f), radians(i9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(i9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
+		i9ModelTranslationMatrix = translate(mat4(1.0f), i9ModelPosition);
+		i9ModelMatrix = i9ModelTranslationMatrix * i9ModelScalingMatrix * i9ModelRotationMatrix;
+
+		// Building U3 scalable/translatable/rotateable matrix for individual letter
+		u3ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * u3ModelScaleFactor);
+		u3ModelRotationMatrix = rotate(mat4(1.0f), radians(u3ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(u3ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
+		u3ModelTranslationMatrix = translate(mat4(1.0f), u3ModelPosition);
+		u3ModelMatrix = u3ModelTranslationMatrix * u3ModelScalingMatrix * u3ModelRotationMatrix;
+
+		// Building T9 scalable/translatable/rotateable matrix for individual letter
+		t9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * t9ModelScaleFactor);
+		t9ModelRotationMatrix = rotate(mat4(1.0f), radians(t9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(t9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
+		t9ModelTranslationMatrix = translate(mat4(1.0f), u3ModelPosition);
+		t9ModelMatrix = t9ModelTranslationMatrix * t9ModelScalingMatrix * t9ModelRotationMatrix;
+
+		// Building C4 scalable/translatable/rotateable matrix for individual letter
+		c4ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * c4ModelScaleFactor);
+		c4ModelRotationMatrix = rotate(mat4(1.0f), radians(c4ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(c4ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
+		c4ModelTranslationMatrix = translate(mat4(1.0f), c4ModelPosition);
+		c4ModelMatrix = c4ModelTranslationMatrix * c4ModelScalingMatrix * c4ModelRotationMatrix;
+		
+		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix;
+		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix;
+		mat4 U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix;
+		//mat4 T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix;
+		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix;
+#pragma endregion
+
 		//Draw scene for the shadow map
-		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
-		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
 		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
-		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
+		//u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
+		//t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
 
 #pragma endRegion
 
 #pragma region shadowPass2
-
 		//bind and clear the default (screen) framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, windowWidth, windowHeight);
 
 		// Each frame, reset color of each pixel to glClearColor
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		
 		useLightingShader();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, shadowMap);
 
-		
-		//Draw L9
-		L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
-		
-		//Draw I9
-		I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
 		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
-
-		//Draw U3
-		mat4 U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix;
 		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
-
-		//Draw C4
-		C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
+		//t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
 
 #pragma endregion
