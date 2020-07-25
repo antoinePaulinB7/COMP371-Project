@@ -7,6 +7,7 @@
 
 	in vec4 shadowCoordinate;
 	
+	uniform float shouldRenderShadows = 1.0f;	
 	uniform sampler2D shadowMap;
 
 	out vec4 fragmentColor;
@@ -35,9 +36,13 @@
 		//specular
 		vec3 specularIntensity = vec3(0.3f);
 		
+		vec3 totalIntensity;
+		if (shouldRenderShadows > 0.5f) {
+			totalIntensity = ambientIntensity + (visibility * diffuseIntensity) + (visibility * specularIntensity);
+		} else {
+			   totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
+		}
 
-		vec3 totalIntensity = ambientIntensity + (visibility * diffuseIntensity) + (visibility * specularIntensity);
-			   
 		fragmentColor = vec4(vertexColor.r * totalIntensity.r, 
 			vertexColor.g * totalIntensity.g, 
 			vertexColor.b * totalIntensity.b,
