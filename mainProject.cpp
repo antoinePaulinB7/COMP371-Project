@@ -1930,7 +1930,7 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 				shearForward = false;
 				modelShearFactor += 0.1;
 			}
-			else 
+			else
 			{
 				modelShearFactor -= 0.1;
 			}
@@ -1948,7 +1948,7 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 
 		}
 	}
-	
+
 	// Move/Shear model backwards
 	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
 	{
@@ -2022,7 +2022,7 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	}
 
 	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) 
+		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
 		modelXRotationAngle += rotationSpeed * dt;
 	}
@@ -2308,7 +2308,7 @@ std::map<char, char*> alphabet = {
 
 int numVerticesPerCube = 36;
 
-Model* drawLetter(char c, int index, int vao, glm::mat4 setUpScaling, glm::mat4 setUpRotation,glm:: mat4 setUpTranslation)
+Model* drawLetter(char c, int index, int vao, glm::mat4 setUpScaling, glm::mat4 setUpRotation, glm::mat4 setUpTranslation)
 {
 	char* letter = alphabet[c];
 
@@ -2320,7 +2320,7 @@ Model* drawLetter(char c, int index, int vao, glm::mat4 setUpScaling, glm::mat4 
 		if (letter[i] == '*')
 		{
 			// Creating part of the model
-			setUpTranslation = translate(mat4(1.0f), vec3(-3.5f + (index * 4.0f) + (i % 3)*1.0f, 1.5 + (ceil(i / 3)*-1.0f), -0.5f));
+			setUpTranslation = translate(mat4(1.0f), vec3(-3.5f + (index * 4.0f) + (i % 3) * 1.0f, 1.5 + (ceil(i / 3) * -1.0f), -0.5f));
 			Model* modelPart = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), mat4(1.0));
 
 			// Setting up the model
@@ -2341,15 +2341,15 @@ Model* drawLetter(char c, int index, int vao, glm::mat4 setUpScaling, glm::mat4 
 Model* makeL9Model(int vao, int sphereVAO) {
 	/*  This is the hierarchy for L9, built with Model objects holding other Model objects:
 
-                                      modelL9
+									  modelL9
 
-                            /                           \
+							/                           \
 
-                modelL                                         model9
+				modelL                                         model9
 
-            /            \                       /           /           \          \
+			/            \                       /           /           \          \
 
-     modelLbottomBar modelLverticalBar      model9top  model9right   model9left  model9bottom
+	 modelLbottomBar modelLverticalBar      model9top  model9right   model9left  model9bottom
 
 	Each model applies its own TRS transformations to its children recursively, achieving the same affect
 	we used to get by multiplying out each matrix many times over, like so:
@@ -2364,22 +2364,19 @@ Model* makeL9Model(int vao, int sphereVAO) {
 	glm::mat4 setUpRotation = mat4(1.0f);
 	glm::mat4 setUpTranslation = mat4(1.0f);
 
-
 	// Creating left-part of the letter L
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 1.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
 	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
-
 	// Creating right-part of the letter L
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	/*setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.5f, -2.0f, 0.0f));
-	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);*/
 
 	// Setting up the letter L
 	vector<Model*> LChildren = vector<Model*>();
 	LChildren.push_back(modelLbottomBar);
-	LChildren.push_back(modelLverticalBar);
 	//The pieces of the L are placed such that the entire L is centered at origin on all axes
 	//We can then very simply manipulate this modelL to transform the entire L
 	//for example, to scoot the L left to make room for the number, making the entire L9 centered.
@@ -2393,8 +2390,8 @@ Model* makeL9Model(int vao, int sphereVAO) {
 	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 1.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
 	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating left-part of the number 9
@@ -2438,6 +2435,62 @@ Model* makeL9Model(int vao, int sphereVAO) {
 	return entireModel;
 }
 
+Model* makeL9BottomModel(int vao, int sphereVAO) {
+
+	// Draw L9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	glm::mat4 setUpScaling = mat4(1.0f);
+	glm::mat4 setUpRotation = mat4(1.0f);
+	glm::mat4 setUpTranslation = mat4(1.0f);
+
+	// Creating left-part of the letter L
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -1.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
+	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating right-part of the letter L
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.5f, -2.0f, 0.0f));
+	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Setting up the letter L
+	vector<Model*> LChildren = vector<Model*>();
+	LChildren.push_back(modelLbottomBar);
+	LChildren.push_back(modelLverticalBar);
+	//The pieces of the L are placed such that the entire L is centered at origin on all axes
+	//We can then very simply manipulate this modelL to transform the entire L
+	//for example, to scoot the L left to make room for the number, making the entire L9 centered.
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+	Model* modelL = new Model(vao, 0, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+	// Creating right-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, -1.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
+	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Setting up the number 9
+	vector<Model*> nineChildren = vector<Model*>();
+	nineChildren.push_back(model9bottom);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f));
+	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Setting up the entire L9
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> L9Children = vector<Model*>();
+	L9Children.push_back(modelL);
+	L9Children.push_back(model9);
+	Model* modelL9 = new Model(vao, 0, L9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	// Setting up the entire model
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> entireModelChildren = vector<Model*>();
+	entireModelChildren.push_back(modelL9);
+	Model* entireModel = new Model(vao, 0, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	return entireModel;
+
+}
+
 Model* makeI9Model(int vao, int sphereVAO) {
 	// Draw I9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	glm::mat4 setUpScaling = mat4(1.0f);
@@ -2451,20 +2504,14 @@ Model* makeI9Model(int vao, int sphereVAO) {
 
 
 	// Creating middlet-part of the letter I
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 3.0f, 1.0f));
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
 	Model* modelImiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
-
-	// Creating bottom-part of the letter I
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.5f, 0.0f));
-	Model* modelIbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Setting up the letter I
 	vector<Model*> IChildren = vector<Model*>();
 	IChildren.push_back(modelItopBar);
 	IChildren.push_back(modelImiddleBar);
-	IChildren.push_back(modelIbottomBar);
 	//The pieces of the I are placed such that the entire I is centered at origin on all axes
 	//We can then very simply manipulate this modelI to transform the entire I
 	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
@@ -2488,8 +2535,8 @@ Model* makeI9Model(int vao, int sphereVAO) {
 	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 2.51f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 3.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 3.5f, 1.0f));
 	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 
@@ -2522,7 +2569,64 @@ Model* makeI9Model(int vao, int sphereVAO) {
 	entireModelChildren.push_back(modelSphere);
 	Model* entireModel = new Model(vao, 0, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
-	return entireModel;}
+	return entireModel;
+}
+
+Model* makeI9BottomModel(int vao, int sphereVAO) {
+	// Draw I9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	glm::mat4 setUpScaling = mat4(1.0f);
+	glm::mat4 setUpRotation = mat4(1.0f);
+	glm::mat4 setUpTranslation = mat4(1.0f);
+
+	// Creating middlet-part of the letter I
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 1.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
+	Model* modelImiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating bottom-part of the letter I
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
+	Model* modelIbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Setting up the letter I
+	vector<Model*> IChildren = vector<Model*>();
+	IChildren.push_back(modelImiddleBar);
+	IChildren.push_back(modelIbottomBar);
+	//The pieces of the I are placed such that the entire I is centered at origin on all axes
+	//We can then very simply manipulate this modelI to transform the entire I
+	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	Model* modelI = new Model(vao, 0, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Creating right-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
+	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+
+	// Setting up the number 9
+	vector<Model*> nineChildren = vector<Model*>();
+	nineChildren.push_back(model9right);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Setting up the entire I9
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> I9Children = vector<Model*>();
+	I9Children.push_back(modelI);
+	I9Children.push_back(model9);
+	Model* modelI9 = new Model(vao, 0, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	// Setting up the entire model
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> entireModelChildren = vector<Model*>();
+	entireModelChildren.push_back(modelI9);
+	Model* entireModel = new Model(vao, 0, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	return entireModel;
+}
 
 Model* makeU3Model(int vao, int sphereVAO) {
 	// Draw U3 using hierarchical modeling, start at the lowest model(s) in the hierarchy
@@ -2608,14 +2712,15 @@ Model* makeU3Model(int vao, int sphereVAO) {
 	entireModelChildren.push_back(modelSphere);
 	Model* entireModel = new Model(vao, 0, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
-	return entireModel;}
+	return entireModel;
+}
 
 Model* makeT9Model(int vao, int sphereVAO) {
 	// Draw using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	glm::mat4 setUpScaling = mat4(1.0f);
 	glm::mat4 setUpRotation = mat4(1.0f);
 	glm::mat4 setUpTranslation = mat4(1.0f);
-	
+
 	Model* modelT = drawLetter('T', 0, vao, setUpScaling, setUpRotation, setUpTranslation);
 	Model* model9 = drawLetter('9', 1, vao, setUpScaling, setUpRotation, setUpTranslation);
 
@@ -2638,7 +2743,8 @@ Model* makeT9Model(int vao, int sphereVAO) {
 	entireModelChildren.push_back(modelSphere);
 	Model* entireModel = new Model(vao, 0, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
-	return entireModel;}
+	return entireModel;
+}
 
 Model* makeC4Model(int vao, int sphereVAO) {
 	// Draw C4 using hierarchical modeling, start at the lowest model(s) in the hierarchy
@@ -2672,10 +2778,10 @@ Model* makeC4Model(int vao, int sphereVAO) {
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-9.0f, 0.0f, 0.0f));
 	Model* modelC = new Model(vao, 0, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
-	
+
 	// Creating right-part of the number 4
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 5.0f, 1.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
 	Model* model4right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
 	// Creating middle-part of the number 4
@@ -2685,8 +2791,9 @@ Model* makeC4Model(int vao, int sphereVAO) {
 
 	// Creating left-part of the number 4
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 3.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 	Model* model4left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
 
 	// Setting up the number 4
 	vector<Model*> fourChildren = vector<Model*>();
@@ -2716,7 +2823,8 @@ Model* makeC4Model(int vao, int sphereVAO) {
 	entireModelChildren.push_back(modelSphere);
 	Model* entireModel = new Model(vao, 0, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
-	return entireModel;}
+	return entireModel;
+}
 
 
 void handleExitInput(GLFWwindow* window) {
@@ -2731,7 +2839,7 @@ void checkErrors() {
 	}
 }
 
-int main(int argc, char*argv[])
+int main(int argc, char* argv[])
 {
 	checkErrors();
 
@@ -2812,9 +2920,13 @@ int main(int argc, char*argv[])
 	//Create hierarchical models
 	mat4 L9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
 	Model* l9Model = makeL9Model(unitCubeVAO, sphereVAO);
-	
-	mat4 I9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize -1, 2.5f, -halfGridSize));	//Model's start pos doesn't change
+
+	Model* l9BottomModel = makeL9BottomModel(unitCubeVAO, sphereVAO);
+
+	mat4 I9BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, -halfGridSize));	//Model's start pos doesn't change
 	Model* i9Model = makeI9Model(unitCubeVAO, sphereVAO);
+
+	Model* I9BottomModel = makeI9BottomModel(unitCubeVAO, sphereVAO);
 
 	mat4 U3BaseTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));	//Model's start pos doesn't change
 	Model* u3Model = makeU3Model(rainbowCubeVAO, sphereVAO);
@@ -2853,13 +2965,14 @@ int main(int argc, char*argv[])
 		modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
 		modelRotationMatrix = rotate(mat4(1.0f), radians(modelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(modelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
 		modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
-		modelShearingMatrix =  {
+		modelShearingMatrix = {
 			1.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 1.0f, modelShearFactor, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f,  1.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 1.0f
 		};
-		sharedModelMatrix = modelShearingMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
+
+		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
 
 #pragma region Grid and Coordinate Axis
 		// Draw ground using Hierarchical Modeling
@@ -2887,10 +3000,17 @@ int main(int argc, char*argv[])
 		//Draw L9
 		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix;
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
-		
+
+		mat4 L9BottomMatrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * modelShearingMatrix;
+		l9BottomModel->draw(L9BottomMatrix, renderingMode, worldMatrixLocation);
+
 		//Draw I9
 		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix;
 		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
+
+		mat4 I9BottomMatrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * modelShearingMatrix;
+		I9BottomModel->draw(I9BottomMatrix, renderingMode, worldMatrixLocation);
+
 
 		//Draw U3
 		mat4 U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix;
@@ -2903,7 +3023,6 @@ int main(int argc, char*argv[])
 		//Draw C4
 		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix;
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
-
 
 		// End Frame, include swap interval to prevent blurriness
 		glfwSwapBuffers(window);
