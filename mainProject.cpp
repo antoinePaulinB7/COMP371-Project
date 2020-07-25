@@ -1877,8 +1877,11 @@ float modelXRotationAngle = 0.0f;
 float modelYRotationAngle = 0.0f;
 float modelScaleFactor = 1.0f;
 vec3 modelPosition = vec3(0.0f, 0.0f, 0.0f);
+float modelShearFactor = 0.0f;
+bool shearForward = true;
 
 // Declaring model matrices
+mat4 modelShearingMatrix = mat4(1.0f);
 mat4 modelScalingMatrix = mat4(1.0f);
 mat4 modelRotationMatrix;
 mat4 modelTranslationMatrix;
@@ -1914,6 +1917,65 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		modelPosition = vec3(0.0f);
 		modelXRotationAngle = 0.0f;
 		modelYRotationAngle = 0.0f;
+		modelShearFactor = 0.0f;
+	}
+	// Move/Shear model forward
+	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+	{
+		modelPosition += vec3(0.0f, 0.0f, 1.0f) * moveSpeed * dt;
+		if (shearForward)
+		{
+			if (modelShearFactor < -1)
+			{
+				shearForward = false;
+				modelShearFactor += 0.1;
+			}
+			else 
+			{
+				modelShearFactor -= 0.1;
+			}
+		}
+		else
+		{
+			if (modelShearFactor > 1)
+			{
+				shearForward = true;
+				modelShearFactor -= 0.1;
+			}
+			else {
+				modelShearFactor += 0.1;
+			}
+
+		}
+	}
+	
+	// Move/Shear model backwards
+	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+	{
+		modelPosition += vec3(0.0f, 0.0f, -1.0f) * moveSpeed * dt;
+		if (shearForward)
+		{
+			if (modelShearFactor < -1)
+			{
+				shearForward = false;
+				modelShearFactor += 0.1;
+			}
+			else {
+				modelShearFactor -= 0.1;
+			}
+		}
+		else
+		{
+			if (modelShearFactor > 1)
+			{
+				shearForward = true;
+				modelShearFactor -= 0.1;
+			}
+			else {
+				modelShearFactor += 0.1;
+			}
+
+		}
 	}
 
 	// Role 4 input handling
@@ -2791,7 +2853,13 @@ int main(int argc, char*argv[])
 		modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
 		modelRotationMatrix = rotate(mat4(1.0f), radians(modelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(modelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
 		modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
-		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
+		modelShearingMatrix =  {
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, modelShearFactor, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+		sharedModelMatrix = modelShearingMatrix * modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
 
 #pragma region Grid and Coordinate Axis
 		// Draw ground using Hierarchical Modeling
