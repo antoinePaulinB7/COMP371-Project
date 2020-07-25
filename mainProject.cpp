@@ -2638,7 +2638,7 @@ Model* makeC4Model(int vao, int sphereVAO) {
 	//The pieces of the C are placed such that the entire C is centered at origin on all axes
 	//We can then very simply manipulate this modelC to transform the entire C
 	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-9.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-9.0f, -2.0f, 0.0f));
 	Model* modelC = new Model(vao, 0, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Creating right-part of the number 4
@@ -2661,7 +2661,7 @@ Model* makeC4Model(int vao, int sphereVAO) {
 	fourChildren.push_back(model4left);
 	fourChildren.push_back(model4middle);
 	fourChildren.push_back(model4right);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f));
 	Model* model4 = new Model(vao, 0, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire C4
@@ -2672,7 +2672,7 @@ Model* makeC4Model(int vao, int sphereVAO) {
 	Model* modelC4 = new Model(vao, 0, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up Sphere
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-4.0f, 7.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-4.0f, 5.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(6.0f, 6.0f, 6.0f));
 	Model* modelSphere = new Model(sphereVAO, sizeof(vertexArray) / sizeof(36), vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
 
@@ -2709,7 +2709,7 @@ Model* makeC4BottomModel(int vao) {
 	//The pieces of the C are placed such that the entire C is centered at origin on all axes
 	//We can then very simply manipulate this modelC to transform the entire C
 	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-9.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-9.0f, -2.0f, 0.0f));
 	Model* modelC = new Model(vao, 0, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
@@ -2722,7 +2722,7 @@ Model* makeC4BottomModel(int vao) {
 	// Setting up the number 4
 	vector<Model*> fourChildren = vector<Model*>();
 	fourChildren.push_back(model4right);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f));
 	Model* model4 = new Model(vao, 0, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
