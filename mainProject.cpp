@@ -20,7 +20,7 @@
 using namespace glm;
 using namespace std;
 
-const int windowWidth = 1024, windowHeight = 764;
+int windowWidth = 1024, windowHeight = 764;
 const float shadowMapWidth = 1024, shadowMapHeight = 1024;
 
 #pragma region unitCubes
@@ -1612,6 +1612,9 @@ void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
 	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+	projectionMatrix = perspective(70.0f, // field of view in degrees
+		(float)windowWidth / windowHeight,  // aspect ratio
+		0.01f, 100.0f);
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 }
 
@@ -1677,6 +1680,13 @@ GLuint createShadowMapBuffer(GLuint& shadowMap)
 	return frameBufferObject;
 }
 
+// reference https://www.glfw.org/docs/latest/group__window.html#gae49ee6ebc03fa2da024b89943a331355
+void windowResizeCallback(GLFWwindow* window, int width, int height)
+{
+	windowHeight = height;
+	windowWidth = width;
+}
+
 int main(int argc, char* argv[])
 {
 	checkErrors();
@@ -1705,6 +1715,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
+	glfwSetWindowSizeCallback(window, windowResizeCallback);
 
 	// Initialize GLEW
 	glewExperimental = true; // Needed for core profile
@@ -1721,6 +1732,7 @@ int main(int argc, char* argv[])
 	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
 	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
 	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
+
 
 #pragma endregion windowSetUp
 
