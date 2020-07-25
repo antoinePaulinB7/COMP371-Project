@@ -668,31 +668,42 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 
 	}
 
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move left 
-	{
-		modelPosition += vec3(-1.0f, 0.0f, 0.0f) * moveSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move right 
-	{
-		modelPosition += vec3(1.0f, 0.0f, 0.0f) * moveSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-	{
-		modelXRotationAngle -= rotationSpeed * dt;
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-	{
-		modelXRotationAngle += rotationSpeed * dt;
-	}
-
 	/* INDIVIDUAL MOVEMENT CONTROLS */
+
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE))
+	{
+		float directionOfChange = 0.0f;
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+			directionOfChange = -1.0f;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+			directionOfChange = 1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+		else {
+			modelXRotationAngle += rotationSpeed * dt * directionOfChange;
+		}
+
+	}
 
 	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
 		&& glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
@@ -868,6 +879,42 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		}
 		else {
 			modelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
+		}
+
+	}
+
+
+	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
+	{
+		float directionOfChange = 0.0f;
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+			directionOfChange = -1.0f;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+			directionOfChange = 1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			l9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			t9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			u3ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			i9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		{
+			c4ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
+		}
+		else {
+			modelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
 		}
 
 	}
