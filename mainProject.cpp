@@ -1585,6 +1585,76 @@ Model* makeC4Model(int vao) {
 
 	return modelC4;
 }
+
+Model* makeT9Model(int vao) {
+	// Draw T9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	mat4 setUpScaling = mat4(1.0f);
+	mat4 setUpRotation = mat4(1.0f);
+	mat4 setUpTranslation = mat4(1.0f);
+
+	// Creating hat of the letter T
+	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 4.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
+	Model* modelThat = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+
+	// Creating leg of the letter T
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 4.0f, 1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 2.0f, 0.0f));
+	Model* modelTleg = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Setting up the letter T
+	vector<Model*> TChildren = vector<Model*>();
+	TChildren.push_back(modelThat);
+	TChildren.push_back(modelTleg);
+
+	//The pieces of the T are placed such that the entire T is centered at origin on all axes
+	//We can then very simply manipulate this modelT to transform the entire T
+	//for example, to scoot the T left to make room for the number, making the entire T9 centered.
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, -2.0f, 0.0f));
+	Model* modelT = new Model(vao, 0, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Creating top-part of the number 9
+	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 4.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
+	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating left-part of the number 9
+	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 3.25f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
+	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating bottom-part of the number 9
+	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 2.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
+	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+	// Creating right-part of the number 9
+	setUpTranslation = translate(mat4(1.0f), vec3(4.0f, 2.51f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
+	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+
+
+	// Setting up the number 9
+	vector<Model*> nineChildren = vector<Model*>();
+	nineChildren.push_back(model9top);
+	nineChildren.push_back(model9right);
+	nineChildren.push_back(model9left);
+	nineChildren.push_back(model9bottom);
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, -2.0f, 0.0f));
+	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Setting up the entire T9
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> T9Children = vector<Model*>();
+	T9Children.push_back(modelT);
+	T9Children.push_back(model9);
+	Model* modelT9 = new Model(vao, 0, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	return modelT9;
+}
 #pragma endregion
 
 void handleExitInput(GLFWwindow* window) {
@@ -1737,9 +1807,9 @@ int main(int argc, char* argv[])
 	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
 
 	// Compile and link shaders here ...
-	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
-	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
-	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
+	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
+	phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
+	shadowShaderProgram = shader("shadowShader.vs", "shadowShader.fs");
 
 
 #pragma endregion windowSetUp
@@ -1763,8 +1833,8 @@ int main(int argc, char* argv[])
 	mat4 U3BaseTranslation = translate(mat4(1.0f), vec3(0, 2.5f, 0));	//Model's start pos doesn't change
 	Model* u3Model = makeU3Model(rainbowCubeVAO);
 
-	//mat4 T9BaseTranslation = translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, halfGridSize));	//Model's start pos doesn't change
-	//Model* t9Model = makeT9Model(vao);
+	mat4 T9BaseTranslation = translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, halfGridSize));	//Model's start pos doesn't change
+	Model* t9Model = makeT9Model(unitCubeVAO);
 
 	mat4 C4BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
 	Model* c4Model = makeC4Model(unitCubeVAO);
@@ -1829,7 +1899,7 @@ int main(int argc, char* argv[])
 		// Building T9 scalable/translatable/rotateable matrix for individual letter
 		t9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * t9ModelScaleFactor);
 		t9ModelRotationMatrix = rotate(mat4(1.0f), radians(t9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(t9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		t9ModelTranslationMatrix = translate(mat4(1.0f), u3ModelPosition);
+		t9ModelTranslationMatrix = translate(mat4(1.0f), t9ModelPosition);
 		t9ModelMatrix = t9ModelTranslationMatrix * t9ModelScalingMatrix * t9ModelRotationMatrix;
 
 		// Building C4 scalable/translatable/rotateable matrix for individual letter
@@ -1841,7 +1911,7 @@ int main(int argc, char* argv[])
 		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix;
 		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix;
 		mat4 U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix;
-		//mat4 T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix;
+		mat4 T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix;
 		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix;
 #pragma endregion
 
@@ -1849,7 +1919,7 @@ int main(int argc, char* argv[])
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
 		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
 		//u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
-		//t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
+		t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
 
 #pragma endRegion
@@ -1869,7 +1939,7 @@ int main(int argc, char* argv[])
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
 		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
 		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
-		//t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
+		t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
 
 #pragma endregion
