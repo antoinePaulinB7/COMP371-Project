@@ -1612,13 +1612,13 @@ void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
 	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
-	projectionMatrix = perspective(70.0f, // field of view in degrees
-		(float)windowWidth / windowHeight,  // aspect ratio
-		0.01f, 100.0f);
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 }
 
 void useStandardShader() {
+	projectionMatrix = perspective(70.0f, // field of view in degrees
+		(float)windowWidth / windowHeight,  // aspect ratio
+		0.01f, 100.0f);
 	useShader(defaultShaderProgram, projectionMatrix, viewMatrix);
 }
 
@@ -1631,6 +1631,9 @@ void useShadowShader() {
 }
 
 void useLightingShader() {
+	projectionMatrix = perspective(70.0f, // field of view in degrees
+		(float)windowWidth / windowHeight,  // aspect ratio
+		0.01f, 100.0f);
 	useShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
 
 	//Set up vertex shader uniforms
