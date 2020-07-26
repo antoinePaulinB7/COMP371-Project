@@ -13,13 +13,23 @@
 
 	out vec4 fragmentColor;
 
+		float clampIt(float value) {
+		if (value < 0.0f) {
+		return 0.0f;
+		} else if (value > 1.0f) {
+			return 1.0f;
+		} else {
+			return value;
+		}
+	}
+
 	void main()
 	{
 		//Initialize variables for lighting attributes
-		float coeffAmbient = 0.5f;
-		float coeffDiffuse = 0.3f;
-		float coeffSpecular = 0.3f;
-		int coeffShininess = 32;
+		float coeffAmbient = 0.3f;
+		float coeffDiffuse = 0.8f;
+		float coeffSpecular = 0.5f;
+		int coeffShininess = 256;
 		vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
 		
 		//Shadow math
@@ -31,8 +41,6 @@
 		if (dist > depthVal + bias) {
 			visibility = 0.0f;
 		}
-
-		//Calculate and add ambient, diffuse and specular components
 
 		//ambient
 		vec3 ambientIntensity = lightColor * coeffAmbient;
@@ -48,15 +56,27 @@
 		vec3 reflectDirection = reflect(-lightDirection, norm);
 		float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), coeffShininess);
 		vec3 specularIntensity = coeffSpecular * spec * lightColor;
-
+		
 		//Phong Lighting Model combines the 3 lighting components
 		vec3 totalIntensity;
 		if (shouldRenderShadows > 0.5f) {
 			totalIntensity = ambientIntensity + (visibility * diffuseIntensity) + (visibility * specularIntensity);
 		} else {
-			   totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
+			  totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
 		}
+
+		fragmentColor = vec4(vertexColor.r * totalIntensity.r, 
+			vertexColor.g * totalIntensity.g, 
+			vertexColor.b * totalIntensity.b,
+			1.0f);		           
+		//Calculate each color channel  (R,G,B) separately
+		//Clamp the final result to [0, 1]
+		float totalIntensityR = clampIt(totalIntensity.r);	
+		float totalIntensityG = clampIt(totalIntensity.g);	
+		float totalIntensityB = clampIt(totalIntensity.b);	
 			   
-		vec3 result = totalIntensity * vertexColor;
-		fragmentColor = vec4(result, 1.0);
+		fragmentColor = vec4(vertexColor.r * totalIntensityR, 
+			vertexColor.g * totalIntensityG, 
+			vertexColor.b * totalIntensityB,
+			1.0f);
 	}

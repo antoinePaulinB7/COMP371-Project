@@ -27,9 +27,9 @@
 		
 		//Light math
 		fragPosition = vec3(worldMatrix * vec4(aPos, 1.0));
-		normalN = aNormal;
-		lightVectorL = vec3(worldMatrix * vec4(lightPosition, 1.0));
-		eyeVectorV = cameraPosition;
+		normalN = vec3(worldMatrix * vec4(aNormal, 0.0f));
+		lightVectorL = lightPosition;
+		eyeVectorV = normalize(vec3(viewMatrix * vec4((cameraPosition - fragPosition), 0.0f)));
 
 		//Shadow math
 		//Transform points in shadow map
