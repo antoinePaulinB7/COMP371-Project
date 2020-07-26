@@ -1638,6 +1638,11 @@ void useLightingShader() {
 	mat4 depthVP = lightProjectionMatrix * lightViewMatrix;
 	glUniformMatrix4fv(depthVPLocation, 1, GL_FALSE, &depthVP[0][0]);
 
+	GLuint lightPosition = glGetUniformLocation(phongLightShaderProgram, "lightPosition");
+	glUniform3f(lightPosition, 0.0f, 30.0f, 0.0f);
+
+	GLuint camPosition = glGetUniformLocation(phongLightShaderProgram, "cameraPosition");
+	glUniform3f(camPosition, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
 	//Set up fragment shader uniforms
 	GLuint shouldRenderShadowsLocation = glGetUniformLocation(phongLightShaderProgram, "shouldRenderShadows");
