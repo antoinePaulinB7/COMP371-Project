@@ -3,7 +3,7 @@ Group 14
 Nicole Parmentier - 40040213
 Laura Wheatley - 40034960
 Melissa Lim - 27195842
-Antoine Paulin-Bessette -
+Antoine Paulin-Bessette - 40098918
 Briana Toia - 40097889
 
 
