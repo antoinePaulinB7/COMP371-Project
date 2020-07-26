@@ -25,6 +25,7 @@
 		mat4 mvp = projectionMatrix * viewMatrix * worldMatrix;
         gl_Position = mvp * vec4(aPos, 1.0f);
 		
+		// used this reference https://learnopengl.com/Lighting/Basic-Lighting
 		//Light math
 		fragPosition = vec3(worldMatrix * vec4(aPos, 1.0));
 		normalN = vec3(worldMatrix * vec4(aNormal, 0.0f));
