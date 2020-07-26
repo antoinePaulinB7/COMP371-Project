@@ -11,6 +11,7 @@
 #include <glm/common.hpp>
 #include "shaders.h"
 #include "Model.h"
+#include "texture.h"
 #include <time.h>
 #include <algorithm>
 #include <list>
@@ -121,6 +122,118 @@ int createUnitCubeVertexArrayObject()
 		(void*)(2 * sizeof(vec3))      // normal is offseted 2 vec3 (comes after position and color)
 	);
 	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	return vertexArrayObject;
+}
+
+int createTextureCubeVertexArrayObject() {
+  vec3 whiteColor = vec3(1.0f, 1.0f, 1.0f);
+	vec3 posX = vec3(1.0f, 0.0f, 0.0f);
+	vec3 posY = vec3(0.0f, 1.0f, 0.0f);
+	vec3 posZ = vec3(0.0f, 0.0f, 1.0f);
+
+	// Cube model (position, colors, normals, texture coordinates)
+	float vertexArray[] = {
+		-0.5f, -0.5f, -0.5f,        1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     0.0f, 1.0f, //left 
+		-0.5f,-0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     0.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     1.0f, 0.0f,
+
+		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     1.0f, 1.0f,
+		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     0.0f, 1.0f,
+		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     1.0f, 0.0f,
+
+		0.5f, 0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     0.0f, 1.0f, // far
+		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     0.0f, 0.0f,
+		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     1.0f, 0.0f,
+
+		0.5f, 0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     1.0f, 1.0f,
+		0.5f,-0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     0.0f, 1.0f,
+		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     1.0f, 0.0f,
+
+		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     0.0f, 1.0f, // bottom 
+		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     0.0f, 0.0f,
+		0.5f,-0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     1.0f, 0.0f,
+
+		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     1.0f, 1.0f,
+		-0.5f,-0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     0.0f, 1.0f,
+		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     1.0f, 0.0f,
+
+		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 1.0f,     0.0f, 1.0f, // near
+		-0.5f,-0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
+		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 1.0f,     1.0f, 0.0f,
+
+		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 1.0f,     1.0f, 1.0f,
+		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 1.0f,     0.0f, 1.0f,
+		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 1.0f,     1.0f, 0.0f,
+
+		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     0.0f, 1.0f, // right 
+		0.5f,-0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     0.0f, 0.0f,
+		0.5f, 0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     1.0f, 0.0f,
+
+		0.5f,-0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     1.0f, 1.0f,
+		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     0.0f, 1.0f,
+		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     1.0f, 0.0f,
+
+		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 1.0f, // top 
+		0.5f, 0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f,
+		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     1.0f, 0.0f,
+
+		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     1.0f, 1.0f,
+		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 1.0f,
+		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     1.0f, 0.0f
+	};
+
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
+
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
+		3,                   // size
+		GL_FLOAT,            // type
+		GL_FALSE,            // normalized?
+		3 * 3 * sizeof(float) + 2 * sizeof(float), // stride - each vertex contain 3 vec3 (position, color, normal)
+		(void*)0             // array buffer offset
+	);
+	glEnableVertexAttribArray(0);
+
+
+	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		3 * 3 * sizeof(float) + 2 * sizeof(float),
+		(void*) (3 * sizeof(float))      // color is offseted a vec3 (comes after position)
+	);
+	glEnableVertexAttribArray(1);
+
+
+	glVertexAttribPointer(2,                            // attribute 2 matches aNormal in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		3 * 3 * sizeof(float) + 2 * sizeof(float),
+		(void*)(2 * 3 * sizeof(float))      // normal is offseted 2 vec3 (comes after position and color)
+	);
+	glEnableVertexAttribArray(2);
+
+  glVertexAttribPointer(3,                            // attribute 3 matches aText in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		3 * 3 * sizeof(float) + 2 * sizeof(float),
+		(void*)(3 * 3 * sizeof(float))      // texture is offseted 2 vec3 (comes after position and color)
+	);
+	glEnableVertexAttribArray(3);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -991,295 +1104,6 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 }
 #pragma endregion
 
-#pragma region alphabetStuff
-// font taken from https://fontstruct.com/fontstructions/show/716744/3_by_5_pixel_font
-// I'm really sorry this is all in one file. I am so freakin illiterate in C++, I have no clue what do.
-// But basically, this maps a char to a string that represents a square pattern following the pixel font linked above
-map<char, char*> alphabet = {
-	{ 'A',
-		"***"
-		"* *"
-		"***"
-		"* *"
-		"* *"
-	},
-	{ 'B',
-		"** "
-		"* *"
-		"** "
-		"* *"
-		"** "
-	},
-	{ 'C',
-		" **"
-		"*  "
-		"*  "
-		"*  "
-		" **"
-	},
-	{ 'D',
-		"** "
-		"* *"
-		"* *"
-		"* *"
-		"** "
-	},
-	{ 'E',
-		"***"
-		"*  "
-		"***"
-		"*  "
-		"***"
-	},
-	{ 'F',
-		"***"
-		"*  "
-		"***"
-		"*  "
-		"*  "
-	},
-	{ 'G',
-		" **"
-		"*  "
-		"* *"
-		"* *"
-		" **"
-	},
-	{ 'H',
-		"* *"
-		"* *"
-		"***"
-		"* *"
-		"* *"
-	},
-	{ 'I',
-		"***"
-		" * "
-		" * "
-		" * "
-		"***"
-	},
-	{ 'J',
-		"  *"
-		"  *"
-		"  *"
-		"* *"
-		"***"
-	},
-	{ 'K',
-		"* *"
-		"* *"
-		"** "
-		"* *"
-		"* *"
-	},
-	{ 'L',
-		"*  "
-		"*  "
-		"*  "
-		"*  "
-		"***"
-	},
-	{ 'M',
-		"* *"
-		"***"
-		"* *"
-		"* *"
-		"* *"
-	},
-	{ 'N',
-		"***"
-		"* *"
-		"* *"
-		"* *"
-		"* *"
-	},
-	{ 'O',
-		"***"
-		"* *"
-		"* *"
-		"* *"
-		"***"
-	},
-	{ 'P',
-		"***"
-		"* *"
-		"***"
-		"*  "
-		"*  "
-	},
-	{ 'Q',
-		"** "
-		"** "
-		"** "
-		"** "
-		"***"
-	},
-	{ 'R',
-		"** "
-		"* *"
-		"** "
-		"* *"
-		"* *"
-	},
-	{ 'S',
-		" **"
-		"*  "
-		" * "
-		"  *"
-		"** "
-	},
-	{ 'T',
-		"***"
-		" * "
-		" * "
-		" * "
-		" * "
-	},
-	{ 'U',
-		"* *"
-		"* *"
-		"* *"
-		"* *"
-		"***"
-	},
-	{ 'V',
-		"* *"
-		"* *"
-		"* *"
-		"* *"
-		"** "
-	},
-	{ 'W',
-		"* *"
-		"* *"
-		"* *"
-		"***"
-		"* *"
-	},
-	{ 'X',
-		"* *"
-		"* *"
-		" * "
-		"* *"
-		"* *"
-	},
-	{ 'Y',
-		"* *"
-		"* *"
-		"***"
-		" * "
-		" * "
-	},
-	{ 'Z',
-		"***"
-		"  *"
-		" * "
-		"*  "
-		"***"
-	},
-	{ '0',
-		" * "
-		"* *"
-		"* *"
-		"* *"
-		" * "
-	},
-	{ '1',
-		" * "
-		"** "
-		" * "
-		" * "
-		"***"
-	},
-	{ '2',
-		"** "
-		"  *"
-		" * "
-		"*  "
-		"***"
-	},
-	{ '3',
-		"***"
-		"  *"
-		" **"
-		"  *"
-		"***"
-	},
-	{ '4',
-		"* *"
-		"* *"
-		"***"
-		"  *"
-		"  *"
-	},
-	{ '5',
-		"***"
-		"*  "
-		"***"
-		"  *"
-		"** "
-	},
-	{ '6',
-		" **"
-		"*  "
-		"***"
-		"* *"
-		"***"
-	},
-	{ '7',
-		"***"
-		"  *"
-		" * "
-		"*  "
-		"*  "
-	},
-	{ '8',
-		"***"
-		"* *"
-		"***"
-		"* *"
-		"***"
-	},
-	{ '9',
-		"***"
-		"* *"
-		"***"
-		"  *"
-		"** "
-	}
-};
-
-/*
- * This is the main rendering function.
- * It picks a letter from the alphabet and draws it according to the
- * modelMatrix transform
- */
-void drawLetter(char c, int index, mat4 modelMatrix, GLuint worldMatrixLocation)
-{
-	char* letter = alphabet[c];
-
-	// The primitive matrices (They place each cube to form the letters -- you could actually make all the cubes spin :) )
-	mat4 primitiveScalingMatrix = scale(mat4(1.0f), vec3(1.0f)); // You can modify this make the letters thicker (but < 1 is bad, cuz they won't connect anymore)
-	mat4 primitiveRotationMatrix = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
-	mat4 primitiveTranslationMatrix;
-
-	mat4 worldMatrix;
-
-	for (int i = 0; i < 15; i++)
-	{
-		if (letter[i] == '*')
-		{
-			primitiveTranslationMatrix = translate(mat4(1.0f), vec3(-3.5f + (index * 4.0f) + (i % 3) * 1.0f, 1.5 + (ceil(i / 3) * -1.0f), -0.5f));
-			worldMatrix = modelMatrix * primitiveTranslationMatrix * primitiveRotationMatrix * primitiveScalingMatrix;
-
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-			glDrawArrays(renderingMode, 0, 36); // 36 vertices (because cube), starting at index 0
-		}
-	}
-}
-#pragma endregion
-
 #pragma region makeModels
 int numVerticesPerCube = 36;
 Model* makeL9Model(int vao) {
@@ -1806,6 +1630,15 @@ int main(int argc, char* argv[])
 	// Black background
 	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
 
+  // Load Textures
+  GLuint brickTexture = loadTexture("brick.jpg");
+  GLuint woodTexture = loadTexture("wood.jpg");
+  GLuint metalTexture = loadTexture("metal.jpg");
+
+  std::cout << brickTexture << std::endl;
+  std::cout << woodTexture << std::endl;
+  std::cout << metalTexture << std::endl;
+
 	// Compile and link shaders here ...
 	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
 	phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
@@ -1819,6 +1652,7 @@ int main(int argc, char* argv[])
 	//And some are centered on origin while others have origin in a corner
 	int unitCubeVAO = createUnitCubeVertexArrayObject();
 	int rainbowCubeVAO = createVertexArrayObjectU3();
+  int texturedCubeVAO = createTextureCubeVertexArrayObject();
 	int vao = createVertexArrayObjectR4();
 	int gridVAO = createVertexArrayObjectGridLine();
 	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
@@ -1834,7 +1668,7 @@ int main(int argc, char* argv[])
 	Model* u3Model = makeU3Model(rainbowCubeVAO);
 
 	mat4 T9BaseTranslation = translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, halfGridSize));	//Model's start pos doesn't change
-	Model* t9Model = makeT9Model(unitCubeVAO);
+	Model* t9Model = makeT9Model(texturedCubeVAO);
 
 	mat4 C4BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
 	Model* c4Model = makeC4Model(unitCubeVAO);
