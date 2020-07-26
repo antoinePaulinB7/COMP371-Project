@@ -1914,6 +1914,10 @@ float modelScaleFactor = 1.0f;
 vec3 modelPosition = vec3(0.0f, 0.0f, 0.0f);
 float modelShearFactor = 0.0f;
 bool shearForward = true;
+bool shearStepping = false;
+bool shearSteppingBackward = false;
+bool shearWalking = false;
+int shearDirection = 0;
 
 // Declaring model matrices
 mat4 modelShearingMatrix = mat4(1.0f);
@@ -2025,60 +2029,96 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	// Move/Shear model forward
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
 	{
-		modelPosition += vec3(0.0f, 0.0f, 1.0f) * moveSpeed * dt;
-		if (shearForward)
-		{
-			if (modelShearFactor < -1)
+
+		shearWalking = !shearWalking;
+		shearDirection = 1;
+	}
+
+	//ONE STEP FORWARD
+	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS || shearStepping)
+	{
+		if (!shearStepping) {
+			shearStepping = true;
+			shearForward = true;
+			modelShearFactor = 0.0f;
+		}
+		if (shearStepping) {
+			modelPosition += vec3(0.0f, 0.0f, 1.0f) * moveSpeed * dt;
+			if (shearForward)
 			{
-				shearForward = false;
-				modelShearFactor += 0.1;
+				if (modelShearFactor < -1)
+				{
+					shearForward = false;
+					modelShearFactor += 0.1;
+				}
+				else
+				{
+					modelShearFactor -= 0.1;
+				}
+				if (modelShearFactor > -0.1 && modelShearFactor < 0.1) {
+					shearStepping = false;
+				}
 			}
 			else
 			{
-				modelShearFactor -= 0.1;
+				if (modelShearFactor > 1)
+				{
+					shearForward = true;
+					modelShearFactor -= 0.1;
+				}
+				else {
+					modelShearFactor += 0.1;
+				}
+
 			}
 		}
-		else
-		{
-			if (modelShearFactor > 1)
-			{
-				shearForward = true;
-				modelShearFactor -= 0.1;
-			}
-			else {
-				modelShearFactor += 0.1;
-			}
+	}
 
+	//ONE STEP BACKWARD
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS || shearSteppingBackward)
+	{
+		if (!shearSteppingBackward) {
+			shearSteppingBackward = true;
+			shearForward = false;
+			modelShearFactor = 0.0f;
+		}
+		if (shearSteppingBackward) {
+			modelPosition += vec3(0.0f, 0.0f, -1.0f) * moveSpeed * dt;
+			if (shearForward)
+			{
+				if (modelShearFactor < -1)
+				{
+					shearForward = false;
+					modelShearFactor += 0.1;
+				}
+				else
+				{
+					modelShearFactor -= 0.1;
+				}
+			}
+			else
+			{
+				if (modelShearFactor > 1)
+				{
+					shearForward = true;
+					modelShearFactor -= 0.1;
+				}
+				else {
+					modelShearFactor += 0.1;
+				}
+				if (modelShearFactor > -0.1 && modelShearFactor < 0.1) {
+					shearSteppingBackward = false;
+				}
+
+			}
 		}
 	}
 
 	// Move/Shear model backwards
 	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
 	{
-		modelPosition += vec3(0.0f, 0.0f, -1.0f) * moveSpeed * dt;
-		if (shearForward)
-		{
-			if (modelShearFactor < -1)
-			{
-				shearForward = false;
-				modelShearFactor += 0.1;
-			}
-			else {
-				modelShearFactor -= 0.1;
-			}
-		}
-		else
-		{
-			if (modelShearFactor > 1)
-			{
-				shearForward = true;
-				modelShearFactor -= 0.1;
-			}
-			else {
-				modelShearFactor += 0.1;
-			}
-
-		}
+		shearWalking = !shearWalking;
+		shearDirection = -1;
 	}
 
 	/* INDIVIDUAL MOVEMENT CONTROLS */
@@ -3478,6 +3518,42 @@ int main(int argc, char* argv[])
 
 #pragma endregion
 
+		if (shearWalking)
+		{
+			if (shearDirection > 0)
+			{
+				modelPosition += vec3(0.0f, 0.0f, 1.0f) * moveSpeed * dt;
+			}
+			else if (shearDirection < 0)
+			{
+				modelPosition += vec3(0.0f, 0.0f, -1.0f) * moveSpeed * dt;
+			}
+			if (shearForward)
+			{
+				if (modelShearFactor < -1)
+				{
+					shearForward = false;
+					modelShearFactor += 0.1;
+				}
+				else
+				{
+					modelShearFactor -= 0.1;
+				}
+			}
+			else
+			{
+				if (modelShearFactor > 1)
+				{
+					shearForward = true;
+					modelShearFactor -= 0.1;
+				}
+				else {
+					modelShearFactor += 0.1;
+				}
+
+			}
+		}
+
 	}
 
 	// Shutdown GLFW
@@ -3485,3 +3561,4 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
+
