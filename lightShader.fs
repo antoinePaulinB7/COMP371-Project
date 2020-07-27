@@ -50,7 +50,10 @@
 		vec3 diffuseIntensity = coeffDiffuse * diff * lightColor;
 		
 		//attenuation maths following the attenuation formula Id = (kd*Ld) / (a + bq + cq^2) * (l dot n) attenuationFactor being 1/(a + bq + cq^2)
-		//float attenuationFactor = 1 / (attenuationConstantA + (attenuationConstantB * distanceToLightSource) + (attenuationConstantC * distanceToLightSource * distanceToLightSource));
+		float attenuationConstantA = 1.0f;
+		float attenuationConstantB = 1.0f;
+		float attenuationConstantC = 1.0f;
+		float attenuationFactor = 1 / (attenuationConstantA + (attenuationConstantB * distanceToLightSource) + (attenuationConstantC * distanceToLightSource * distanceToLightSource));
 		//vec3 diffuseIntensity = attenuationFactor * (coeffDiffuse * lightColor) * diff;
 		
 		//specular
@@ -73,8 +76,10 @@
 		float totalIntensityG = clampIt(totalIntensity.g);	
 		float totalIntensityB = clampIt(totalIntensity.b);	
 			   
-		fragmentColor = vec4(vertexColor.r * totalIntensityR, 
-			vertexColor.g * totalIntensityG, 
-			vertexColor.b * totalIntensityB,
-			1.0f);
+			   fragmentColor = vec4(totalIntensity,1.0f);
+
+		//fragmentColor = vec4(vertexColor.r * totalIntensityR, 
+		//	vertexColor.g * totalIntensityG, 
+		//	vertexColor.b * totalIntensityB,
+		//	1.0f);
 	}
