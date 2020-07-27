@@ -2306,7 +2306,7 @@ int main(int argc, char* argv[])
 
 			if (shearForward)
 			{
-				if (modelShearFactor < -1)
+				if (modelShearFactor < -0.5)
 				{
 					shearForward = false;
 					modelShearFactor += 0.1;
@@ -2318,7 +2318,7 @@ int main(int argc, char* argv[])
 			}
 			else
 			{
-				if (modelShearFactor > 1)
+				if (modelShearFactor > 0.5)
 				{
 					shearForward = true;
 					modelShearFactor -= 0.1;
