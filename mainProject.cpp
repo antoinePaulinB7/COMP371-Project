@@ -771,6 +771,7 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		if (!shearStepping) {
 			shearStepping = true;
 			shearForward = true;
+			shearWalking = false;
 			modelShearFactor = 0.0f;
 		}
 		if (shearStepping) {
@@ -814,6 +815,7 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		if (!shearSteppingBackward) {
 			shearSteppingBackward = true;
 			shearForward = false;
+			shearWalking = false;
 			modelShearFactor = 0.0f;
 		}
 		if (shearSteppingBackward) {
@@ -2306,7 +2308,7 @@ int main(int argc, char* argv[])
 
 			if (shearForward)
 			{
-				if (modelShearFactor < -1)
+				if (modelShearFactor < -0.5)
 				{
 					shearForward = false;
 					modelShearFactor += 0.1;
@@ -2318,7 +2320,7 @@ int main(int argc, char* argv[])
 			}
 			else
 			{
-				if (modelShearFactor > 1)
+				if (modelShearFactor > 0.5)
 				{
 					shearForward = true;
 					modelShearFactor -= 0.1;
