@@ -2184,21 +2184,6 @@ void useLightingShader() {
 	//Set up fragment shader uniforms
 	GLuint shouldRenderShadowsLocation = glGetUniformLocation(phongLightShaderProgram, "shouldRenderShadows");
 	glUniform1f(shouldRenderShadowsLocation, renderShadows);
-
-	// //light variables
-	// float kAmbient = 0.1f;
-	// float kDiffuse = 0.8f;
-	// float kSpecular = 0.5f;
-	// int aShininess = 256;
-	// float lightColorR = 1.0f;
-	// float lightColorG = 1.0f;
-	// float lightColorB = 1.0f;
-
-	// glUniform1f(glGetUniformLocation(phongLightShaderProgram, "coeffAmbient"), kAmbient);
-	// glUniform1f(glGetUniformLocation(phongLightShaderProgram, "coeffDiffuse"), kDiffuse);
-	// glUniform1f(glGetUniformLocation(phongLightShaderProgram, "coeffSpecular"), kSpecular);
-	// glUniform1i(glGetUniformLocation(phongLightShaderProgram, "coeffShininess"), aShininess);
-	// glUniform3f(glGetUniformLocation(phongLightShaderProgram, "lightColor"), lightColorR, lightColorG, lightColorB);
 }
 
 //The buffer is the memory that backs up the shadowMap texture, like how the VBO is the memory that backs up the VAO
