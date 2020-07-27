@@ -1,4 +1,5 @@
 #version 330 core
+  in vec2 texCoord;
 	in vec3 vertexColor;
     in vec3 normalN;
     in vec3 lightVectorL;
@@ -10,11 +11,14 @@
 
 	uniform float shouldRenderShadows = 1.0f;
 	uniform sampler2D shadowMap;
-	uniform float coeffAmbient;
-	uniform float coeffDiffuse;
-	uniform float coeffSpecular;
-	uniform int coeffShininess;
-	uniform vec3 lightColor;
+  uniform sampler2D someTexture;
+
+  uniform vec4 lightCoefficients = vec4(0.3f, 0.8f, 0.5f, 256);
+  uniform vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
+	float coeffAmbient;
+	float coeffDiffuse;
+	float coeffSpecular;
+	float coeffShininess;
 
 	out vec4 fragmentColor;
 
@@ -29,7 +33,13 @@
 	}
 
 	void main()
-	{		
+	{
+		//Initialize variables for lighting attributes
+		float coeffAmbient = lightCoefficients[0]; //0.3f;
+		float coeffDiffuse = lightCoefficients[1]; //0.8f;
+		float coeffSpecular = lightCoefficients[2]; //0.5f;
+		float coeffShininess = lightCoefficients[3]; //256;
+		
 		//Shadow math
 		vec3 shadowCoord = (shadowCoordinate.xyz / shadowCoordinate.w) * 0.5 + 0.5; 
 		float visibility = 0.0f;
@@ -84,15 +94,16 @@
 			 totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
 		}
 
+    vec4 texColor = texture(someTexture, texCoord);
+
 		//Calculate each color channel  (R,G,B) separately
 		//Clamp the final result to [0, 1]
-		float totalIntensityR = clampIt(totalIntensity.r);	
-		float totalIntensityG = clampIt(totalIntensity.g);	
-		float totalIntensityB = clampIt(totalIntensity.b);	
+		float totalIntensityR = totalIntensity.r;//clampIt(totalIntensity.r);	
+		float totalIntensityG = totalIntensity.g;//clampIt(totalIntensity.g);	
+		float totalIntensityB = totalIntensity.b;//clampIt(totalIntensity.b);	
 			   
-
-		fragmentColor = vec4(vertexColor.r * totalIntensityR, 
-			vertexColor.g * totalIntensityG, 
-			vertexColor.b * totalIntensityB,
+		fragmentColor = vec4(texColor.r * totalIntensityR, 
+			texColor.g * totalIntensityG, 
+			texColor.b * totalIntensityB,
 			1.0f);
 	}
