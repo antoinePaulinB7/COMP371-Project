@@ -8,6 +8,7 @@
 bool loadOBJ(
 	const char * path,
 	std::vector<glm::vec3> & out_vertices,
+	std::vector<glm::vec3> & out_colors,
 	std::vector<glm::vec3> & out_normals,
 	std::vector<glm::vec2> & out_uvs) {
 
@@ -102,6 +103,7 @@ bool loadOBJ(
 		}
 
 	}
+
 	//std::cout << "Vertex indices: " << vertexIndices.size() << std::endl;
 	//std::cout << "UV indices: " << uvIndices.size() << std::endl;
 	//std::cout << "Normal indices: " << normalIndices.size() << std::endl;
@@ -121,6 +123,8 @@ bool loadOBJ(
 				out_normals.push_back(normal);
 			}
 		}
+
+		out_colors.push_back(glm::vec3(1.0f));
 
 		unsigned int vertexIndex = abs(vertexIndices[i]);
 		glm::vec3 vertex = temp_vertices[vertexIndex - 1];
