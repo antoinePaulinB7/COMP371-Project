@@ -3580,21 +3580,25 @@ vec3 getShearMovement(float shearRotationAngle) {
 	else if (shearRotationAngle == -180 || shearRotationAngle == 180) {
 		return(vec3(0.0f, 0.0f, -1.0f));
 	}
-	else if (shearRotationAngle == -270 || shearRotationAngle == 270) {
+	else if (shearRotationAngle == -270 || shearRotationAngle == 90) {
 		return(vec3(1.0f, 0.0f, 0.0f));
 	}
-	else if (shearRotationAngle == -90 || shearRotationAngle == 90) {
+	else if (shearRotationAngle == -90 || shearRotationAngle == 270) {
 		return(vec3(-1.0f, 0.0f, 0.0f));
 	}
+	//first quadrant to left
 	else if (shearRotationAngle < 0 && shearRotationAngle > -90 || shearRotationAngle > 270 && shearRotationAngle < 360) {
 		return(vec3(-1.0 * abs(sin(shearRotationAngle)), 0.0f, 1.0 * abs(cos(shearRotationAngle))));
 	}
+	//second quadrant
 	else if (shearRotationAngle <= -90 && shearRotationAngle > -180 || shearRotationAngle > 180 && shearRotationAngle < 270) {
 		return(vec3(-1.0 * abs(sin(shearRotationAngle)), 0.0f, -1.0 * abs(cos(shearRotationAngle))));
 	}
+	//third quadrant
 	else if (shearRotationAngle < -180 && shearRotationAngle > -270 || shearRotationAngle > 90 && shearRotationAngle < 180) {
-		return(vec3(1.0 * abs(sin(shearRotationAngle)), 0.0f, -1.0 * abs(cos(shearRotationAngle))));
+		return(vec3(1.0 * abs(cos(shearRotationAngle)), 0.0f, -1.0 * abs(sin(shearRotationAngle))));
 	}
+	//fourth quadrant
 	else if (shearRotationAngle <= -270 && shearRotationAngle > -360 || shearRotationAngle > 0 && shearRotationAngle <= 90) {
 		return(vec3(1.0 * abs(sin(shearRotationAngle)), 0.0f, 1.0 * abs(cos(shearRotationAngle))));
 	}
