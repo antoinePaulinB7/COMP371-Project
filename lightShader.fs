@@ -67,7 +67,7 @@
 		vec3 diffuseIntensity = attenuationFactor * (coeffDiffuse * lightColor) * diff;
 		
 		//specular
-		vec3 viewDirection = normalize(eyeVectorV - fragPosition);
+		vec3 viewDirection = normalize(eyeVectorV);
 		vec3 reflectDirection = reflect(-lightDirection, norm);
 		float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), coeffShininess);
 		vec3 specularIntensity = attenuationFactor * coeffSpecular * spec * lightColor;
