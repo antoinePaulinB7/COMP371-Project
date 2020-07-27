@@ -1987,7 +1987,7 @@ int main(int argc, char* argv[])
 #endif
 
 	// Create Window and rendering context using GLFW, resolution is 800x600
-	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Comp371 - Group 14 P1", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Comp371 - Group 14 P2", NULL, NULL);
 	if (window == NULL)
 	{
 		cerr << "Failed to create GLFW window" << endl;
