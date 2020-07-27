@@ -32,13 +32,24 @@
 	{		
 		//Shadow math
 		vec3 shadowCoord = (shadowCoordinate.xyz / shadowCoordinate.w) * 0.5 + 0.5; 
-		float visibility = 1.0f;
-		float depthVal = texture(shadowMap, shadowCoord.xy).z;
+		float visibility = 0.0f;
 		float dist = shadowCoord.z;
-		float bias = 0.000001f;
-		if (dist > depthVal + bias) {
-			visibility = 0.0f;
+		float bias = 0.00001f;
+		int percentageCloserFilteringRadius = 2;
+		vec2 shadowMapDimensions = textureSize(shadowMap, 0);	//https://www.khronos.org/opengl/wiki/Sampler_(GLSL)#Texture_size_retrieval
+		float shadowMapTexelWidth = 1.0f / shadowMapDimensions.x;
+		float shadowMapTexelHeight = 1.0f / shadowMapDimensions.y;
+		for (int i = -percentageCloserFilteringRadius; i <= percentageCloserFilteringRadius; ++i) {
+			for (int j = -percentageCloserFilteringRadius; j <= percentageCloserFilteringRadius; ++j) {
+				float depthVal = texture(shadowMap, vec2(shadowCoord.x + (i*shadowMapTexelWidth), shadowCoord.y + (j*shadowMapTexelHeight))).z;
+				if (dist <= depthVal + bias) {
+					visibility += 1.0f;
+				}
+			}
 		}
+		float sampleDiameter = (percentageCloserFilteringRadius * 2.0f + 1.0f);
+		visibility = visibility / (sampleDiameter * sampleDiameter);
+
 
 		//ambient
 		vec3 ambientIntensity = lightColor * coeffAmbient;
@@ -66,7 +77,7 @@
 		if (shouldRenderShadows > 0.5f) {
 			totalIntensity = ambientIntensity + (visibility * diffuseIntensity) + (visibility * specularIntensity);
 		} else {
-			  totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
+			 totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
 		}
 
 		//Calculate each color channel  (R,G,B) separately

@@ -23,7 +23,7 @@ using namespace glm;
 using namespace std;
 
 int windowWidth = 1024, windowHeight = 764;
-const float shadowMapWidth = 1024, shadowMapHeight = 1024;
+const float shadowMapWidth = 2048, shadowMapHeight = 2048;
 
 vec3 getShearMovement(float shearRotationAngle);
 
