@@ -1747,9 +1747,9 @@ int main(int argc, char* argv[])
   metal.lightColor = vec3(1.0f, 1.0f, 0.0f);
 
 	// Compile and link shaders here ...
-	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
-  phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
-	shadowShaderProgram = shader("shadowShader.vs", "shadowShader.fs");
+	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
+	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
+	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
 
 
 #pragma endregion windowSetUp
