@@ -15,6 +15,10 @@
 
   uniform vec4 lightCoefficients = vec4(0.3f, 0.8f, 0.5f, 256);
   uniform vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
+	float coeffAmbient;
+	float coeffDiffuse;
+	float coeffSpecular;
+	float coeffShininess;
 
 	out vec4 fragmentColor;
 
@@ -49,17 +53,23 @@
 		//ambient
 		vec3 ambientIntensity = lightColor * coeffAmbient;
 
+		//attenuation maths following the attenuation formula Id = (kd*Ld) / (a + bq + cq^2) * (l dot n) attenuationFactor being 1/(a + bq + cq^2)
+		float attenuationConstantA = 0.5f;
+		float attenuationConstantB = 0.01f;
+		float attenuationConstantC = 0.0001f;
+		float attenuationFactor = 1 / (attenuationConstantA + (attenuationConstantB * distanceToLightSource) + (attenuationConstantC * distanceToLightSource * distanceToLightSource));
+
 		//diffuse
 		vec3 norm = normalize(normalN);
 		vec3 lightDirection = normalize(lightVectorL - fragPosition);
 		float diff = max(dot(norm, lightDirection), 0.0f);
-		vec3 diffuseIntensity = coeffDiffuse * diff * lightColor;
+		vec3 diffuseIntensity = attenuationFactor * (coeffDiffuse * lightColor) * diff;
 		
 		//specular
 		vec3 viewDirection = normalize(eyeVectorV - fragPosition);
 		vec3 reflectDirection = reflect(-lightDirection, norm);
 		float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), coeffShininess);
-		vec3 specularIntensity = coeffSpecular * spec * lightColor;
+		vec3 specularIntensity = attenuationFactor * coeffSpecular * spec * lightColor;
 		
 		//Phong Lighting Model combines the 3 lighting components
 		vec3 totalIntensity;
