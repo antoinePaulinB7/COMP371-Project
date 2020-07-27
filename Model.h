@@ -7,7 +7,7 @@
 #include <vector>
 
 struct Material {
-  Material() : texture(0), lightCoefficients(glm::vec4(1.0f)), lightColor(glm::vec3(1.0f)) {}
+  Material() : texture(1), lightCoefficients(glm::vec4(1.0f)), lightColor(glm::vec3(1.0f)) {}
   GLuint texture;
   glm::vec4 lightCoefficients;
   glm::vec3 lightColor;
