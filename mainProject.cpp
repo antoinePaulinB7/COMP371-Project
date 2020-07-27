@@ -24,6 +24,10 @@ using namespace std;
 int windowWidth = 1024, windowHeight = 764;
 const float shadowMapWidth = 1024, shadowMapHeight = 1024;
 
+GLuint brickTexture, woodTexture, metalTexture;
+
+Material defaultMaterial, brick, wood, metal;
+
 #pragma region unitCubes
 int createUnitCubeVertexArrayObject()
 {
@@ -130,36 +134,32 @@ int createUnitCubeVertexArrayObject()
 }
 
 int createTextureCubeVertexArrayObject() {
-  vec3 whiteColor = vec3(1.0f, 1.0f, 1.0f);
-	vec3 posX = vec3(1.0f, 0.0f, 0.0f);
-	vec3 posY = vec3(0.0f, 1.0f, 0.0f);
-	vec3 posZ = vec3(0.0f, 0.0f, 1.0f);
 
 	// Cube model (position, colors, normals, texture coordinates)
 	float vertexArray[] = {
-		-0.5f, -0.5f, -0.5f,        1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     0.0f, 1.0f, //left 
-		-0.5f,-0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     0.0f, 0.0f,
-		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     1.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,        1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     0.0f, 0.0f, //left 
+		-0.5f,-0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     0.0f, 1.0f,
+		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     1.0f, 1.0f,
 
-		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     1.0f, 1.0f,
-		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     0.0f, 1.0f,
+		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     0.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     1.0f, 1.0f,
 		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     -1.0f, 0.0f, 0.0f,     1.0f, 0.0f,
 
-		0.5f, 0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     0.0f, 1.0f, // far
+		0.5f, 0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     1.0f, 1.0f, // far
 		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     0.0f, 0.0f,
-		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     1.0f, 0.0f,
+		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     0.0f, 1.0f,
 
 		0.5f, 0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     1.0f, 1.0f,
-		0.5f,-0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     0.0f, 1.0f,
-		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     1.0f, 0.0f,
+		0.5f,-0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     1.0f, 0.0f,
+		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, -1.0f,     0.0f, 0.0f,
 
-		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     0.0f, 1.0f, // bottom 
+		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     1.0f, 1.0f, // bottom 
 		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     0.0f, 0.0f,
 		0.5f,-0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     1.0f, 0.0f,
 
 		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     1.0f, 1.0f,
 		-0.5f,-0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     0.0f, 1.0f,
-		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     1.0f, 0.0f,
+		-0.5f,-0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, -1.0f, 0.0f,     0.0f, 0.0f,
 
 		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 1.0f,     0.0f, 1.0f, // near
 		-0.5f,-0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
@@ -169,21 +169,21 @@ int createTextureCubeVertexArrayObject() {
 		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 1.0f,     0.0f, 1.0f,
 		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 1.0f,     1.0f, 0.0f,
 
-		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     0.0f, 1.0f, // right 
+		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     1.0f, 1.0f, // right 
 		0.5f,-0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     0.0f, 0.0f,
 		0.5f, 0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     1.0f, 0.0f,
 
-		0.5f,-0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     1.0f, 1.0f,
-		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     0.0f, 1.0f,
-		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     1.0f, 0.0f,
+		0.5f,-0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     0.0f, 0.0f,
+		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     1.0f, 1.0f,
+		0.5f,-0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     1.0f, 0.0f, 0.0f,     0.0f, 1.0f,
 
-		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 1.0f, // top 
-		0.5f, 0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f,
-		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     1.0f, 0.0f,
+		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     1.0f, 1.0f, // top 
+		0.5f, 0.5f,-0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     1.0f, 0.0f,
+		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f,
 
 		0.5f, 0.5f, 0.5f,           1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     1.0f, 1.0f,
-		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 1.0f,
-		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     1.0f, 0.0f
+		-0.5f, 0.5f,-0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 1.0f
 	};
 
 	// Create a vertex array
@@ -201,7 +201,7 @@ int createTextureCubeVertexArrayObject() {
 		3,                   // size
 		GL_FLOAT,            // type
 		GL_FALSE,            // normalized?
-		3 * 3 * sizeof(float) + 2 * sizeof(float), // stride - each vertex contain 3 vec3 (position, color, normal)
+		11 * sizeof(float), // stride - each vertex contain 3 vec3 (position, color, normal)
 		(void*)0             // array buffer offset
 	);
 	glEnableVertexAttribArray(0);
@@ -211,7 +211,7 @@ int createTextureCubeVertexArrayObject() {
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		3 * 3 * sizeof(float) + 2 * sizeof(float),
+		11 * sizeof(float),
 		(void*) (3 * sizeof(float))      // color is offseted a vec3 (comes after position)
 	);
 	glEnableVertexAttribArray(1);
@@ -221,16 +221,16 @@ int createTextureCubeVertexArrayObject() {
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		3 * 3 * sizeof(float) + 2 * sizeof(float),
+		11 * sizeof(float),
 		(void*)(2 * 3 * sizeof(float))      // normal is offseted 2 vec3 (comes after position and color)
 	);
 	glEnableVertexAttribArray(2);
 
   glVertexAttribPointer(3,                            // attribute 3 matches aText in Vertex Shader
-		3,
+		2,
 		GL_FLOAT,
 		GL_FALSE,
-		3 * 3 * sizeof(float) + 2 * sizeof(float),
+		11 * sizeof(float),
 		(void*)(3 * 3 * sizeof(float))      // texture is offseted 2 vec3 (comes after position and color)
 	);
 	glEnableVertexAttribArray(3);
@@ -1136,13 +1136,13 @@ Model* makeL9Model(int vao) {
 	// Creating left-part of the letter L
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 
 	// Creating right-part of the letter L
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, -2.0f, 0.0f));
-	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 	// Setting up the letter L
 	vector<Model*> LChildren = vector<Model*>();
@@ -1158,21 +1158,21 @@ Model* makeL9Model(int vao) {
 	// Creating top-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating right-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating left-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 0.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 2.0f, 1.0f));
-	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating bottom-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 0.0f, 0.0f));
-	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), mat4(1.0f), metal);
 
 	// Setting up the number 9
 	vector<Model*> nineChildren = vector<Model*>();
@@ -1203,18 +1203,18 @@ Model* makeI9Model(int vao) {
 	// Creating top-part of the letter I
 	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
-	Model* modelItopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelItopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 
 	// Creating middlet-part of the letter I
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.0f, 1.0f));
 	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 2.5f, 0.0f));
-	Model* modelImiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelImiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 	// Creating bottom-part of the letter I
 	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 0.5f, 0.0f));
-	Model* modelIbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelIbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 	// Setting up the letter I
 	vector<Model*> IChildren = vector<Model*>();
@@ -1231,22 +1231,22 @@ Model* makeI9Model(int vao) {
 	// Creating top-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
-	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating left-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 3.25f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
-	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating bottom-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating right-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(4.0f, 2.51f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 
 	// Setting up the number 9
@@ -1278,18 +1278,18 @@ Model* makeU3Model(int vao) {
 	// Creating left-part of the letter U
 	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-	Model* modelUleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelUleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 
 	// Creating bottom-part of the letter U
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.5f, -2.0f, 0.0f));
-	Model* modelUbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelUbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 	// Creating right-part of the letter U
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
-	Model* modelUrightBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelUrightBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 	// Setting up the letter U
 	vector<Model*> UChildren = vector<Model*>();
@@ -1306,22 +1306,22 @@ Model* makeU3Model(int vao) {
 	// Creating base-part of the number 3
 	setUpTranslation = translate(mat4(1.0f), vec3(4.0f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-	Model* model3base = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model3base = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating topArm-part of the number 3
 	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-	Model* model3topArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model3topArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating middleArm-part of the number 3
 	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, -2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-	Model* model3middleArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model3middleArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating bottomArm-part of the number 3
 	setUpTranslation = translate(mat4(1.0f), vec3(3.0f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
-	Model* model3bottomArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model3bottomArm = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 
 	// Setting up the number 3
@@ -1353,17 +1353,17 @@ Model* makeC4Model(int vao) {
 	// Creating left-part of the letter C
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.5f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-	Model* modelCleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelCleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 	// Creating bottom-part of the letter C
 	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, -2.0f, 0.0f));
-	Model* modelCbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelCbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 	// Creating top-part of the letter C
 	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 2.0f, 0.0f));
-	Model* modelCtopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelCtopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 	// Setting up the letter C
 	vector<Model*> CChildren = vector<Model*>();
@@ -1379,17 +1379,17 @@ Model* makeC4Model(int vao) {
 	// Creating right-part of the number 4
 	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-	Model* model4right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model4right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating middle-part of the number 4
 	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 1.0f));
-	Model* model4middle = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model4middle = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating left-part of the number 4
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.5f, 1.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 2.0f, 1.0f));
-	Model* model4left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model4left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Setting up the number 4
 	vector<Model*> fourChildren = vector<Model*>();
@@ -1419,13 +1419,13 @@ Model* makeT9Model(int vao) {
 	// Creating hat of the letter T
 	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
-	Model* modelThat = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelThat = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 
 	// Creating leg of the letter T
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 4.0f, 1.0f));
 	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 2.0f, 0.0f));
-	Model* modelTleg = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* modelTleg = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
 
 	// Setting up the letter T
 	vector<Model*> TChildren = vector<Model*>();
@@ -1442,22 +1442,22 @@ Model* makeT9Model(int vao) {
 	// Creating top-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
-	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating left-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 3.25f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
-	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating bottom-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating right-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(4.0f, 2.51f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling);
+	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 
 	// Setting up the number 9
@@ -1537,6 +1537,15 @@ void useLightingShader() {
 
 	GLuint lightPosition = glGetUniformLocation(phongLightShaderProgram, "lightPosition");
 	glUniform3f(lightPosition, 0.0f, 30.0f, 0.0f);
+
+  GLuint texture = glGetUniformLocation(phongLightShaderProgram, "someTexture");
+  glUniform1i(texture, brickTexture);
+
+  GLuint lightCoefficients = glGetUniformLocation(phongLightShaderProgram, "lightCoefficients");
+  glUniform4f(lightCoefficients,  0.3f, 0.8f, 0.5f, 256);
+
+  GLuint lightColor = glGetUniformLocation(phongLightShaderProgram, "lightColor");
+  glUniform3f(lightColor, 1.0f, 1.0f, 1.0f);
 
 	GLuint camPosition = glGetUniformLocation(phongLightShaderProgram, "cameraPosition");
 	glUniform3f(camPosition, cameraPosition.x, cameraPosition.y, cameraPosition.z);
@@ -1631,17 +1640,33 @@ int main(int argc, char* argv[])
 	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
 
   // Load Textures
-  GLuint brickTexture = loadTexture("brick.jpg");
-  GLuint woodTexture = loadTexture("wood.jpg");
-  GLuint metalTexture = loadTexture("metal.jpg");
+  brickTexture = loadTexture("brick.jpg");
+  woodTexture = loadTexture("wood.jpg");
+  metalTexture = loadTexture("metal2.jpg");
 
   std::cout << brickTexture << std::endl;
   std::cout << woodTexture << std::endl;
   std::cout << metalTexture << std::endl;
 
+  defaultMaterial = {};
+  brick = {};
+  brick.texture = brickTexture;
+  brick.lightCoefficients = vec4(0.4f, 0.4f, 0.4f, 125);
+  brick.lightColor = vec3(0.9f);
+
+  wood = {};
+  wood.texture = woodTexture;
+  wood.lightCoefficients = vec4(0.5f, 0.8f, 0.5f, 256);
+  wood.lightColor = vec3(1.0f);
+
+  metal = {};
+  metal.texture = metalTexture;
+  metal.lightCoefficients = vec4(0.3f, 0.8f, 0.5f, 256);
+  metal.lightColor = vec3(1.0f, 1.0f, 0.0f);
+
 	// Compile and link shaders here ...
 	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
-	phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
+  phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
 	shadowShaderProgram = shader("shadowShader.vs", "shadowShader.fs");
 
 
@@ -1659,19 +1684,19 @@ int main(int argc, char* argv[])
 
 	//Create hierarchical models
 	mat4 L9BaseTranslation = translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, -halfGridSize));	//Model's start pos doesn't change
-	Model* l9Model = makeL9Model(unitCubeVAO);
+	Model* l9Model = makeL9Model(texturedCubeVAO);
 
 	mat4 I9BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize -1, 2.5f, -halfGridSize));	//Model's start pos doesn't change
-	Model* i9Model = makeI9Model(unitCubeVAO);
+	Model* i9Model = makeI9Model(texturedCubeVAO);
 
 	mat4 U3BaseTranslation = translate(mat4(1.0f), vec3(0, 2.5f, 0));	//Model's start pos doesn't change
-	Model* u3Model = makeU3Model(rainbowCubeVAO);
+	Model* u3Model = makeU3Model(texturedCubeVAO);
 
 	mat4 T9BaseTranslation = translate(mat4(1.0f), vec3(-halfGridSize, 2.5f, halfGridSize));	//Model's start pos doesn't change
 	Model* t9Model = makeT9Model(texturedCubeVAO);
 
 	mat4 C4BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
-	Model* c4Model = makeC4Model(unitCubeVAO);
+	Model* c4Model = makeC4Model(texturedCubeVAO);
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -1682,6 +1707,7 @@ int main(int argc, char* argv[])
 	// Enable Backface culling and depth test
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
+  glEnable(GL_TEXTURE_2D);
 
 	glPointSize(3.0f);
 
@@ -1750,11 +1776,11 @@ int main(int argc, char* argv[])
 #pragma endregion
 
 		//Draw scene for the shadow map
-		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
-		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
+		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		//u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
-		t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
-		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
+		t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 
 #pragma endRegion
 
@@ -1770,11 +1796,11 @@ int main(int argc, char* argv[])
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, shadowMap);
 
-		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation);
-		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation);
-		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
-		t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation);
-		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation);
+		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 
 #pragma endregion
 
