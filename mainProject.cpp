@@ -23,6 +23,8 @@ using namespace std;
 int windowWidth = 1024, windowHeight = 764;
 const float shadowMapWidth = 1024, shadowMapHeight = 1024;
 
+vec3 getShearMovement(float shearRotationAngle);
+
 #pragma region unitCubes
 int createUnitCubeVertexArrayObject()
 {
@@ -2043,7 +2045,10 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 			modelShearFactor = 0.0f;
 		}
 		if (shearStepping) {
-			modelPosition += vec3(0.0f, 0.0f, 1.0f) * moveSpeed * dt;
+			float shearRotationAngle = (int)modelYRotationAngle % 360;
+
+			modelPosition += getShearMovement(shearRotationAngle) * moveSpeed * dt;
+
 			if (shearForward)
 			{
 				if (modelShearFactor < -1)
@@ -2083,7 +2088,11 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 			modelShearFactor = 0.0f;
 		}
 		if (shearSteppingBackward) {
-			modelPosition += vec3(0.0f, 0.0f, -1.0f) * moveSpeed * dt;
+
+			float shearRotationAngle = (int)modelYRotationAngle % 360;
+
+			modelPosition -= getShearMovement(shearRotationAngle) * moveSpeed * dt;
+
 			if (shearForward)
 			{
 				if (modelShearFactor < -1)
@@ -3540,14 +3549,17 @@ int main(int argc, char* argv[])
 
 		if (shearWalking)
 		{
+			float shearRotationAngle = (int)modelYRotationAngle % 360;
+
 			if (shearDirection > 0)
 			{
-				modelPosition += vec3(0.0f, 0.0f, 1.0f) * moveSpeed * dt;
+				modelPosition += getShearMovement(shearRotationAngle) * moveSpeed * dt;
 			}
 			else if (shearDirection < 0)
 			{
-				modelPosition += vec3(0.0f, 0.0f, -1.0f) * moveSpeed * dt;
+				modelPosition -= getShearMovement(shearRotationAngle) * moveSpeed * dt;
 			}
+
 			if (shearForward)
 			{
 				if (modelShearFactor < -1)
@@ -3573,7 +3585,6 @@ int main(int argc, char* argv[])
 
 			}
 		}
-
 	}
 
 	// Shutdown GLFW
@@ -3582,3 +3593,33 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
+vec3 getShearMovement(float shearRotationAngle) {
+	if (shearRotationAngle == 0) {
+		return(vec3(0.0f, 0.0f, 1.0f));
+	}
+	else if (shearRotationAngle == -180 || shearRotationAngle == 180) {
+		return(vec3(0.0f, 0.0f, -1.0f));
+	}
+	else if (shearRotationAngle == -270 || shearRotationAngle == 90) {
+		return(vec3(1.0f, 0.0f, 0.0f));
+	}
+	else if (shearRotationAngle == -90 || shearRotationAngle == 270) {
+		return(vec3(-1.0f, 0.0f, 0.0f));
+	}
+	//first quadrant to left
+	else if (shearRotationAngle < 0 && shearRotationAngle > -90 || shearRotationAngle > 270 && shearRotationAngle < 360) {
+		return(vec3(-1.0 * abs(sin(shearRotationAngle)), 0.0f, 1.0 * abs(cos(shearRotationAngle))));
+	}
+	//second quadrant
+	else if (shearRotationAngle <= -90 && shearRotationAngle > -180 || shearRotationAngle > 180 && shearRotationAngle < 270) {
+		return(vec3(-1.0 * abs(sin(shearRotationAngle)), 0.0f, -1.0 * abs(cos(shearRotationAngle))));
+	}
+	//third quadrant
+	else if (shearRotationAngle < -180 && shearRotationAngle > -270 || shearRotationAngle > 90 && shearRotationAngle < 180) {
+		return(vec3(1.0 * abs(cos(shearRotationAngle)), 0.0f, -1.0 * abs(sin(shearRotationAngle))));
+	}
+	//fourth quadrant
+	else if (shearRotationAngle <= -270 && shearRotationAngle > -360 || shearRotationAngle > 0 && shearRotationAngle <= 90) {
+		return(vec3(1.0 * abs(sin(shearRotationAngle)), 0.0f, 1.0 * abs(cos(shearRotationAngle))));
+	}
+}
