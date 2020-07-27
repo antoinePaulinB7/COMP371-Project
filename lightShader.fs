@@ -10,6 +10,11 @@
 
 	uniform float shouldRenderShadows = 1.0f;
 	uniform sampler2D shadowMap;
+	uniform float coeffAmbient;
+	uniform float coeffDiffuse;
+	uniform float coeffSpecular;
+	uniform int coeffShininess;
+	uniform vec3 lightColor;
 
 	out vec4 fragmentColor;
 
@@ -24,14 +29,7 @@
 	}
 
 	void main()
-	{
-		//Initialize variables for lighting attributes
-		float coeffAmbient = 0.3f;
-		float coeffDiffuse = 0.8f;
-		float coeffSpecular = 0.5f;
-		int coeffShininess = 256;
-		vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
-		
+	{		
 		//Shadow math
 		vec3 shadowCoord = (shadowCoordinate.xyz / shadowCoordinate.w) * 0.5 + 0.5; 
 		float visibility = 1.0f;
@@ -51,6 +49,10 @@
 		float diff = max(dot(norm, lightDirection), 0.0f);
 		vec3 diffuseIntensity = coeffDiffuse * diff * lightColor;
 		
+		//attenuation maths following the attenuation formula Id = (kd*Ld) / (a + bq + cq^2) * (l dot n) attenuationFactor being 1/(a + bq + cq^2)
+		//float attenuationFactor = 1 / (attenuationConstantA + (attenuationConstantB * distanceToLightSource) + (attenuationConstantC * distanceToLightSource * distanceToLightSource));
+		//vec3 diffuseIntensity = attenuationFactor * (coeffDiffuse * lightColor) * diff;
+		
 		//specular
 		vec3 viewDirection = normalize(eyeVectorV - fragPosition);
 		vec3 reflectDirection = reflect(-lightDirection, norm);
@@ -65,10 +67,6 @@
 			  totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
 		}
 
-		fragmentColor = vec4(vertexColor.r * totalIntensity.r, 
-			vertexColor.g * totalIntensity.g, 
-			vertexColor.b * totalIntensity.b,
-			1.0f);		           
 		//Calculate each color channel  (R,G,B) separately
 		//Clamp the final result to [0, 1]
 		float totalIntensityR = clampIt(totalIntensity.r);	

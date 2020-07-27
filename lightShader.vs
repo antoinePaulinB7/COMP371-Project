@@ -16,6 +16,7 @@
 	out vec3 lightVectorL;
 	out vec3 eyeVectorV;
     out vec4 shadowCoordinate;
+	out float distanceToLightSource;
 
     void main()
     {
@@ -25,12 +26,16 @@
 		mat4 mvp = projectionMatrix * viewMatrix * worldMatrix;
         gl_Position = mvp * vec4(aPos, 1.0f);
 		
-		// used this reference https://learnopengl.com/Lighting/Basic-Lighting
+		//used this reference https://learnopengl.com/Lighting/Basic-Lighting
 		//Light math
 		fragPosition = vec3(worldMatrix * vec4(aPos, 1.0));
 		normalN = vec3(worldMatrix * vec4(aNormal, 0.0f));
 		lightVectorL = lightPosition;
 		eyeVectorV = normalize(vec3(viewMatrix * vec4((cameraPosition - fragPosition), 0.0f)));
+
+		//Distance to Light math
+		vec3 vectorToLightSource = lightPosition - fragPosition;
+		distanceToLightSource = length(vectorToLightSource);
 
 		//Shadow math
 		//Transform points in shadow map
