@@ -603,7 +603,7 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 #pragma endregion
 #pragma region modelInput
 //storing the redering mode in a variable 
-int renderingMode = GL_TRIANGLE_STRIP;
+int renderingMode = GL_TRIANGLES;
 bool renderShadows = true;
 void handleRenderingModeInput(GLFWwindow* window) {
 	//----------------------------------------------------------------------------------
@@ -615,12 +615,12 @@ void handleRenderingModeInput(GLFWwindow* window) {
 
 	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) //change to lines
 	{
-		renderingMode = GL_LINES;
+		renderingMode = GL_LINE_LOOP;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) //change to trianges
 	{
-		renderingMode = GL_TRIANGLE_STRIP;
+		renderingMode = GL_TRIANGLES;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) //toggle shadow rendering
@@ -648,7 +648,6 @@ bool shearStepping = false;
 bool shearSteppingBackward = false;
 bool shearWalking = false;
 int shearDirection = 0;
-bool walkingPressed = false;
 
 // Declaring model matrices
 mat4 modelShearingMatrix = mat4(1.0f);
@@ -760,11 +759,8 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	// Move/Shear model forward
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
 	{
-		if (!walkingPressed) {
-			shearWalking = !shearWalking;
-			shearDirection = 1;
-			walkingPressed = true;
-		}
+		shearWalking = !shearWalking;
+		shearDirection = 1;
 	}
 
 	//ONE STEP FORWARD
@@ -859,11 +855,8 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	// Move/Shear model backwards
 	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
 	{
-		if (!walkingPressed) {
-			shearWalking = !shearWalking;
-			shearDirection = -1;
-			walkingPressed = true;
-		}
+		shearWalking = !shearWalking;
+		shearDirection = -1;
 	}
 
 	/* INDIVIDUAL MOVEMENT CONTROLS */
