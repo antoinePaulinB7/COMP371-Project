@@ -477,6 +477,9 @@ int createVertexArrayObjectCoordinateXYZ()
 const int gridSize = 101; // Change only this value to change the grid size. If gridSize is 101 it Will make 100 x 100 squares in a grid
 float halfGridSize = gridSize / 2.0f;
 float lineLength = gridSize - 1.0f;
+
+vec3 gridColor = vec3(0.25f, 0.25f, 0.25f);
+
 int createVertexArrayObjectGridLine()
 {
 	// Line Vertices Array containing position & colors 
@@ -488,7 +491,7 @@ int createVertexArrayObjectGridLine()
 	{
 		if (i % 4 == 1 || i % 4 == 3) {
 			vertexArray[i] = {
-				vec3(1.0f, 1.0f, 0.0f) // Color vertex (yellow)
+				gridColor
 			};
 		}
 		else if (i % 4 == 0) {
@@ -508,7 +511,7 @@ int createVertexArrayObjectGridLine()
 	{
 		if (i % 4 == 1 || i % 4 == 3) {
 			vertexArray[i + (gridSize * 8) / 2] = {
-				vec3(1.0f, 1.0f, 0.0f) // Color vertex (yellow)
+				gridColor
 			};
 		}
 		else if (i % 4 == 0) {
@@ -558,6 +561,71 @@ int createVertexArrayObjectGridLine()
 	glBindVertexArray(0);
 
 	return vertexBufferObject;
+}
+
+int createGridSquareVertexArrayObject() {
+	// Cube model (position, colors, normals, texture coordinates)
+	float vertexArray[] = {
+		-lineLength/2, -0.5f, -lineLength/2,        	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f, //left 
+		-lineLength/2, -0.5f, lineLength/2,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 10.0f,
+		lineLength/2, -0.5f, lineLength/2,         	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     10.0f, 10.0f,
+
+		-lineLength/2, -0.5f,-lineLength/2,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f, //right
+		lineLength/2, -0.5f, lineLength/2,          	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     10.0f, 10.0f,
+		lineLength/2, -0.5f,-lineLength/2,          	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     10.0f, 0.0f,
+	};
+
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
+
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
+		3,                   // size
+		GL_FLOAT,            // type
+		GL_FALSE,            // normalized?
+		11 * sizeof(float), // stride - each vertex contain 3 vec3 (position, color, normal)
+		(void*)0             // array buffer offset
+	);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		11 * sizeof(float),
+		(void*) (3 * sizeof(float))      // color is offseted a vec3 (comes after position)
+	);
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2,                            // attribute 2 matches aNormal in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		11 * sizeof(float),
+		(void*)(2 * 3 * sizeof(float))      // normal is offseted 2 vec3 (comes after position and color)
+	);
+	glEnableVertexAttribArray(2);
+
+  glVertexAttribPointer(3,                            // attribute 3 matches aText in Vertex Shader
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		11 * sizeof(float),
+		(void*)(3 * 3 * sizeof(float))      // texture is offseted 2 vec3 (comes after position and color)
+	);
+	glEnableVertexAttribArray(3);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	return vertexArrayObject;
 }
 #pragma endregion
 
@@ -1479,6 +1547,20 @@ Model* makeT9Model(int vao) {
 
 	return modelT9;
 }
+
+Model* makeFloorModel(int vao) {
+	// Draw floor using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+	
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> children = vector<Model*>();
+	Model* floorModel = new Model(vao, 6, children, setUpTranslation, setUpRotation, setUpScaling, wood);
+
+	return floorModel;
+}
+
 #pragma endregion
 
 void handleExitInput(GLFWwindow* window) {
@@ -1656,8 +1738,8 @@ int main(int argc, char* argv[])
 
   wood = {};
   wood.texture = woodTexture;
-  wood.lightCoefficients = vec4(0.5f, 0.8f, 0.5f, 256);
-  wood.lightColor = vec3(1.0f);
+  wood.lightCoefficients = vec4(0.4f, 0.8f, 0.9f, 256);
+  wood.lightColor = vec3(252.0f/255.0f, 244.0f/255.0f, 202.0f/255.0f);
 
   metal = {};
   metal.texture = metalTexture;
@@ -1680,6 +1762,7 @@ int main(int argc, char* argv[])
   int texturedCubeVAO = createTextureCubeVertexArrayObject();
 	int vao = createVertexArrayObjectR4();
 	int gridVAO = createVertexArrayObjectGridLine();
+	int gridSquare = createGridSquareVertexArrayObject();
 	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
 
 	//Create hierarchical models
@@ -1697,6 +1780,9 @@ int main(int argc, char* argv[])
 
 	mat4 C4BaseTranslation = translate(mat4(1.0f), vec3(halfGridSize - 1, 2.5f, halfGridSize));	//Model's start pos doesn't change
 	Model* c4Model = makeC4Model(texturedCubeVAO);
+
+	mat4 floorBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
+	Model* floorModel = makeFloorModel(gridSquare);
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -1767,21 +1853,24 @@ int main(int argc, char* argv[])
 		c4ModelRotationMatrix = rotate(mat4(1.0f), radians(c4ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(c4ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
 		c4ModelTranslationMatrix = translate(mat4(1.0f), c4ModelPosition);
 		c4ModelMatrix = c4ModelTranslationMatrix * c4ModelScalingMatrix * c4ModelRotationMatrix;
-		
+
+		mat4 floorModelMatrix = translate(mat4(1.0f), vec3(0.0f)) * scale(mat4(1.0f), vec3(1.0f)) * rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	
 		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix;
 		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix;
 		mat4 U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix;
 		mat4 T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix;
 		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix;
+		mat4 floorMatrix = worldOrientationModelMatrix * floorBaseTranslation * translate(mat4(1.0f), vec3(0.0f));
 #pragma endregion
 
 		//Draw scene for the shadow map
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		//u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation);
+		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-
+		floorModel->draw(floorMatrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 #pragma endRegion
 
 #pragma region shadowPass2
@@ -1801,6 +1890,7 @@ int main(int argc, char* argv[])
 		u3Model->draw(U3Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		t9Model->draw(T9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		floorModel->draw(floorMatrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 
 #pragma endregion
 
