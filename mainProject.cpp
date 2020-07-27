@@ -1918,7 +1918,7 @@ void useLightingShader() {
 	glUniform1f(shouldRenderShadowsLocation, renderShadows);
 
 	//light variables
-	float kAmbient = 0.3f;
+	float kAmbient = 0.1f;
 	float kDiffuse = 0.8f;
 	float kSpecular = 0.5f;
 	int aShininess = 256;
