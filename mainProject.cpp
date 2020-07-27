@@ -2271,9 +2271,15 @@ int main(int argc, char* argv[])
 	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
 
   // Load Textures
+  #if defined(PLATFORM_OSX) || __linux__
   brickTexture = loadTexture("brick.jpg");
   woodTexture = loadTexture("wood.jpg");
   metalTexture = loadTexture("metal2.jpg");
+  #else
+  brickTexture = loadTexture("../Source/COMP371-Group14-Project/brick.jpg");
+  woodTexture = loadTexture("../Source/COMP371-Group14-Project/wood.jpg");
+  metalTexture = loadTexture("../Source/COMP371-Group14-Project/metal2.jpg");
+  #endif
 
   std::cout << brickTexture << std::endl;
   std::cout << woodTexture << std::endl;
@@ -2281,12 +2287,12 @@ int main(int argc, char* argv[])
 
   brick = {};
   brick.texture = brickTexture;
-  brick.lightCoefficients = vec4(0.4f, 0.4f, 0.4f, 125);
+  brick.lightCoefficients = vec4(0.4f, 0.4f, 0.4f, 0);
   brick.lightColor = vec3(0.9f);
 
   wood = {};
   wood.texture = woodTexture;
-  wood.lightCoefficients = vec4(0.4f, 0.8f, 0.9f, 256);
+  wood.lightCoefficients = vec4(0.4f, 0.8f, 0.9f, 52);
   wood.lightColor = vec3(252.0f/255.0f, 244.0f/255.0f, 202.0f/255.0f);
 
   metal = {};
@@ -2295,9 +2301,15 @@ int main(int argc, char* argv[])
   metal.lightColor = vec3(1.0f, 1.0f, 0.0f);
 
 	// Compile and link shaders here ...
+  #if defined(PLATFORM_OSX) || __linux__
+	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
+	phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
+	shadowShaderProgram = shader("shadowShader.vs", "shadowShader.fs");
+  #else
 	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
 	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
 	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
+  #endif
 
 
 #pragma endregion windowSetUp
@@ -2312,7 +2324,12 @@ int main(int argc, char* argv[])
 	int gridVAO = createVertexArrayObjectGridLine();
 	int gridSquare = createGridSquareVertexArrayObject();
 	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
+
+  #if defined(PLATFORM_OSX) || __linux__
+	int sphereVAO = createSphereObjectVAO("sphere.obj", sphereVertices);
+  #else
 	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/sphere.obj", sphereVertices);
+  #endif
 
 
 	//Create hierarchical models
