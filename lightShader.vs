@@ -31,7 +31,7 @@
 		fragPosition = vec3(worldMatrix * vec4(aPos, 1.0));
 		normalN = vec3(worldMatrix * vec4(aNormal, 0.0f));
 		lightVectorL = lightPosition;
-		eyeVectorV = normalize(vec3(viewMatrix * vec4((cameraPosition - fragPosition), 0.0f)));
+		eyeVectorV = normalize(vec3(vec4((cameraPosition - fragPosition), 0.0f)));
 
 		//Distance to Light math
 		vec3 vectorToLightSource = lightPosition - fragPosition;
