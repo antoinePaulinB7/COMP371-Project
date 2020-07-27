@@ -70,6 +70,10 @@
 		vec3 viewDirection = normalize(eyeVectorV);
 		vec3 reflectDirection = reflect(-lightDirection, norm);
 		float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), coeffShininess);
+		//eliminate the backface specular light https://stackoverflow.com/questions/20008089/specular-lighting-appears-on-both-eye-facing-and-rear-sides-of-object
+		if (dot(viewDirection, norm) < 0.0f) {
+			spec = 0.0f; 
+		}
 		vec3 specularIntensity = attenuationFactor * coeffSpecular * spec * lightColor;
 		
 		//Phong Lighting Model combines the 3 lighting components
