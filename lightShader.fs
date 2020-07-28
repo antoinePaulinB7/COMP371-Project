@@ -10,6 +10,7 @@
 	in vec4 shadowCoordinate;
 
 	uniform float shouldRenderShadows = 1.0f;
+  uniform float shouldRenderTextures = 1.0f;
 	uniform sampler2D shadowMap;
   uniform sampler2D someTexture;
 
@@ -94,16 +95,22 @@
 			 totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
 		}
 
-    vec4 texColor = texture(someTexture, texCoord);
+    vec4 texColor;
+
+    if(shouldRenderTextures > 0.5f) {
+      texColor = texture(someTexture, texCoord);
+    } else {
+      texColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);
+    }
 
 		//Calculate each color channel  (R,G,B) separately
 		//Clamp the final result to [0, 1]
 		float totalIntensityR = totalIntensity.r;//clampIt(totalIntensity.r);	
 		float totalIntensityG = totalIntensity.g;//clampIt(totalIntensity.g);	
 		float totalIntensityB = totalIntensity.b;//clampIt(totalIntensity.b);	
-			   
-		fragmentColor = vec4(texColor.r * totalIntensityR, 
-			texColor.g * totalIntensityG, 
-			texColor.b * totalIntensityB,
-			1.0f);
+
+    fragmentColor = vec4(texColor.r * totalIntensityR, 
+      texColor.g * totalIntensityG, 
+      texColor.b * totalIntensityB,
+      1.0f);
 	}

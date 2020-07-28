@@ -794,6 +794,7 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 //storing the redering mode in a variable 
 int renderingMode = GL_TRIANGLES;
 bool renderShadows = true;
+bool renderTextures = true;
 void handleRenderingModeInput(GLFWwindow* window) {
 	//----------------------------------------------------------------------------------
 	//User can change the rendering mode
@@ -815,6 +816,11 @@ void handleRenderingModeInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) //toggle shadow rendering
 	{
 		renderShadows = !renderShadows;
+	}
+
+  if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) //toggle shadow rendering
+	{
+		renderTextures = !renderTextures;
 	}
 }
 
@@ -2182,6 +2188,9 @@ void useLightingShader() {
 	//Set up fragment shader uniforms
 	GLuint shouldRenderShadowsLocation = glGetUniformLocation(phongLightShaderProgram, "shouldRenderShadows");
 	glUniform1f(shouldRenderShadowsLocation, renderShadows);
+
+  GLuint shouldRenderTexturesLocation = glGetUniformLocation(phongLightShaderProgram, "shouldRenderTextures");
+  glUniform1f(shouldRenderTexturesLocation, renderTextures);
 }
 
 //The buffer is the memory that backs up the shadowMap texture, like how the VBO is the memory that backs up the VAO
