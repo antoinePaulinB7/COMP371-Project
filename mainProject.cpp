@@ -26,9 +26,9 @@ using namespace std;
 int windowWidth = 1024, windowHeight = 764;
 const float shadowMapWidth = 2048, shadowMapHeight = 2048;
 
-GLuint brickTexture, woodTexture, metalTexture;
+GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture;
 
-Material brick, wood, metal;
+Material brick, wood, metal, box, floorTiles;
 vec3 getShearMovement(float shearRotationAngle);
 
 #pragma region unitCubes
@@ -623,12 +623,12 @@ int createGridSquareVertexArrayObject() {
 	// Cube model (position, colors, normals, texture coordinates)
 	float vertexArray[] = {
 		-lineLength/2, -0.5f, -lineLength/2,        	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f, //left 
-		-lineLength/2, -0.5f, lineLength/2,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 10.0f,
-		lineLength/2, -0.5f, lineLength/2,         	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     10.0f, 10.0f,
+		-lineLength/2, -0.5f, lineLength/2,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 8.0f,
+		lineLength/2, -0.5f, lineLength/2,         	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     8.0f, 8.0f,
 
 		-lineLength/2, -0.5f,-lineLength/2,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f, //right
-		lineLength/2, -0.5f, lineLength/2,          	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     10.0f, 10.0f,
-		lineLength/2, -0.5f,-lineLength/2,          	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     10.0f, 0.0f,
+		lineLength/2, -0.5f, lineLength/2,          	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     8.0f, 8.0f,
+		lineLength/2, -0.5f,-lineLength/2,          	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     8.0f, 0.0f,
 	};
 
 	// Create a vertex array
@@ -1256,7 +1256,7 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 
 	}
 
-	/* Simultaneously pressing T + (1 OR 2 OR 3 OR 4 OR 5) will translate the chosen character on Y*/
+	/* Simultaneously pressing SHIFT + (1 OR 2 OR 3 OR 4 OR 5) will translate the chosen character on Y*/
 	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
 		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
 	{
@@ -1420,7 +1420,7 @@ Model* makeL9Model(int vao, int sphereVAO) {
 	// Creating left-part of the letter L
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 1.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter L
 	vector<Model*> LChildren = vector<Model*>();
@@ -1429,7 +1429,7 @@ Model* makeL9Model(int vao, int sphereVAO) {
 	//We can then very simply manipulate this modelL to transform the entire L
 	//for example, to scoot the L left to make room for the number, making the entire L9 centered.
 	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 0.0f, 0.0f));
-	Model* modelL = new Model(vao, 0, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f), brick);
+	Model* modelL = new Model(vao, 0, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f), box);
 
 
 	// Creating top-part of the number 9
@@ -1471,7 +1471,7 @@ Model* makeL9Model(int vao, int sphereVAO) {
 	// Setting up Sphere
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 4.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(6.0f, 6.0f, 6.0f));
-	Model* modelSphere = new Model(sphereVAO, sphereVertices, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
+	Model* modelSphere = new Model(sphereVAO, sphereVertices, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, wood);
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -1493,12 +1493,12 @@ Model* makeL9BottomModel(int vao) {
 	// Creating bottom-part of the letter L
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -1.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Creating right-part of the letter L
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.5f, -1.75f, 0.0f));
-	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter L
 	vector<Model*> LChildren = vector<Model*>();
@@ -1546,15 +1546,15 @@ Model* makeI9Model(int vao, int sphereVAO) {
 	mat4 setUpTranslation = mat4(1.0f);
 
 	// Creating top-part of the letter I
-	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 4.5f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
-	Model* modelItopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelItopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 
 	// Creating middlet-part of the letter I
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.75f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 2.75f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelImiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelImiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter I
 	vector<Model*> IChildren = vector<Model*>();
@@ -1563,27 +1563,27 @@ Model* makeI9Model(int vao, int sphereVAO) {
 	//The pieces of the I are placed such that the entire I is centered at origin on all axes
 	//We can then very simply manipulate this modelI to transform the entire I
 	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
 	Model* modelI = new Model(vao, 0, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating top-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 4.5f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
 	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating left-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 3.25f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 3.25f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
 	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating bottom-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
 	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 3.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 3.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
 	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
@@ -1594,7 +1594,7 @@ Model* makeI9Model(int vao, int sphereVAO) {
 	nineChildren.push_back(model9right);
 	nineChildren.push_back(model9left);
 	nineChildren.push_back(model9bottom);
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
 	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
@@ -1606,9 +1606,9 @@ Model* makeI9Model(int vao, int sphereVAO) {
 	Model* modelI9 = new Model(vao, 0, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up Sphere
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 5.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(6.0f, 6.0f, 6.0f));
-	Model* modelSphere = new Model(sphereVAO, sphereVertices, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
+	Model* modelSphere = new Model(sphereVAO, sphereVertices, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, wood);
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -1627,14 +1627,14 @@ Model* makeI9BottomModel(int vao) {
 	glm::mat4 setUpTranslation = mat4(1.0f);
 
 	// Creating middlet-part of the letter I
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 1.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 1.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelImiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelImiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Creating bottom-part of the letter I
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
-	Model* modelIbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelIbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter I
 	vector<Model*> IChildren = vector<Model*>();
@@ -1643,12 +1643,12 @@ Model* makeI9BottomModel(int vao) {
 	//The pieces of the I are placed such that the entire I is centered at origin on all axes
 	//We can then very simply manipulate this modelI to transform the entire I
 	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
 	Model* modelI = new Model(vao, 0, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.5f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
 	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
@@ -1656,7 +1656,7 @@ Model* makeI9BottomModel(int vao) {
 	// Setting up the number 9
 	vector<Model*> nineChildren = vector<Model*>();
 	nineChildren.push_back(model9right);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
 	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
@@ -1685,12 +1685,12 @@ Model* makeU3Model(int vao, int sphereVAO) {
 	// Creating left-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelUleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Creating right-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUrightBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelUrightBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter U
 	vector<Model*> UChildren = vector<Model*>();
@@ -1701,7 +1701,6 @@ Model* makeU3Model(int vao, int sphereVAO) {
 	//for example, to scoot the U left to make room for the number, making the entire U3 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
 	Model* modelU = new Model(vao, 0, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
-
 
 	// Creating base-part of the number 3
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 2.0f, 0.0f));
@@ -1737,7 +1736,7 @@ Model* makeU3Model(int vao, int sphereVAO) {
 	// Setting up Sphere
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 4.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(6.0f, 6.0f, 6.0f));
-	Model* modelSphere = new Model(sphereVAO, sphereVertices, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
+	Model* modelSphere = new Model(sphereVAO, sphereVertices, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, wood);
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -1759,18 +1758,18 @@ Model* makeU3BottomModel(int vao) {
 	// Creating left-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelUleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 
 	// Creating bottom-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -1.25f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
-	Model* modelUbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelUbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Creating right-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUrightBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelUrightBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter U
 	vector<Model*> UChildren = vector<Model*>();
@@ -1820,21 +1819,20 @@ Model* makeU3BottomModel(int vao) {
 }
 
 Model* makeT9Model(int vao, int sphereVAO) {
-	// Draw I9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	// Draw T9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	glm::mat4 setUpScaling = mat4(1.0f);
 	glm::mat4 setUpRotation = mat4(1.0f);
 	glm::mat4 setUpTranslation = mat4(1.0f);
 
 	// Creating top-part of the letter T
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.5f, 4.25f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, 4.25f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
-	Model* modelTtopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
-
+	Model* modelTtopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Creating middle-part of the letter T
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.5f, 2.5f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, 2.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelTmiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelTmiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter T
 	vector<Model*> TChildren = vector<Model*>();
@@ -1843,26 +1841,26 @@ Model* makeT9Model(int vao, int sphereVAO) {
 	//The pieces of the I are placed such that the entire T is centered at origin on all axes
 	//We can then very simply manipulate this modelI to transform the entire T
 	//for example, to scoot the T left to make room for the number, making the entire I9 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
 	Model* modelT = new Model(vao, 0, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Creating top-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 4.5f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
 	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating left-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 3.25f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 3.25f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
 	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating bottom-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
 	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 3.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 3.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
 	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
@@ -1873,7 +1871,7 @@ Model* makeT9Model(int vao, int sphereVAO) {
 	nineChildren.push_back(model9right);
 	nineChildren.push_back(model9left);
 	nineChildren.push_back(model9bottom);
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
 	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
@@ -1885,9 +1883,9 @@ Model* makeT9Model(int vao, int sphereVAO) {
 	Model* modelT9 = new Model(vao, 0, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up Sphere
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 5.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(6.0f, 6.0f, 6.0f));
-	Model* modelSphere = new Model(sphereVAO, sphereVertices, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
+	Model* modelSphere = new Model(sphereVAO, sphereVertices, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, wood);
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -1906,9 +1904,9 @@ Model* makeT9BottomModel(int vao) {
 	glm::mat4 setUpTranslation = mat4(1.0f);
 
 	// Creating middlet-part of the letter T
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.5f, 0.5f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, 0.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-	Model* modelTmiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelTmiddleBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter T
 	vector<Model*> TChildren = vector<Model*>();
@@ -1916,12 +1914,12 @@ Model* makeT9BottomModel(int vao) {
 	//The pieces of the I are placed such that the entire I is centered at origin on all axes
 	//We can then very simply manipulate this modelI to transform the entire I
 	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
 	Model* modelI = new Model(vao, 0, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.5f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
 	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
@@ -1929,7 +1927,7 @@ Model* makeT9BottomModel(int vao) {
 	// Setting up the number 9
 	vector<Model*> nineChildren = vector<Model*>();
 	nineChildren.push_back(model9right);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
 	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
@@ -1958,12 +1956,12 @@ Model* makeC4Model(int vao, int sphereVAO) {
 	// Creating left-part of the letter C
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelCleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelCleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Creating top-part of the letter C
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 0.0f));
-	Model* modelCtopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelCtopBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter C
 	vector<Model*> CChildren = vector<Model*>();
@@ -1972,21 +1970,21 @@ Model* makeC4Model(int vao, int sphereVAO) {
 	//The pieces of the C are placed such that the entire C is centered at origin on all axes
 	//We can then very simply manipulate this modelC to transform the entire C
 	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-9.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-5.0f, -2.0f, 0.0f));
 	Model* modelC = new Model(vao, 0, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Creating right-part of the number 4
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.5f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, 2.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.75f, 1.0f));
 	Model* model4right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating middle-part of the number 4
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 1.5f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
 	Model* model4middle = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating left-part of the number 4
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 3.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 3.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
 	Model* model4left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
@@ -1995,7 +1993,7 @@ Model* makeC4Model(int vao, int sphereVAO) {
 	fourChildren.push_back(model4left);
 	fourChildren.push_back(model4middle);
 	fourChildren.push_back(model4right);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, -2.0f, 0.0f));
 	Model* model4 = new Model(vao, 0, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire C4
@@ -2006,9 +2004,9 @@ Model* makeC4Model(int vao, int sphereVAO) {
 	Model* modelC4 = new Model(vao, 0, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up Sphere
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-4.0f, 5.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(6.0f, 6.0f, 6.0f));
-	Model* modelSphere = new Model(sphereVAO, sphereVertices, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
+	Model* modelSphere = new Model(sphereVAO, sphereVertices, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, wood);
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -2027,14 +2025,14 @@ Model* makeC4BottomModel(int vao) {
 	glm::mat4 setUpTranslation = mat4(1.0f);
 
 	// Creating left-part of the letter C
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelCleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelCleftBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Creating bottom-part of the letter C
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.0f, -0.75f, 0.0f));
-	Model* modelCbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(3.0f, -0.75f, 0.0f));
+	Model* modelCbottomBar = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter C
 	vector<Model*> CChildren = vector<Model*>();
@@ -2043,12 +2041,12 @@ Model* makeC4BottomModel(int vao) {
 	//The pieces of the C are placed such that the entire C is centered at origin on all axes
 	//We can then very simply manipulate this modelC to transform the entire C
 	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-9.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-7.0f, -2.0f, 0.0f));
 	Model* modelC = new Model(vao, 0, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating right-part of the number 4
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
 	Model* model4right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
@@ -2056,7 +2054,7 @@ Model* makeC4BottomModel(int vao) {
 	// Setting up the number 4
 	vector<Model*> fourChildren = vector<Model*>();
 	fourChildren.push_back(model4right);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, -2.0f, 0.0f));
 	Model* model4 = new Model(vao, 0, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire C4
@@ -2083,15 +2081,15 @@ Model* makeT9Model(int vao) {
 	mat4 setUpTranslation = mat4(1.0f);
 
 	// Creating hat of the letter T
-	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 4.5f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
-	Model* modelThat = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	Model* modelThat = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 
 	// Creating leg of the letter T
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 4.0f, 1.0f));
-	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 2.0f, 0.0f));
-	Model* modelTleg = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, brick);
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 2.0f, 0.0f));
+	Model* modelTleg = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, box);
 
 	// Setting up the letter T
 	vector<Model*> TChildren = vector<Model*>();
@@ -2101,27 +2099,27 @@ Model* makeT9Model(int vao) {
 	//The pieces of the T are placed such that the entire T is centered at origin on all axes
 	//We can then very simply manipulate this modelT to transform the entire T
 	//for example, to scoot the T left to make room for the number, making the entire T9 centered.
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, -2.0f, 0.0f));
 	Model* modelT = new Model(vao, 0, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating top-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 4.5f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(4.75f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
 	Model* model9top = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating left-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 3.25f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(3.5f, 3.25f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
 	Model* model9left = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating bottom-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(2.75f, 2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(4.75f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
 	Model* model9bottom = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
 	// Creating right-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(4.0f, 2.51f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(6.0f, 2.51f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
 	Model* model9right = new Model(vao, numVerticesPerCube, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, metal);
 
@@ -2132,7 +2130,7 @@ Model* makeT9Model(int vao) {
 	nineChildren.push_back(model9right);
 	nineChildren.push_back(model9left);
 	nineChildren.push_back(model9bottom);
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, -2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, -2.0f, 0.0f));
 	Model* model9 = new Model(vao, 0, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
@@ -2327,10 +2325,14 @@ int main(int argc, char* argv[])
   brickTexture = loadTexture("brick.jpg");
   woodTexture = loadTexture("wood.jpg");
   metalTexture = loadTexture("metal2.jpg");
+  boxTexture = loadTexture("box.jpg");
+  floorTilesTexture = loadTexture("floortiles.jpg");
   #else
   brickTexture = loadTexture("../Source/COMP371-Group14-Project/brick.jpg");
   woodTexture = loadTexture("../Source/COMP371-Group14-Project/wood.jpg");
   metalTexture = loadTexture("../Source/COMP371-Group14-Project/metal2.jpg");
+  boxTexture = loadTexture("../Source/COMP371-Group14-Project/box.jpg");
+  floorTilesTexture = loadTexture("../Source/COMP371-Group14-Project/floortiles.jpg");
   #endif
 
   std::cout << brickTexture << std::endl;
@@ -2351,6 +2353,17 @@ int main(int argc, char* argv[])
   metal.texture = metalTexture;
   metal.lightCoefficients = vec4(0.3f, 0.8f, 0.5f, 256);
   metal.lightColor = vec3(1.0f, 1.0f, 0.0f);
+
+  box = {};
+  box.texture = boxTexture;
+  box.lightCoefficients = vec4(0.4f, 0.4f, 0.4f, 0);
+  box.lightColor = vec3(0.9f);
+
+  floorTiles = {};
+  floorTiles.texture = floorTilesTexture;
+  floorTiles.lightCoefficients = vec4(0.3f, 0.6f, 0.9f, 256);
+  floorTiles.lightColor = vec3(1.0f, 1.0f, 1.0f);
+
 
 	// Compile and link shaders here ...
   #if defined(PLATFORM_OSX) || __linux__
@@ -2376,7 +2389,6 @@ int main(int argc, char* argv[])
 	int gridVAO = createVertexArrayObjectGridLine();
 	int gridSquare = createGridSquareVertexArrayObject();
 	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
-
   #if defined(PLATFORM_OSX) || __linux__
 	int sphereVAO = createSphereObjectVAO("sphere.obj", sphereVertices);
   #else
