@@ -795,6 +795,10 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 int renderingMode = GL_TRIANGLES;
 bool renderShadows = true;
 bool renderTextures = true;
+static bool BPressed = false;
+static bool MPressed = false;
+static bool NPressed = false;
+static bool XPressed = false;
 void handleRenderingModeInput(GLFWwindow* window) {
 	//----------------------------------------------------------------------------------
 	//User can change the rendering mode
@@ -813,14 +817,24 @@ void handleRenderingModeInput(GLFWwindow* window) {
 		renderingMode = GL_TRIANGLES;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) //toggle shadow rendering
+	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS && BPressed == false) //toggle shadow rendering
 	{
 		renderShadows = !renderShadows;
+		BPressed = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE && BPressed == true) //toggle shadow rendering
+	{
+		BPressed = false;
 	}
 
-  if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) //toggle shadow rendering
+  	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && XPressed == false) //toggle shadow rendering
 	{
 		renderTextures = !renderTextures;
+		XPressed = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_RELEASE && XPressed == true) //toggle shadow rendering
+	{
+		XPressed = false;
 	}
 }
 
@@ -975,10 +989,15 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 		C4BaseTranslation = C4StartTranslation;
 	}
 	// Move/Shear model forward
-	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && MPressed == false)
 	{
 		shearWalking = !shearWalking;
 		shearDirection = 1;
+		MPressed = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_RELEASE && MPressed == true)
+	{
+		MPressed = false;
 	}
 
 	//ONE STEP FORWARD
@@ -1071,10 +1090,15 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	}
 
 	// Move/Shear model backwards
-	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS && NPressed == false)
 	{
 		shearWalking = !shearWalking;
 		shearDirection = -1;
+		NPressed = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_RELEASE && NPressed == true)
+	{
+		NPressed = false;
 	}
 
 	/* INDIVIDUAL MOVEMENT CONTROLS */
