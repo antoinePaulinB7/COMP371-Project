@@ -2152,7 +2152,7 @@ Model* makeFloorModel(int vao) {
 	
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> children = vector<Model*>();
-	Model* floorModel = new Model(vao, 6, children, setUpTranslation, setUpRotation, setUpScaling, floorTiles);
+	Model* floorModel = new Model(vao, 6, children, setUpTranslation, setUpRotation, setUpScaling, wood);
 
 	return floorModel;
 }
