@@ -10,6 +10,7 @@
 	in vec4 shadowCoordinate;
 
 	uniform float shouldRenderShadows = 1.0f;
+  uniform float shouldRenderTextures = 1.0f;
 	uniform sampler2D shadowMap;
   uniform sampler2D someTexture;
 
@@ -42,13 +43,24 @@
 		
 		//Shadow math
 		vec3 shadowCoord = (shadowCoordinate.xyz / shadowCoordinate.w) * 0.5 + 0.5; 
-		float visibility = 1.0f;
-		float depthVal = texture(shadowMap, shadowCoord.xy).z;
+		float visibility = 0.0f;
 		float dist = shadowCoord.z;
-		float bias = 0.000001f;
-		if (dist > depthVal + bias) {
-			visibility = 0.0f;
+		float bias = 0.00001f;
+		int percentageCloserFilteringRadius = 2;
+		vec2 shadowMapDimensions = textureSize(shadowMap, 0);	//https://www.khronos.org/opengl/wiki/Sampler_(GLSL)#Texture_size_retrieval
+		float shadowMapTexelWidth = 1.0f / shadowMapDimensions.x;
+		float shadowMapTexelHeight = 1.0f / shadowMapDimensions.y;
+		for (int i = -percentageCloserFilteringRadius; i <= percentageCloserFilteringRadius; ++i) {
+			for (int j = -percentageCloserFilteringRadius; j <= percentageCloserFilteringRadius; ++j) {
+				float depthVal = texture(shadowMap, vec2(shadowCoord.x + (i*shadowMapTexelWidth), shadowCoord.y + (j*shadowMapTexelHeight))).z;
+				if (dist <= depthVal + bias) {
+					visibility += 1.0f;
+				}
+			}
 		}
+		float sampleDiameter = (percentageCloserFilteringRadius * 2.0f + 1.0f);
+		visibility = visibility / (sampleDiameter * sampleDiameter);
+
 
 		//ambient
 		vec3 ambientIntensity = lightColor * coeffAmbient;
@@ -66,9 +78,13 @@
 		vec3 diffuseIntensity = attenuationFactor * (coeffDiffuse * lightColor) * diff;
 		
 		//specular
-		vec3 viewDirection = normalize(eyeVectorV - fragPosition);
+		vec3 viewDirection = normalize(eyeVectorV);
 		vec3 reflectDirection = reflect(-lightDirection, norm);
 		float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), coeffShininess);
+		//eliminate the backface specular light https://stackoverflow.com/questions/20008089/specular-lighting-appears-on-both-eye-facing-and-rear-sides-of-object
+		if (dot(viewDirection, norm) < 0.0f) {
+			spec = 0.0f; 
+		}
 		vec3 specularIntensity = attenuationFactor * coeffSpecular * spec * lightColor;
 		
 		//Phong Lighting Model combines the 3 lighting components
@@ -76,19 +92,25 @@
 		if (shouldRenderShadows > 0.5f) {
 			totalIntensity = ambientIntensity + (visibility * diffuseIntensity) + (visibility * specularIntensity);
 		} else {
-			  totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
+			 totalIntensity = ambientIntensity + diffuseIntensity + specularIntensity;
 		}
 
-    vec4 texColor = texture(someTexture, texCoord);
+    vec4 texColor;
+
+    if(shouldRenderTextures > 0.5f) {
+      texColor = texture(someTexture, texCoord);
+    } else {
+      texColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);
+    }
 
 		//Calculate each color channel  (R,G,B) separately
 		//Clamp the final result to [0, 1]
 		float totalIntensityR = totalIntensity.r;//clampIt(totalIntensity.r);	
 		float totalIntensityG = totalIntensity.g;//clampIt(totalIntensity.g);	
 		float totalIntensityB = totalIntensity.b;//clampIt(totalIntensity.b);	
-			   
-		fragmentColor = vec4(texColor.r * totalIntensityR, 
-			texColor.g * totalIntensityG, 
-			texColor.b * totalIntensityB,
-			1.0f);
+
+    fragmentColor = vec4(texColor.r * totalIntensityR, 
+      texColor.g * totalIntensityG, 
+      texColor.b * totalIntensityB,
+      1.0f);
 	}
