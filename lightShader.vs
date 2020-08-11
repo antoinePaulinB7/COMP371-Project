@@ -17,11 +17,22 @@
 							//total = 64
 	};
 
-    uniform mat4 depthVP;
-    uniform vec3 lightPosition;
-    
-	uniform mat4 depthVP2;
-    uniform vec3 lightPosition2 = vec3(0.0f);
+	layout (std140) uniform LightInfo
+	{
+		mat4 depthVP;						// 16		// 0 (column 0)
+											// 16		// 16 (column 1)
+											// 16		// 32 (column 2)
+											// 16		// 48 (column 3)
+		vec3 lightPosition;					// 16		// 64
+
+		mat4 depthVP2;						// 16		// 80 (column 0)
+											// 16		// 96 (column 1)
+											// 16		// 112 (column 2)
+											// 16		// 128 (column 3)
+		vec3 lightPosition2;				// 16		// 144
+											//total = 160
+	};
+
 
     out vec2 texCoord;
     out vec3 vertexColor;

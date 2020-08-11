@@ -1389,6 +1389,8 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 
 #pragma region makeModels
 unsigned int uboWorldMatrixBlock;
+unsigned int uboDepthVPBlock;
+unsigned int uboLightInfoBlock;
 int numVerticesPerCube = 36;
 
 Model* makeL9Model(int vao, int sphereVAO) {
@@ -2172,14 +2174,11 @@ void checkErrors() {
 	}
 }
 
-GLuint worldMatrixLocation;
 GLuint defaultShaderProgram;
 GLuint phongLightShaderProgram;
 GLuint shadowShaderProgram;
 void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 	glUseProgram(shaderProgram);
-
-	worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 
 	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
@@ -2199,8 +2198,13 @@ mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 100.0f);
 mat4 lightViewMatrix = lookAt(vec3(0.0f, 30.0f, 0.0f),  // eye
 	vec3(0.0f, 0.0f, 0.0f),  // center
 	vec3(1.0f, 0.0f, 0.0f)); // up
-void useShadowShader() {
-	useShader(shadowShaderProgram, lightProjectionMatrix, lightViewMatrix);
+void useShadowShader(mat4 projectionMatrix, mat4 viewMatrix) {
+	glUseProgram(shadowShaderProgram);
+
+	mat4 depthVP = projectionMatrix * viewMatrix;
+	glBindBuffer(GL_UNIFORM_BUFFER, uboDepthVPBlock);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &depthVP[0][0]);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void useLightingShader() {
@@ -2210,12 +2214,21 @@ void useLightingShader() {
 	useShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
 
 	//Set up vertex shader uniforms
-	GLuint depthVPLocation = glGetUniformLocation(phongLightShaderProgram, "depthVP");
 	mat4 depthVP = lightProjectionMatrix * lightViewMatrix;
-	glUniformMatrix4fv(depthVPLocation, 1, GL_FALSE, &depthVP[0][0]);
+	vec3 lightPosition = vec3(0.0f, 30.0f, 0.0f);
+	vec3 lightPosition2 = vec3(0.0f);
 
-	GLuint lightPosition = glGetUniformLocation(phongLightShaderProgram, "lightPosition");
-	glUniform3f(lightPosition, 0.0f, 30.0f, 0.0f);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboLightInfoBlock);
+	GLsizeiptr currentLocation = 0;
+	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, sizeof(glm::mat4), &depthVP[0][0]);
+	currentLocation += sizeof(glm::mat4);
+	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, sizeof(glm::vec3), &lightPosition);
+	currentLocation += sizeof(glm::vec3);
+	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, sizeof(glm::mat4), &depthVP[0][0]);
+	currentLocation += sizeof(glm::mat4);
+	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, sizeof(glm::vec3), &lightPosition2);
+	currentLocation += sizeof(glm::vec3);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   GLuint texture = glGetUniformLocation(phongLightShaderProgram, "someTexture");
   glUniform1i(texture, brickTexture);
@@ -2380,7 +2393,8 @@ int main(int argc, char* argv[])
 
 #pragma endregion windowSetUp
 
-	// Set up shared buffers for shaders
+#pragma region shaderBuffersSetUp
+	// world matrix (both shaders)
 	glGenBuffers(1, &uboWorldMatrixBlock);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboWorldMatrixBlock);
 	glBufferData(GL_UNIFORM_BUFFER, 64, NULL, GL_STATIC_DRAW); // allocate 64 bytes of memory
@@ -2391,6 +2405,27 @@ int main(int argc, char* argv[])
 	glUniformBlockBinding(phongLightShaderProgram, world_matrix_index_light, 0);
 	unsigned int world_matrix_index_shadow = glGetUniformBlockIndex(shadowShaderProgram, "WorldMatrix");
 	glUniformBlockBinding(shadowShaderProgram, world_matrix_index_shadow, 0);
+
+	// depth view projetion matrix (shadow shader)
+	glGenBuffers(1, &uboDepthVPBlock);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboDepthVPBlock);
+	glBufferData(GL_UNIFORM_BUFFER, 64, NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboDepthVPBlock);  // bind world matrix info to block 1
+	//bind shaders' locations for the world matrix block to the same location, block 1:
+	unsigned int depthVP_matrix_index = glGetUniformBlockIndex(shadowShaderProgram, "DepthVPMatrix");
+	glUniformBlockBinding(shadowShaderProgram, depthVP_matrix_index, 1);
+
+	// all light info matrix (light shader)
+	glGenBuffers(1, &uboLightInfoBlock);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboLightInfoBlock);
+	glBufferData(GL_UNIFORM_BUFFER, 160, NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboLightInfoBlock);  // bind world matrix info to block 1
+	//bind shaders' locations for the world matrix block to the same location, block 1:
+	unsigned int light_info_index = glGetUniformBlockIndex(phongLightShaderProgram, "LightInfo");
+	glUniformBlockBinding(phongLightShaderProgram, light_info_index, 2);
+#pragma endregion
 
 	// Define and upload geometry to the GPU here ...
 	//We have a few different cubes since some people did fun colors,
@@ -2473,7 +2508,7 @@ int main(int argc, char* argv[])
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		//use the shadow shader, draw all objects
-		useShadowShader();
+		useShadowShader(lightProjectionMatrix, lightViewMatrix);
 
 #pragma region buildTransformMatrices
 		// Building L9 scalable/translatable/rotateable matrix for individual letter
