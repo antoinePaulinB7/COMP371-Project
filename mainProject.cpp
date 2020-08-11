@@ -12,6 +12,7 @@
 #include "shaders.h"
 #include "Model.h"
 #include "LightSource.h"
+#include "LightSourceManager.h"
 #include "texture.h"
 #include <time.h>
 #include <algorithm>
@@ -2188,8 +2189,6 @@ void checkErrors() {
 GLuint defaultShaderProgram;
 GLuint phongLightShaderProgram;
 GLuint shadowShaderProgram;
-LightSource* mainLight;
-LightSource* secondaryLight;
 void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 	glUseProgram(shaderProgram);
 
@@ -2215,13 +2214,11 @@ void useLightingShader() {
 
 	//Set up vertex shader uniforms
 	glBindBuffer(GL_UNIFORM_BUFFER, uboLightInfoBlock);
-	GLsizeiptr currentLocation = 0;
-	currentLocation = mainLight->setDataForDrawing(currentLocation);
-	currentLocation = secondaryLight->setDataForDrawing(currentLocation);
+	setDataForDrawingLights();
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   GLuint texture = glGetUniformLocation(phongLightShaderProgram, "someTexture");
-  glUniform1i(texture, brickTexture);
+  glUniform1i(texture, 0);
 
   GLuint lightCoefficients = glGetUniformLocation(phongLightShaderProgram, "lightCoefficients");
   glUniform4f(lightCoefficients,  0.3f, 0.8f, 0.5f, 256);
@@ -2276,15 +2273,6 @@ void drawScene() {
 	C4BottomModel->draw(C4BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 	floorModel->draw(floorMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 
-}
-
-void makeShadowMapForLight(LightSource* currentLight) {
-	glUseProgram(shadowShaderProgram);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	currentLight->setDataForShadowMap(uboDepthVPBlock);
-
-	//Draw scene for the shadow map
-	drawScene();
 }
 
 int main(int argc, char* argv[])
@@ -2405,6 +2393,7 @@ int main(int argc, char* argv[])
 	//bind shaders' locations for the world matrix block to the same location, block 1:
 	unsigned int depthVP_matrix_index = glGetUniformBlockIndex(shadowShaderProgram, "DepthVPMatrix");
 	glUniformBlockBinding(shadowShaderProgram, depthVP_matrix_index, 1);
+	setUBODepthVPBlockInLightSourceManager(uboDepthVPBlock);
 
 	// all light info matrix (light shader)
 	glGenBuffers(1, &uboLightInfoBlock);
@@ -2467,19 +2456,7 @@ int main(int argc, char* argv[])
 	glPointSize(3.0f);
 
 	//Create light sources
-	const float bigShadowMapSize = 2048, smallShadowMapSize = 1024;
-	vec3 mainLightPosition = vec3(0.0f, 30.0f, 0.0f);
-	mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 100.0f);
-	mat4 lightViewMatrix = lookAt(mainLightPosition,  // eye
-		vec3(0.0f, 0.0f, 0.0f),  // center
-		vec3(1.0f, 0.0f, 0.0f)); // up
-	mainLight = new LightSource(mainLightPosition, lightProjectionMatrix, lightViewMatrix, bigShadowMapSize, GL_TEXTURE0);
-	vec3 secondaryLightPosition = vec3(-halfGridSize + 5, 30.0f, -halfGridSize + 5);
-	mat4 secondaryLightViewMatrix = lookAt(secondaryLightPosition,  // eye
-		secondaryLightPosition + vec3(0.0f, -30.0f, 0.0f),  // center
-		vec3(1.0f, 0.0f, 0.0f)); // up
-	secondaryLight = new LightSource(secondaryLightPosition, lightProjectionMatrix, secondaryLightViewMatrix, smallShadowMapSize, GL_TEXTURE2); 	//(skip GL_Texture1 since our model textures use that slot)
-
+	createLightSources();
 
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
@@ -2547,8 +2524,11 @@ int main(int argc, char* argv[])
 
 #pragma region shadowPass1
 		//use the shadow shader, draw all objects for all lights
-		makeShadowMapForLight(mainLight);
-		makeShadowMapForLight(secondaryLight);
+		glUseProgram(shadowShaderProgram);
+		while (makeShadowMapForNextLight()) {
+			//Draw scene for the shadow map
+			drawScene();
+		}
 #pragma endRegion
 
 #pragma region shadowPass2
@@ -2560,13 +2540,7 @@ int main(int argc, char* argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		useLightingShader();
-		GLint shadowMapLoc = glGetUniformLocation(phongLightShaderProgram, "shadowMap");
-		GLint shadowMapLoc2 = glGetUniformLocation(phongLightShaderProgram, "shadowMap2");
-		glUniform1i(shadowMapLoc, 0);
-		glUniform1i(shadowMapLoc2, 2);
-		mainLight->bindShadowMapTexture();
-		secondaryLight->bindShadowMapTexture();
-
+		bindShadowMaps(phongLightShaderProgram);
 		drawScene();
 
 #pragma endregion
@@ -2576,15 +2550,7 @@ int main(int argc, char* argv[])
 		//Draw spheres at light sources (easier to visualize)
 		glBindVertexArray(sphereVAO);
 		GLuint worldMatrixLocation = glGetUniformLocation(defaultShaderProgram, "worldMatrix");
-
-		mat4 lightPos = translate(mat4(1.0f), mainLightPosition);
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &lightPos[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, sphereVertices);
-
-		lightPos = translate(mat4(1.0f), secondaryLightPosition);
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &lightPos[0][0]);
-		glDrawArrays(GL_TRIANGLES, 0, sphereVertices);
-
+		drawLightSources(worldMatrixLocation, sphereVertices);
 
 #pragma region Grid and Coordinate Axis
 		/*

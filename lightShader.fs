@@ -5,6 +5,9 @@
     in vec3 eyeVectorV;
 	in vec3 fragPosition;
 
+	uniform float shouldRenderShadows = 1.0f;
+	uniform float shouldRenderTextures = 1.0f;
+	uniform sampler2D someTexture;	
 
 	in light1 {
 		vec3 lightVectorL;
@@ -21,11 +24,6 @@
 	} light2;
 	uniform float isLight2On = 1.0f;
 	uniform sampler2D shadowMap2;
-
-	
-	uniform float shouldRenderShadows = 1.0f;
-	uniform float shouldRenderTextures = 1.0f;
-	uniform sampler2D someTexture;	
 
     uniform vec4 lightCoefficients = vec4(0.3f, 0.8f, 0.5f, 256);
     uniform vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
