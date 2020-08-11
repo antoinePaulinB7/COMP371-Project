@@ -9,20 +9,21 @@ using namespace glm;
 
 Material DEFAULT_MATERIAL = {};
 
-Model::Model(int vao, int numberOfVertices, vector<Model*> children) : Model(vao, numberOfVertices, children, DEFAULT_MATERIAL) {}
-Model::Model(int vao, int numberOfVertices, vector<Model*> children, Material material) : Model(vao, numberOfVertices, children, mat4(1.0f), mat4(1.0f), mat4(1.0f), material) {}
-Model::Model(int vao, int numberOfVertices, vector<Model*> children, mat4 translation, mat4 rotation, mat4 scaling) : Model(vao, numberOfVertices, children, translation, rotation, scaling, DEFAULT_MATERIAL) {}
-Model::Model(int vao, int numberOfVertices, vector<Model*> children, mat4 translation, mat4 rotation, mat4 scaling, Material material) {
+Model::Model(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, vector<Model*> children) : Model(vao, numberOfVertices, uboWorldMatrixBlock, children, DEFAULT_MATERIAL) {}
+Model::Model(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, vector<Model*> children, Material material) : Model(vao, numberOfVertices, uboWorldMatrixBlock, children, mat4(1.0f), mat4(1.0f), mat4(1.0f), material) {}
+Model::Model(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, vector<Model*> children, mat4 translation, mat4 rotation, mat4 scaling) : Model(vao, numberOfVertices, uboWorldMatrixBlock, children, translation, rotation, scaling, DEFAULT_MATERIAL) {}
+Model::Model(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, vector<Model*> children, mat4 translation, mat4 rotation, mat4 scaling, Material material) {
 	this->children = children;
 	this->vao = vao;
 	this->numberOfVertices = numberOfVertices;
 	this->translation = translation;
 	this->rotation = rotation;
 	this->scaling = scaling;
-  this->material = material;
+    this->material = material;
+    this->uboWorldMatrixBlock = uboWorldMatrixBlock;
 }
 
-void const Model::draw(mat4 parentTRS, int renderingMode, GLuint worldMatrixLocation, GLuint lightCoeffsLocation, GLuint lightColorLocation) {
+void const Model::draw(mat4 parentTRS, int renderingMode, GLuint lightCoeffsLocation, GLuint lightColorLocation) {
   if(material.texture != 0) {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, material.texture);
@@ -32,7 +33,9 @@ void const Model::draw(mat4 parentTRS, int renderingMode, GLuint worldMatrixLoca
 
 	//A model which just holds and transforms children has no vertices and does not need to be drawn, only calculated
 	if (numberOfVertices > 0) {
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &currentTRS[0][0]);
+		glBindBuffer(GL_UNIFORM_BUFFER, uboWorldMatrixBlock);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &currentTRS[0][0]);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 
     glUniform4f(
@@ -55,7 +58,7 @@ void const Model::draw(mat4 parentTRS, int renderingMode, GLuint worldMatrixLoca
 
 	for (vector<Model*>::iterator it = children.begin(); it != children.end(); ++it)
 	{
-		(*it)->draw(currentTRS, renderingMode, worldMatrixLocation, lightCoeffsLocation, lightColorLocation);
+		(*it)->draw(currentTRS, renderingMode, lightCoeffsLocation, lightColorLocation);
 	}
 
   if(material.texture != 0) {
