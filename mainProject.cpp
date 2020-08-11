@@ -25,7 +25,6 @@ using namespace glm;
 using namespace std;
 
 int windowWidth = 1024, windowHeight = 764;
-const float shadowMapWidth = 2048, shadowMapHeight = 2048;
 
 GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture;
 
@@ -795,11 +794,12 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 //storing the redering mode in a variable 
 int renderingMode = GL_TRIANGLES;
 bool renderShadows = true;
-bool renderTextures = true;
+bool renderTextures = true, isLightOn = true;
 static bool BPressed = false;
 static bool MPressed = false;
 static bool NPressed = false;
 static bool XPressed = false;
+static bool ZPressed = false;
 void handleRenderingModeInput(GLFWwindow* window) {
 	//----------------------------------------------------------------------------------
 	//User can change the rendering mode
@@ -836,6 +836,16 @@ void handleRenderingModeInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_RELEASE && XPressed == true) //toggle shadow rendering
 	{
 		XPressed = false;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS && ZPressed == false)  //toggle main light
+	{
+		isLightOn = !isLightOn;
+		ZPressed = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_RELEASE && ZPressed == true)
+	{
+		ZPressed = false;
 	}
 }
 
@@ -2197,11 +2207,6 @@ void useStandardShader() {
 	useShader(defaultShaderProgram, projectionMatrix, viewMatrix);
 }
 
-void useShadowShader(LightSource* currentLight) {
-	glUseProgram(shadowShaderProgram);
-	currentLight->setDataForShadowMap(uboDepthVPBlock);
-}
-
 void useLightingShader() {
 	projectionMatrix = perspective(70.0f, // field of view in degrees
 		(float)windowWidth / windowHeight,  // aspect ratio
@@ -2233,42 +2238,9 @@ void useLightingShader() {
 
   GLuint shouldRenderTexturesLocation = glGetUniformLocation(phongLightShaderProgram, "shouldRenderTextures");
   glUniform1f(shouldRenderTexturesLocation, renderTextures);
-}
 
-//The buffer is the memory that backs up the shadowMap texture, like how the VBO is the memory that backs up the VAO
-// referenced this tutorial which was suggested in the labs https://learnopengl.com/Getting-started/Textures
-// which lead to this tutorial https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
-// referenced the opengl docs for framebuffer info https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glFramebufferTexture2D.xml
-GLuint createShadowMapBuffer(GLuint& shadowMap)
-{
-	//create a frame buffer to hold the shadow map data
-	GLuint frameBufferObject;
-	glGenFramebuffers(1, &frameBufferObject);
-
-	glGenTextures(1, &shadowMap);
-	glBindTexture(GL_TEXTURE_2D, shadowMap);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);	//Set up an empty border, instead of having the default repeating texture
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);	//which lead to duplicate shadows out of place!
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		cerr << "error generating shadow map buffer" << endl;
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	return frameBufferObject;
+  GLuint isLightOnLocation = glGetUniformLocation(phongLightShaderProgram, "isLight1On");
+  glUniform1f(isLightOnLocation, isLightOn);
 }
 
 // reference https://www.glfw.org/docs/latest/group__window.html#gae49ee6ebc03fa2da024b89943a331355
@@ -2304,6 +2276,15 @@ void drawScene() {
 	C4BottomModel->draw(C4BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 	floorModel->draw(floorMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 
+}
+
+void makeShadowMapForLight(LightSource* currentLight) {
+	glUseProgram(shadowShaderProgram);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	currentLight->setDataForShadowMap(uboDepthVPBlock);
+
+	//Draw scene for the shadow map
+	drawScene();
 }
 
 int main(int argc, char* argv[])
@@ -2361,10 +2342,6 @@ int main(int argc, char* argv[])
   boxTexture = loadTexture("../Source/COMP371-Group14-Project/box.jpg");
   floorTilesTexture = loadTexture("../Source/COMP371-Group14-Project/floortiles.jpg");
   #endif
-
-  std::cout << brickTexture << std::endl;
-  std::cout << woodTexture << std::endl;
-  std::cout << metalTexture << std::endl;
 
   brick = {};
   brick.texture = brickTexture;
@@ -2489,22 +2466,19 @@ int main(int argc, char* argv[])
 
 	glPointSize(3.0f);
 
-	//Shadow setup
-	GLuint shadowMap;
-	GLuint shadowMapBuffer = createShadowMapBuffer(shadowMap);
-
 	//Create light sources
+	const float bigShadowMapSize = 2048, smallShadowMapSize = 1024;
 	vec3 mainLightPosition = vec3(0.0f, 30.0f, 0.0f);
 	mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 100.0f);
 	mat4 lightViewMatrix = lookAt(mainLightPosition,  // eye
 		vec3(0.0f, 0.0f, 0.0f),  // center
 		vec3(1.0f, 0.0f, 0.0f)); // up
-	mainLight = new LightSource(mainLightPosition, lightProjectionMatrix, lightViewMatrix);
-	vec3 secondaryLightPosition = vec3(-halfGridSize, 10.0f, -halfGridSize);
+	mainLight = new LightSource(mainLightPosition, lightProjectionMatrix, lightViewMatrix, bigShadowMapSize, GL_TEXTURE0);
+	vec3 secondaryLightPosition = vec3(-halfGridSize + 5, 30.0f, -halfGridSize + 5);
 	mat4 secondaryLightViewMatrix = lookAt(secondaryLightPosition,  // eye
-		vec3(0.0f, 0.0f, 0.0f),  // center
+		secondaryLightPosition + vec3(0.0f, -30.0f, 0.0f),  // center
 		vec3(1.0f, 0.0f, 0.0f)); // up
-	secondaryLight = new LightSource(secondaryLightPosition, lightProjectionMatrix, secondaryLightViewMatrix);
+	secondaryLight = new LightSource(secondaryLightPosition, lightProjectionMatrix, secondaryLightViewMatrix, smallShadowMapSize, GL_TEXTURE2); 	//(skip GL_Texture1 since our model textures use that slot)
 
 
 	// Entering Main Loop
@@ -2572,16 +2546,9 @@ int main(int argc, char* argv[])
 #pragma endregion
 
 #pragma region shadowPass1
-		//bind and clear the shadow buffer, set viewport to shadowMap dimensions
-		glViewport(0, 0, shadowMapWidth, shadowMapHeight);
-		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapBuffer);
-		glClear(GL_DEPTH_BUFFER_BIT);
-
-		//use the shadow shader, draw all objects
-		useShadowShader(mainLight);
-
-		//Draw scene for the shadow map
-		drawScene();
+		//use the shadow shader, draw all objects for all lights
+		makeShadowMapForLight(mainLight);
+		makeShadowMapForLight(secondaryLight);
 #pragma endRegion
 
 #pragma region shadowPass2
@@ -2593,13 +2560,31 @@ int main(int argc, char* argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		useLightingShader();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, shadowMap);
+		GLint shadowMapLoc = glGetUniformLocation(phongLightShaderProgram, "shadowMap");
+		GLint shadowMapLoc2 = glGetUniformLocation(phongLightShaderProgram, "shadowMap2");
+		glUniform1i(shadowMapLoc, 0);
+		glUniform1i(shadowMapLoc2, 2);
+		mainLight->bindShadowMapTexture();
+		secondaryLight->bindShadowMapTexture();
 
 		drawScene();
+
 #pragma endregion
 
 		useStandardShader();
+
+		//Draw spheres at light sources (easier to visualize)
+		glBindVertexArray(sphereVAO);
+		GLuint worldMatrixLocation = glGetUniformLocation(defaultShaderProgram, "worldMatrix");
+
+		mat4 lightPos = translate(mat4(1.0f), mainLightPosition);
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &lightPos[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, sphereVertices);
+
+		lightPos = translate(mat4(1.0f), secondaryLightPosition);
+		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &lightPos[0][0]);
+		glDrawArrays(GL_TRIANGLES, 0, sphereVertices);
+
 
 #pragma region Grid and Coordinate Axis
 		/*
