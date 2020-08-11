@@ -11,6 +11,7 @@
 #include <glm/common.hpp>
 #include "shaders.h"
 #include "Model.h"
+#include "LightSource.h"
 #include "texture.h"
 #include <time.h>
 #include <algorithm>
@@ -2177,6 +2178,8 @@ void checkErrors() {
 GLuint defaultShaderProgram;
 GLuint phongLightShaderProgram;
 GLuint shadowShaderProgram;
+LightSource* mainLight;
+LightSource* secondaryLight;
 void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 	glUseProgram(shaderProgram);
 
@@ -2194,17 +2197,9 @@ void useStandardShader() {
 	useShader(defaultShaderProgram, projectionMatrix, viewMatrix);
 }
 
-mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 100.0f);
-mat4 lightViewMatrix = lookAt(vec3(0.0f, 30.0f, 0.0f),  // eye
-	vec3(0.0f, 0.0f, 0.0f),  // center
-	vec3(1.0f, 0.0f, 0.0f)); // up
-void useShadowShader(mat4 projectionMatrix, mat4 viewMatrix) {
+void useShadowShader(LightSource* currentLight) {
 	glUseProgram(shadowShaderProgram);
-
-	mat4 depthVP = projectionMatrix * viewMatrix;
-	glBindBuffer(GL_UNIFORM_BUFFER, uboDepthVPBlock);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &depthVP[0][0]);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	currentLight->setDataForShadowMap(uboDepthVPBlock);
 }
 
 void useLightingShader() {
@@ -2214,20 +2209,10 @@ void useLightingShader() {
 	useShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
 
 	//Set up vertex shader uniforms
-	mat4 depthVP = lightProjectionMatrix * lightViewMatrix;
-	vec3 lightPosition = vec3(0.0f, 30.0f, 0.0f);
-	vec3 lightPosition2 = vec3(0.0f);
-
 	glBindBuffer(GL_UNIFORM_BUFFER, uboLightInfoBlock);
 	GLsizeiptr currentLocation = 0;
-	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, sizeof(glm::mat4), &depthVP[0][0]);
-	currentLocation += sizeof(glm::mat4);
-	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, sizeof(glm::vec3), &lightPosition);
-	currentLocation += sizeof(glm::vec3);
-	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, sizeof(glm::mat4), &depthVP[0][0]);
-	currentLocation += sizeof(glm::mat4);
-	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, sizeof(glm::vec3), &lightPosition2);
-	currentLocation += sizeof(glm::vec3);
+	currentLocation = mainLight->setDataForDrawing(currentLocation);
+	currentLocation = secondaryLight->setDataForDrawing(currentLocation);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   GLuint texture = glGetUniformLocation(phongLightShaderProgram, "someTexture");
@@ -2291,6 +2276,34 @@ void windowResizeCallback(GLFWwindow* window, int width, int height)
 {
 	windowHeight = height;
 	windowWidth = width;
+}
+
+Model* l9Model;
+Model* l9BottomModel;
+Model* i9Model;
+Model* I9BottomModel;
+Model* u3Model;
+Model* U3BottomModel;
+Model* t9Model;
+Model* t9BottomModel;
+Model* c4Model;
+Model* C4BottomModel;
+Model* floorModel;
+mat4 L9Matrix, L9BottomMatrix, I9Matrix, I9BottomMatrix, U3Matrix, U3BottomMatrix, T9Matrix, t9BottomMatrix, C4Matrix, C4BottomMatrix, floorMatrix;
+
+void drawScene() {
+	l9Model->draw(L9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	l9BottomModel->draw(L9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	i9Model->draw(I9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	I9BottomModel->draw(I9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	u3Model->draw(U3Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	U3BottomModel->draw(U3BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	t9Model->draw(T9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	t9BottomModel->draw(t9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	c4Model->draw(C4Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	C4BottomModel->draw(C4BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	floorModel->draw(floorMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+
 }
 
 int main(int argc, char* argv[])
@@ -2445,23 +2458,23 @@ int main(int argc, char* argv[])
 
 
 	//Create hierarchical models
-	Model* l9Model = makeL9Model(texturedCubeVAO, sphereVAO);
-	Model* l9BottomModel = makeL9BottomModel(texturedCubeVAO);
+	l9Model = makeL9Model(texturedCubeVAO, sphereVAO);
+	l9BottomModel = makeL9BottomModel(texturedCubeVAO);
 
-	Model* i9Model = makeI9Model(texturedCubeVAO, sphereVAO);
-	Model* I9BottomModel = makeI9BottomModel(texturedCubeVAO);
+	i9Model = makeI9Model(texturedCubeVAO, sphereVAO);
+	I9BottomModel = makeI9BottomModel(texturedCubeVAO);
 
-	Model* u3Model = makeU3Model(texturedCubeVAO, sphereVAO);
-	Model* U3BottomModel = makeU3BottomModel(texturedCubeVAO);
+	u3Model = makeU3Model(texturedCubeVAO, sphereVAO);
+	U3BottomModel = makeU3BottomModel(texturedCubeVAO);
 
-	Model* t9Model = makeT9Model(texturedCubeVAO, sphereVAO);
-	Model* t9BottomModel = makeT9BottomModel(texturedCubeVAO);
+	t9Model = makeT9Model(texturedCubeVAO, sphereVAO);
+	t9BottomModel = makeT9BottomModel(texturedCubeVAO);
 
-	Model* c4Model = makeC4Model(texturedCubeVAO, sphereVAO);
-	Model* C4BottomModel = makeC4BottomModel(texturedCubeVAO);
+	c4Model = makeC4Model(texturedCubeVAO, sphereVAO);
+	C4BottomModel = makeC4BottomModel(texturedCubeVAO);
 
-  mat4 floorBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
-	Model* floorModel = makeFloorModel(gridSquare);
+	mat4 floorBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
+	floorModel = makeFloorModel(gridSquare);
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -2480,6 +2493,19 @@ int main(int argc, char* argv[])
 	GLuint shadowMap;
 	GLuint shadowMapBuffer = createShadowMapBuffer(shadowMap);
 
+	//Create light sources
+	vec3 mainLightPosition = vec3(0.0f, 30.0f, 0.0f);
+	mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 100.0f);
+	mat4 lightViewMatrix = lookAt(mainLightPosition,  // eye
+		vec3(0.0f, 0.0f, 0.0f),  // center
+		vec3(1.0f, 0.0f, 0.0f)); // up
+	mainLight = new LightSource(mainLightPosition, lightProjectionMatrix, lightViewMatrix);
+	vec3 secondaryLightPosition = vec3(-halfGridSize, 10.0f, -halfGridSize);
+	mat4 secondaryLightViewMatrix = lookAt(secondaryLightPosition,  // eye
+		vec3(0.0f, 0.0f, 0.0f),  // center
+		vec3(1.0f, 0.0f, 0.0f)); // up
+	secondaryLight = new LightSource(secondaryLightPosition, lightProjectionMatrix, secondaryLightViewMatrix);
+
 
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
@@ -2488,6 +2514,7 @@ int main(int argc, char* argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
+#pragma region buildTransformMatrices
 		// Model Matrices - they control the transformations of the letters model
 		modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
 		modelRotationMatrix = rotate(mat4(1.0f), radians(modelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(modelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
@@ -2501,16 +2528,6 @@ int main(int argc, char* argv[])
 
 		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
 
-#pragma region shadowPass1
-		//bind and clear the shadow buffer, set viewport to shadowMap dimensions
-		glViewport(0, 0, shadowMapWidth, shadowMapHeight);
-		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapBuffer);
-		glClear(GL_DEPTH_BUFFER_BIT);
-
-		//use the shadow shader, draw all objects
-		useShadowShader(lightProjectionMatrix, lightViewMatrix);
-
-#pragma region buildTransformMatrices
 		// Building L9 scalable/translatable/rotateable matrix for individual letter
 		l9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * l9ModelScaleFactor);
 		l9ModelRotationMatrix = rotate(mat4(1.0f), radians(l9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(l9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
@@ -2541,34 +2558,30 @@ int main(int argc, char* argv[])
 		c4ModelTranslationMatrix = translate(mat4(1.0f), c4ModelPosition);
 		c4ModelMatrix = c4ModelTranslationMatrix * c4ModelScalingMatrix * c4ModelRotationMatrix;
 
-		mat4 floorModelMatrix = translate(mat4(1.0f), vec3(0.0f)) * scale(mat4(1.0f), vec3(1.0f)) * rotate(mat4(1.0f), 0.0f, vec3(1.0f));
-	
-		mat4 L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix;
-		mat4 L9BottomMatrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix * modelShearingMatrix;
-		mat4 I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix;
-		mat4 I9BottomMatrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix * modelShearingMatrix;
-		mat4 U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix;
-		mat4 U3BottomMatrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix * modelShearingMatrix;
-		mat4 T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix;
-		mat4 t9BottomMatrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix * modelShearingMatrix;
-		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix;
-		mat4 C4BottomMatrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix * modelShearingMatrix;
-		mat4 floorMatrix = worldOrientationModelMatrix * floorBaseTranslation * translate(mat4(1.0f), vec3(0.0f));
+		L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix;
+		L9BottomMatrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix * modelShearingMatrix;
+		I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix;
+		I9BottomMatrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix * modelShearingMatrix;
+		U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix;
+		U3BottomMatrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix * modelShearingMatrix;
+		T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix;
+		t9BottomMatrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix * modelShearingMatrix;
+		C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix;
+		C4BottomMatrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix * modelShearingMatrix;
+		floorMatrix = worldOrientationModelMatrix * floorBaseTranslation * translate(mat4(1.0f), vec3(0.0f));
 #pragma endregion
 
-		//Draw scene for the shadow map
-		l9Model->draw(L9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		l9BottomModel->draw(L9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		i9Model->draw(I9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		I9BottomModel->draw(I9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		u3Model->draw(U3Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		U3BottomModel->draw(U3BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		t9Model->draw(T9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		t9BottomModel->draw(t9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		c4Model->draw(C4Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		C4BottomModel->draw(C4BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-    floorModel->draw(floorMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+#pragma region shadowPass1
+		//bind and clear the shadow buffer, set viewport to shadowMap dimensions
+		glViewport(0, 0, shadowMapWidth, shadowMapHeight);
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowMapBuffer);
+		glClear(GL_DEPTH_BUFFER_BIT);
 
+		//use the shadow shader, draw all objects
+		useShadowShader(mainLight);
+
+		//Draw scene for the shadow map
+		drawScene();
 #pragma endRegion
 
 #pragma region shadowPass2
@@ -2583,18 +2596,7 @@ int main(int argc, char* argv[])
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, shadowMap);
 
-		l9Model->draw(L9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		l9BottomModel->draw(L9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		i9Model->draw(I9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		I9BottomModel->draw(I9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		u3Model->draw(U3Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		U3BottomModel->draw(U3BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		t9Model->draw(T9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		t9BottomModel->draw(t9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		c4Model->draw(C4Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-		C4BottomModel->draw(C4BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-    floorModel->draw(floorMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-
+		drawScene();
 #pragma endregion
 
 		useStandardShader();
