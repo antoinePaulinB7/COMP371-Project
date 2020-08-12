@@ -700,12 +700,12 @@ bool panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam =
 vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
 vec3 cameraUp(0.0f, 1.0f, 0.0f);
 vec3 cameraPosition(0.0f, 15.0f, 30.0f);
-float currentCamX = 0, currentCamZ = 30.0f;
+float currentCamStrafingMovement = 0, currentCamFacingMovement = 0.0f;
 
 // Set projection matrix for shader, this won't change
 mat4 projectionMatrix = perspective(70.0f, // field of view in degrees
 	(float)windowWidth / windowHeight,  // aspect ratio
-	0.01f, 100.0f);   // near and far (near > 0)
+	0.01f, 300.0f);   // near and far (near > 0)
 
 	// Set initial view matrix
 mat4 viewMatrix = lookAt(cameraPosition,  // eye
@@ -791,22 +791,22 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 		changeDelay--;
 	}
 
-	float walkSpeed = 2.0f;
+	float walkSpeed = 1.5f;
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 	{
-		currentCamX -= walkSpeed;
+		currentCamStrafingMovement -= walkSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 	{
-		currentCamX += walkSpeed;
+		currentCamStrafingMovement += walkSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 	{
-		currentCamZ -= walkSpeed;
+		currentCamFacingMovement += walkSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 	{
-		currentCamZ += walkSpeed;
+		currentCamFacingMovement -= walkSpeed;
 	}
 }
 #pragma endregion
@@ -2223,14 +2223,14 @@ void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 void useStandardShader() {
 	projectionMatrix = perspective(70.0f, // field of view in degrees
 		(float)windowWidth / windowHeight,  // aspect ratio
-		0.01f, 100.0f);
+		0.01f, 300.0f);
 	useShader(defaultShaderProgram, projectionMatrix, viewMatrix);
 }
 
 void useLightingShader() {
 	projectionMatrix = perspective(70.0f, // field of view in degrees
 		(float)windowWidth / windowHeight,  // aspect ratio
-		0.01f, 100.0f);
+		0.01f, 300.0f);
 	useShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
 
 	//Set up vertex shader uniforms
@@ -2682,10 +2682,13 @@ int main(int argc, char* argv[])
 		/* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 
 		// Update viewMatrix
-		cameraPosition = vec3(currentCamX, 15.0f, currentCamZ);
+		cameraPosition = vec3(cameraPosition.x, 15.0f, cameraPosition.z) 
+			+ vec3(cameraLookAt.x * currentCamFacingMovement, 0.0f, cameraLookAt.z * currentCamFacingMovement)
+			+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		viewMatrix = scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
-
+		currentCamStrafingMovement = 0;
+		currentCamFacingMovement = 0;
 		vec3 flashlightPosition = cameraPosition + vec3(0.0f, -5.0f, 0.0f);
 		updateFlashlight(flashlightPosition, flashlightPosition + cameraLookAt + vec3(0.0f, 0.2f, 0.0f));
 
