@@ -7,10 +7,11 @@
 using namespace std;
 using namespace glm;
 
-LightSource::LightSource(vec3 lightPosition, mat4 projection, mat4 view, float shadowMapSize, int textureIndex) {
+LightSource::LightSource(vec3 lightPosition, glm::vec3 lookAtPos, glm::vec3 upVector, mat4 projection, float shadowMapSize, int textureIndex) {
 	this->lightPosition = lightPosition;
+	this->lookAtPos = lookAtPos;
+	this->upVector = upVector;
 	this->projection = projection;
-	this->view = view;
 	this->shadowMapSize = shadowMapSize;
 	this->textureIndex = textureIndex;
 	createShadowMapBuffer();
@@ -21,6 +22,9 @@ GLsizeiptr const LightSource::setDataForDrawing(GLsizeiptr currentLocation) {
 	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, 64, &depthVP[0][0]);
 	currentLocation += 64;
 	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, 16, &lightPosition);
+	currentLocation += 16;
+	vec3 pointingDir = normalize(lightPosition - lookAtPos);
+	glBufferSubData(GL_UNIFORM_BUFFER, currentLocation, 16, &pointingDir);
 	currentLocation += 16;
 	return currentLocation;
 }

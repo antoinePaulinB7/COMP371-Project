@@ -693,13 +693,14 @@ float cameraFastSpeed = 2 * cameraSpeed;
 float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
-float magnificationFactor = 0.25f;
+float magnificationFactor = 1.0f;
 bool panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
 
 // Camera parameters for view transform
 vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
 vec3 cameraUp(0.0f, 1.0f, 0.0f);
 vec3 cameraPosition(0.0f, 15.0f, 30.0f);
+float currentCamX = 0, currentCamZ = 30.0f;
 
 // Set projection matrix for shader, this won't change
 mat4 projectionMatrix = perspective(70.0f, // field of view in degrees
@@ -770,7 +771,7 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 			changeDelay = 10;
 			cameraHorizontalAngle = 90.0f;
 			cameraVerticalAngle = -25.0f;
-			magnificationFactor = 0.25f;
+			magnificationFactor = 1.0f;
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
@@ -783,11 +784,29 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 			changeDelay = 10;
 			cameraHorizontalAngle = 90.0f;
 			cameraVerticalAngle = -25.0f;
-			magnificationFactor = 0.25f;
+			magnificationFactor = 1.0f;
 		}
 	}
 	else {
 		changeDelay--;
+	}
+
+	float walkSpeed = 2.0f;
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+	{
+		currentCamX -= walkSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+	{
+		currentCamX += walkSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		currentCamZ -= walkSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		currentCamZ += walkSpeed;
 	}
 }
 #pragma endregion
@@ -943,6 +962,8 @@ mat4 C4BaseTranslation = C4StartTranslation;
 
 void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	//Changing World Orientation 
+	//Not sure we want these controls for P3
+	/*
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) //rotate X axis in anti-clockwise direction
 	{
 		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(-1.0f, 0.f, 0.f));
@@ -962,7 +983,7 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	{
 		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, 1.0f, 0.f));
 	}
-
+	*/
 	//reset world orientation to original settings
 	//used Tab to test as I do not have a Home button
 	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS)
@@ -2331,29 +2352,31 @@ int main(int argc, char* argv[])
   floorTilesTexture = loadTexture("../Source/COMP371-Group14-Project/floortiles.jpg");
   #endif
 
+  float globalAmbientIntensity = 0.15f;
+
   brick = {};
   brick.texture = brickTexture;
-  brick.lightCoefficients = vec4(0.4f, 0.4f, 0.4f, 0);
+  brick.lightCoefficients = vec4(globalAmbientIntensity, 0.4f, 0.4f, 0);
   brick.lightColor = vec3(0.9f);
 
   wood = {};
   wood.texture = woodTexture;
-  wood.lightCoefficients = vec4(0.4f, 0.8f, 0.9f, 52);
+  wood.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.9f, 52);
   wood.lightColor = vec3(252.0f/255.0f, 244.0f/255.0f, 202.0f/255.0f);
 
   metal = {};
   metal.texture = metalTexture;
-  metal.lightCoefficients = vec4(0.3f, 0.8f, 0.5f, 256);
+  metal.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
   metal.lightColor = vec3(1.0f, 1.0f, 0.0f);
 
   box = {};
   box.texture = boxTexture;
-  box.lightCoefficients = vec4(0.4f, 0.4f, 0.4f, 0);
+  box.lightCoefficients = vec4(globalAmbientIntensity, 0.4f, 0.4f, 0);
   box.lightColor = vec3(0.9f);
 
   floorTiles = {};
   floorTiles.texture = floorTilesTexture;
-  floorTiles.lightCoefficients = vec4(0.3f, 0.6f, 0.9f, 256);
+  floorTiles.lightCoefficients = vec4(globalAmbientIntensity, 0.6f, 0.9f, 256);
   floorTiles.lightColor = vec3(1.0f, 1.0f, 1.0f);
 
 
@@ -2398,7 +2421,7 @@ int main(int argc, char* argv[])
 	// all light info matrix (light shader)
 	glGenBuffers(1, &uboLightInfoBlock);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboLightInfoBlock);
-	glBufferData(GL_UNIFORM_BUFFER, 160, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, totalNumLights * 96, NULL, GL_STATIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboLightInfoBlock);  // bind world matrix info to block 1
 	//bind shaders' locations for the world matrix block to the same location, block 1:
@@ -2659,8 +2682,12 @@ int main(int argc, char* argv[])
 		/* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 
 		// Update viewMatrix
+		cameraPosition = vec3(currentCamX, 15.0f, currentCamZ);
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		viewMatrix = scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
+
+		vec3 flashlightPosition = cameraPosition + vec3(0.0f, -5.0f, 0.0f);
+		updateFlashlight(flashlightPosition, flashlightPosition + cameraLookAt + vec3(0.0f, 0.2f, 0.0f));
 
 #pragma endregion
 

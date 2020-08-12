@@ -14,7 +14,7 @@ int currentLightIndex = 0;
 GLuint uboDepthVPBlockCopy;
 
 LightSource* lights[totalNumLights];
-vec3 lightPositions[totalNumLights] = { vec3(0.0f, 30.0f, 0.0f),
+vec3 lightPositions[totalNumLights] = { vec3(0.0f, 5.0f, 30.0f),
 										vec3(-45, 30.0f, -45) };
 vec3 lightLookAtPositions[totalNumLights] = { vec3(0.0f, 0.0f, 0.0f),
 										vec3(-45, 0.0f, -45) };
@@ -29,12 +29,10 @@ void createLightSources()
 	mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 100.0f);
 	currentLightIndex = 0;
 	while (currentLightIndex < totalNumLights) {
-		vec3 pos = lightPositions[currentLightIndex];
+		lights[currentLightIndex] = new LightSource(lightPositions[currentLightIndex], lightLookAtPositions[currentLightIndex],
+			(currentLightIndex == 0 ? vec3(0.0f, 1.0f, 0.0f) : vec3(1.0f, 0.0f, 0.0f)), lightProjectionMatrix, 
+			bigShadowMapSize, GL_TEXTURE1 + currentLightIndex);
 
-		mat4 lightViewMatrix = lookAt(pos,  // eye
-			lightLookAtPositions[currentLightIndex],  // center
-			vec3(1.0f, 0.0f, 0.0f)); // up
-		lights[currentLightIndex] = new LightSource(pos, lightProjectionMatrix, lightViewMatrix, bigShadowMapSize, GL_TEXTURE1 + currentLightIndex);
 		currentLightIndex++;
 	}
 	currentLightIndex = 0;
@@ -79,10 +77,16 @@ void setDataForDrawingLights() {
 void drawLightSources(GLuint worldMatrixLocation, int sphereVertices) {
 	currentLightIndex = 0;
 	while (currentLightIndex < totalNumLights) {
-		mat4 lightPos = translate(mat4(1.0f), lightPositions[currentLightIndex]);
+
+		mat4 lightPos = translate(mat4(1.0f), lights[currentLightIndex]->getPosition());
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &lightPos[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, sphereVertices);
 		currentLightIndex++;
 	}
 	currentLightIndex = 0;
+}
+
+void updateFlashlight(vec3 position, vec3 lookAtPosition) {
+	lights[0]->setPosition(position);
+	lights[0]->setLookAtPosition(lookAtPosition);
 }

@@ -11,6 +11,7 @@
 
 	in light1 {
 		vec3 lightVectorL;
+		vec3 lightPointingDir;
 		vec4 shadowCoordinate;
 		float distanceToLightSource;
 	} light1;
@@ -19,6 +20,7 @@
 
 	in light2 {
 		vec3 lightVectorL;
+		vec3 lightPointingDir;
 		vec4 shadowCoordinate;
 		float distanceToLightSource;
 	} light2;
@@ -82,7 +84,7 @@
 			return attenuationFactor * spec;
 		}
 
-		vec3 getTotalIntensity(float distToLightSource, vec3 lightVector, vec4 shadowCoordinate, float bias, int percentageCloserFilteringRadius, sampler2D shadowMap, bool isLightOn, float angle) {
+		vec3 getTotalIntensity(float distToLightSource, vec3 lightVector, vec3 lightPointingDir, vec4 shadowCoordinate, float bias, int percentageCloserFilteringRadius, sampler2D shadowMap, bool isLightOn, float angle) {
 			//Initialize variables for lighting attributes
 			float coeffAmbient = lightCoefficients[0]; //0.3f;
 			float coeffDiffuse = lightCoefficients[1]; //0.8f;
@@ -110,20 +112,20 @@
 			} 
 
 			//Only for use with spotlights
-			//float spotLitness = dot(lightDirection, normalize(lightVector));
-			//spotLitness = (spotLitness > angle ? spotLitness : 0.0f);
+			float spotLitness = dot(lightDirection, lightPointingDir);
+			spotLitness = (spotLitness > angle ? spotLitness : 0.0f);
 			float lightOnness = 1.0f;
 			if (!isLightOn) {
 				lightOnness = 0.0f;
 				visibility = 0.0f;	//do not cast shadows when the light is off
 			} else {
 				//Only for use with spotlights
-				//spotLitness = clampIt(spotLitness);	
-				//spotLitness = (spotLitness - angle) * 10.0f;
-				//lightOnness = clampIt(spotLitness);	
-				//if (spotLitness <= bias) {
-				//	visibility = 0.0f;
-				//}
+				spotLitness = clampIt(spotLitness);	
+				spotLitness = (spotLitness - angle) * 10.0f;
+				lightOnness = clampIt(spotLitness);	
+				if (spotLitness <= bias) {
+					visibility = 0.0f;
+				}
 			}
 
 			return ambientIntensity + ((visibility + lightOnness)/2.0f) * (diffuseIntensity + specularIntensity);
@@ -136,11 +138,11 @@
 		float bias = 0.000001f;
 		int percentageCloserFilteringRadius = 2;
 
-		float angle = 0.76f; //0.76f is roughly cos(40), our spotlight covers 40 degrees
-		vec3 intensity1 = getTotalIntensity(light1.distanceToLightSource, light1.lightVectorL, light1.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap, isLight1On > 0.5f, angle);
+		float angle = 0.9f; //0.76f is roughly cos(40), our spotlight covers 40 degrees
+		vec3 intensity1 = getTotalIntensity(light1.distanceToLightSource, light1.lightVectorL, light1.lightPointingDir, light1.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap, isLight1On > 0.5f, angle);
 		vec3 intensity2 = vec3(0.0f);
 		if (light2.lightVectorL != vec3(0.0f)) {
-			intensity2 = getTotalIntensity(light2.distanceToLightSource, light2.lightVectorL, light2.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap2, isLight2On > 0.5f, angle);
+			intensity2 = getTotalIntensity(light2.distanceToLightSource, light2.lightVectorL, light2.lightPointingDir, light2.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap2, isLight2On > 0.5f, angle);
 		}
 		vec3 totalIntensity = intensity1 + intensity2;	
 		vec4 texColor = vec4(1.0f);

@@ -19,18 +19,17 @@
 
 	layout (std140) uniform LightInfo
 	{
-		mat4 depthVP;						// 16		// 0 (column 0)
-											// 16		// 16 (column 1)
-											// 16		// 32 (column 2)
-											// 16		// 48 (column 3)
-		vec3 lightPosition;					// 16		// 64
+		mat4 depthVP;					// 16		// 0 (column 0)
+										// 16		// 16 (column 1)
+										// 16		// 32 (column 2)
+										// 16		// 48 (column 3)
+		vec3 lightPosition;				// 16		// 60
+		vec3 lightPointingDirection;	// 16		// 72
+										//total = 96 per light
 
-		mat4 depthVP2;						// 16		// 80 (column 0)
-											// 16		// 96 (column 1)
-											// 16		// 112 (column 2)
-											// 16		// 128 (column 3)
-		vec3 lightPosition2;				// 16		// 144
-											//total = 160
+		mat4 depthVP2;	
+		vec3 lightPosition2;	
+		vec3 lightPointingDirection2;
 	};
 
 
@@ -42,12 +41,14 @@
 
 	out light1 {
 		vec3 lightVectorL;
+		vec3 lightPointingDir;
 		vec4 shadowCoordinate;
 		float distanceToLightSource;
 	} light1;
 
 	out light2 {
 		vec3 lightVectorL;
+		vec3 lightPointingDir;
 		vec4 shadowCoordinate;
 		float distanceToLightSource;
 	} light2;
@@ -72,9 +73,11 @@
 		vec3 vectorToLightSource = lightPosition - fragPosition;
 		light1.distanceToLightSource = length(vectorToLightSource);
 		light1.shadowCoordinate = depthVP * worldMatrix * vec4(aPos, 1.0f);
+		light1.lightPointingDir = lightPointingDirection;
 
 		light2.lightVectorL = lightPosition2;
 		vec3 vectorToLightSource2 = lightPosition2 - fragPosition;
 		light2.distanceToLightSource = length(vectorToLightSource2);
 		light2.shadowCoordinate = depthVP2 * worldMatrix * vec4(aPos, 1.0f);
+		light2.lightPointingDir = lightPointingDirection2;
     }
