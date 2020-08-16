@@ -11,6 +11,7 @@
 #include <glm/common.hpp>
 #include "shaders.h"
 #include "Model.h"
+#include "Skybox.h"
 #include "texture.h"
 #include <time.h>
 #include <algorithm>
@@ -26,9 +27,9 @@ using namespace std;
 int windowWidth = 1024, windowHeight = 764;
 const float shadowMapWidth = 2048, shadowMapHeight = 2048;
 
-GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture;
+GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture, skyTexture;
 
-Material brick, wood, metal, box, floorTiles;
+Material brick, wood, metal, box, floorTiles, sky;
 vec3 getShearMovement(float shearRotationAngle);
 
 #pragma region unitCubes
@@ -692,7 +693,7 @@ float cameraFastSpeed = 2 * cameraSpeed;
 float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
-float magnificationFactor = 0.25f;
+float magnificationFactor = 1.0f;
 bool panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
 
 // Camera parameters for view transform
@@ -769,7 +770,7 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 			changeDelay = 10;
 			cameraHorizontalAngle = 90.0f;
 			cameraVerticalAngle = -25.0f;
-			magnificationFactor = 0.25f;
+			magnificationFactor = 1.0f;
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
@@ -782,7 +783,7 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 			changeDelay = 10;
 			cameraHorizontalAngle = 90.0f;
 			cameraVerticalAngle = -25.0f;
-			magnificationFactor = 0.25f;
+			magnificationFactor = 1.0f;
 		}
 	}
 	else {
@@ -2157,6 +2158,10 @@ Model* makeFloorModel(int vao) {
 	return floorModel;
 }
 
+Skybox* makeSkyBoxModel(int vao) {
+	return new Skybox(vao, sphereVertices, vector<Model*>(), mat4(1.0f), mat4(1.0f), mat4(1.0f), sky);
+}
+
 #pragma endregion
 
 void handleExitInput(GLFWwindow* window) {
@@ -2327,17 +2332,15 @@ int main(int argc, char* argv[])
   metalTexture = loadTexture("metal2.jpg");
   boxTexture = loadTexture("box.jpg");
   floorTilesTexture = loadTexture("floortiles.jpg");
+  skyTexture = loadTexture("sky.jpg");
   #else
   brickTexture = loadTexture("../Source/COMP371-Group14-Project/brick.jpg");
   woodTexture = loadTexture("../Source/COMP371-Group14-Project/wood.jpg");
   metalTexture = loadTexture("../Source/COMP371-Group14-Project/metal2.jpg");
   boxTexture = loadTexture("../Source/COMP371-Group14-Project/box.jpg");
   floorTilesTexture = loadTexture("../Source/COMP371-Group14-Project/floortiles.jpg");
+  skyTexture = loadTexture("../Source/COMP371-Group14-Project/sky.jpg");
   #endif
-
-  std::cout << brickTexture << std::endl;
-  std::cout << woodTexture << std::endl;
-  std::cout << metalTexture << std::endl;
 
   brick = {};
   brick.texture = brickTexture;
@@ -2363,6 +2366,11 @@ int main(int argc, char* argv[])
   floorTiles.texture = floorTilesTexture;
   floorTiles.lightCoefficients = vec4(0.3f, 0.6f, 0.9f, 256);
   floorTiles.lightColor = vec3(1.0f, 1.0f, 1.0f);
+
+  sky = {};
+  sky.texture = skyTexture;
+  sky.lightCoefficients = vec4(1.0f, 0.0f, 0.0f, 0);
+  sky.lightColor = vec3(1.0f);
 
 
 	// Compile and link shaders here ...
@@ -2414,6 +2422,8 @@ int main(int argc, char* argv[])
 
   mat4 floorBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
 	Model* floorModel = makeFloorModel(gridSquare);
+
+	Skybox* skyBoxModel = makeSkyBoxModel(sphereVAO);
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -2505,6 +2515,7 @@ int main(int argc, char* argv[])
 		mat4 C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix;
 		mat4 C4BottomMatrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix * modelShearingMatrix;
 		mat4 floorMatrix = worldOrientationModelMatrix * floorBaseTranslation * translate(mat4(1.0f), vec3(0.0f));
+		mat4 skyboxMatrix = translate(mat4(1.0f), vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z));
 #pragma endregion
 
 		//Draw scene for the shadow map
@@ -2534,6 +2545,9 @@ int main(int argc, char* argv[])
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, shadowMap);
 
+		skyBoxModel->draw(skyboxMatrix, GL_TRIANGLES, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+
+
 		l9Model->draw(L9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		l9BottomModel->draw(L9BottomMatrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		i9Model->draw(I9Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
@@ -2544,8 +2558,7 @@ int main(int argc, char* argv[])
 		t9BottomModel->draw(t9BottomMatrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		c4Model->draw(C4Matrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		C4BottomModel->draw(C4BottomMatrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-    floorModel->draw(floorMatrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-
+		floorModel->draw(floorMatrix, renderingMode, worldMatrixLocation, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 #pragma endregion
 
 		useStandardShader();

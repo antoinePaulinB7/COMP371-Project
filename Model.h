@@ -14,6 +14,7 @@ struct Material {
 };
 
 class Model {
+protected:
 	int vao;
 	int numberOfVertices;
 	std::vector<Model*> children;
@@ -25,6 +26,6 @@ public:
   Model(int vao, int numberOfVertices, std::vector<Model*> children, Material material);
 	Model(int vao, int numberOfVertices, std::vector<Model*> children, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scaling);
 	Model(int vao, int numberOfVertices, std::vector<Model*> children, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scaling, Material material);
-	void const draw(glm::mat4 parentTRS, int renderingMode, GLuint worldMatrixLocation, GLuint lightCoeffsLocation, GLuint lightColorLocation);
+	virtual void const draw(glm::mat4 parentTRS, int renderingMode, GLuint worldMatrixLocation, GLuint lightCoeffsLocation, GLuint lightColorLocation);
   Material getDefaultMaterial();
 };
