@@ -39,14 +39,14 @@
     out vec3 fragPosition;
     out vec3 eyeVectorV;
 
-	out light1 {
+	out LIGHT_1 {
 		vec3 lightVectorL;
 		vec3 lightPointingDir;
 		vec4 shadowCoordinate;
 		float distanceToLightSource;
 	} light1;
 
-	out light2 {
+	out LIGHT_2 {
 		vec3 lightVectorL;
 		vec3 lightPointingDir;
 		vec4 shadowCoordinate;

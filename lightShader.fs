@@ -9,7 +9,7 @@
 	uniform float shouldRenderTextures = 1.0f;
 	uniform sampler2D someTexture;	
 
-	in light1 {
+	in LIGHT_1 {
 		vec3 lightVectorL;
 		vec3 lightPointingDir;
 		vec4 shadowCoordinate;
@@ -18,7 +18,7 @@
 	uniform float isLight1On = 1.0f;
 	uniform sampler2D shadowMap;
 
-	in light2 {
+	in LIGHT_2 {
 		vec3 lightVectorL;
 		vec3 lightPointingDir;
 		vec4 shadowCoordinate;
