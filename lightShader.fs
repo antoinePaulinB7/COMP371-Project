@@ -69,7 +69,7 @@
 
 		vec3 getDiffuseIntensity(float attenuationFactor, vec3 norm, vec3 lightDirection) {
 			float diff = max(dot(norm, lightDirection), 0.0f);
-			return attenuationFactor * diff;
+			return vec3(attenuationFactor * diff);
 		}
 
 		vec3 getSpecularIntensity(float attenuationFactor, vec3 norm, vec3 lightDirection) {
@@ -81,7 +81,7 @@
 			if (dot(viewDirection, norm) < 0.0f) {
 				spec = 0.0f; 
 			}
-			return attenuationFactor * spec;
+			return vec3(attenuationFactor * spec);
 		}
 
 		vec3 getTotalIntensity(float distToLightSource, vec3 lightVector, vec3 lightPointingDir, vec4 shadowCoordinate, float bias, int percentageCloserFilteringRadius, sampler2D shadowMap, bool isLightOn, float angle) {
