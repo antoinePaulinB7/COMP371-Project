@@ -10,8 +10,8 @@
 
 class Skybox : Model {
 public: 
-	Skybox(int vao, int numberOfVertices, std::vector<Model*> children, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scaling, Material material);
+	Skybox(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, std::vector<Model*> children, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scaling, Material material);
 
-	void const draw(glm::mat4 parentTRS, int renderingMode, GLuint worldMatrixLocation, GLuint lightCoeffsLocation, GLuint lightColorLocation) override;
+	void const draw(glm::mat4 parentTRS, int renderingMode, GLuint lightCoeffsLocation, GLuint lightColorLocation) override;
 
 };
