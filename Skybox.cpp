@@ -13,7 +13,7 @@ Skybox::Skybox(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, 
 
 void const Skybox::draw(mat4 parentTRS, int renderingMode, GLuint lightCoeffsLocation, GLuint lightColorLocation) {
 	if (material.texture != 0) {
-		glActiveTexture(GL_TEXTURE1);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, material.texture);
 	}
 	glBindVertexArray(vao);

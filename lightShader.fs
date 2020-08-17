@@ -64,7 +64,7 @@
 				}
 			}
 			float sampleDiameter = (percentageCloserFilteringRadius * 2.0f + 1.0f);
-			return clampIt(visibility / (sampleDiameter * sampleDiameter));
+			return visibility / (sampleDiameter * sampleDiameter);
 		}
 
 		vec3 getDiffuseIntensity(float attenuationFactor, vec3 norm, vec3 lightDirection) {
@@ -105,7 +105,7 @@
 			vec3 ambientIntensity = lightColor * coeffAmbient;
 			vec3 diffuseIntensity = (coeffDiffuse * lightColor) * getDiffuseIntensity(attenuationFactor, norm, lightDirection);
 			vec3 specularIntensity = (coeffSpecular * lightColor) * getSpecularIntensity(attenuationFactor, norm, lightDirection);
-		
+
 			//Phong Lighting Model combines the 3 lighting components
 			if (shouldRenderShadows < 0.5f) {
 				visibility = 1.0f;
@@ -153,9 +153,9 @@
 
 		//Calculate each color channel  (R,G,B) separately
 		//Clamp the final result to [0, 1]
-		float totalIntensityR = totalIntensity.r;//clampIt(totalIntensity.r);	
-		float totalIntensityG = totalIntensity.g;//clampIt(totalIntensity.g);	
-		float totalIntensityB = totalIntensity.b;//clampIt(totalIntensity.b);	
+		float totalIntensityR = clampIt(totalIntensity.r);	
+		float totalIntensityG = clampIt(totalIntensity.g);	
+		float totalIntensityB = clampIt(totalIntensity.b);	
 
     fragmentColor = vec4(texColor.r * totalIntensityR * vertexColor.r, 
       texColor.g * totalIntensityG * vertexColor.g, 
