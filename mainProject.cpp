@@ -696,7 +696,7 @@ float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
 float magnificationFactor = 1.0f;
-bool panMoveMode = false, angleMoveMode = false, zoomMoveMode = false, fastCam = false;
+bool zoomMoveMode = false, fastCam = false;
 
 // Camera parameters for view transform
 vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
@@ -716,27 +716,6 @@ mat4 viewMatrix = lookAt(cameraPosition,  // eye
 
 void handleCameraFlagInputs(GLFWwindow* window) {
 	fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
-
-	// On key up, set movement mode flag
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-		panMoveMode = true;
-	}
-
-	// On key down , unset movement mode flag
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
-	{
-		panMoveMode = false;
-	}
-
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
-	{
-		angleMoveMode = true;
-	}
-
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_RELEASE)
-	{
-		angleMoveMode = false;
-	}
 
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 	{
@@ -2379,7 +2358,7 @@ int main(int argc, char* argv[])
 	sky.lightColor = vec3(1.0f);
 
 
-  Terrain terrain = Terrain(glm::vec3(200, 3, 200), 32);
+	Terrain terrain = Terrain(glm::vec3(200, 3, 200), 32);
 
 	// Compile and link shaders here ...
 #if defined(PLATFORM_OSX) || __linux__
@@ -2650,27 +2629,23 @@ int main(int argc, char* argv[])
 		normalize(cameraSideVector);
 
 #pragma region mouseCameraMovement
-		/* Begin Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
-		if (panMoveMode)
-		{
-			if (dx > 0) {
-				cameraHorizontalAngle -= cameraAngularSpeed * dt * 1 * dx;
-			}
-			// If position goes toward negative axis, increase cameraposition
-			else if (dx < 0) {
-				cameraHorizontalAngle += cameraAngularSpeed * dt * -1 * dx;
-			}
+
+		int slowingFactor = 3;
+
+		if (dx > 0) {
+			cameraHorizontalAngle -= (cameraAngularSpeed * dt * 1 * dx) / slowingFactor;
+		}
+		// If position goes toward negative axis, increase cameraposition
+		else if (dx < 0) {
+			cameraHorizontalAngle += (cameraAngularSpeed * dt * -1 * dx) / slowingFactor;
 		}
 
-		if (angleMoveMode)
-		{
-			if (dy < 0) {
-				cameraVerticalAngle += cameraAngularSpeed * dt * -1 * dy;
-			}
+		if (dy < 0) {
+			cameraVerticalAngle += (cameraAngularSpeed * dt * -1 * dy) / slowingFactor;
+		}
 
-			else if (dy > 0) {
-				cameraVerticalAngle -= cameraAngularSpeed * dt * dy;
-			}
+		else if (dy > 0) {
+			cameraVerticalAngle -= (cameraAngularSpeed * dt * dy) / slowingFactor;
 		}
 
 		if (zoomMoveMode)
@@ -2683,7 +2658,6 @@ int main(int argc, char* argv[])
 				magnificationFactor = magnificationFactor / 1.5f;
 			}
 		}
-		/* END Part 2 - SIMULTANEOUS MOUSE AND KEY movement */
 
 		// Update viewMatrix
 		cameraPosition = vec3(cameraPosition.x, 15.0f, cameraPosition.z)
