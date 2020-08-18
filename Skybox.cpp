@@ -7,8 +7,8 @@
 using namespace std;
 using namespace glm;
 
-Skybox::Skybox(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, std::vector<Model*> children, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scaling,
-	Material material) : Model(vao, numberOfVertices, uboWorldMatrixBlock, children, translation, rotation, scaling, material) {};
+Skybox::Skybox(int vao, vector<vec3> vertexPositions, unsigned int uboWorldMatrixBlock, std::vector<Model*> children, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scaling,
+	Material material) : Model(vao, vertexPositions, uboWorldMatrixBlock, children, translation, rotation, scaling, material) {};
 
 
 void const Skybox::draw(mat4 parentTRS, int renderingMode, GLuint lightCoeffsLocation, GLuint lightColorLocation) {
