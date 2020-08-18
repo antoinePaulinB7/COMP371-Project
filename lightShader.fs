@@ -69,7 +69,7 @@
 
 		vec3 getDiffuseIntensity(float attenuationFactor, vec3 norm, vec3 lightDirection) {
 			float diff = max(dot(norm, lightDirection), 0.0f);
-			return vec3(attenuationFactor * diff);
+			return vec3(clampIt(attenuationFactor * diff));
 		}
 
 		vec3 getSpecularIntensity(float attenuationFactor, vec3 norm, vec3 lightDirection) {
@@ -81,7 +81,7 @@
 			if (dot(viewDirection, norm) < 0.0f) {
 				spec = 0.0f; 
 			}
-			return vec3(attenuationFactor * spec);
+			return vec3(clampIt(attenuationFactor * spec));
 		}
 
 		vec3 getTotalIntensity(float distToLightSource, vec3 lightVector, vec3 lightPointingDir, vec4 shadowCoordinate, float bias, int percentageCloserFilteringRadius, sampler2D shadowMap, bool isLightOn, float angle) {
@@ -105,7 +105,7 @@
 			vec3 ambientIntensity = lightColor * coeffAmbient;
 			vec3 diffuseIntensity = (coeffDiffuse * lightColor) * getDiffuseIntensity(attenuationFactor, norm, lightDirection);
 			vec3 specularIntensity = (coeffSpecular * lightColor) * getSpecularIntensity(attenuationFactor, norm, lightDirection);
-		
+
 			//Phong Lighting Model combines the 3 lighting components
 			if (shouldRenderShadows < 0.5f) {
 				visibility = 1.0f;
@@ -153,9 +153,9 @@
 
 		//Calculate each color channel  (R,G,B) separately
 		//Clamp the final result to [0, 1]
-		float totalIntensityR = totalIntensity.r;//clampIt(totalIntensity.r);	
-		float totalIntensityG = totalIntensity.g;//clampIt(totalIntensity.g);	
-		float totalIntensityB = totalIntensity.b;//clampIt(totalIntensity.b);	
+		float totalIntensityR = clampIt(totalIntensity.r);	
+		float totalIntensityG = clampIt(totalIntensity.g);	
+		float totalIntensityB = clampIt(totalIntensity.b);	
 
     fragmentColor = vec4(texColor.r * totalIntensityR * vertexColor.r, 
       texColor.g * totalIntensityG * vertexColor.g, 
