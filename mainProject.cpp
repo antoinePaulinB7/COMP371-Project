@@ -2257,11 +2257,11 @@ Model* makeBuilding1Model(int vao) {
 	Model* top = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 4.5f, 2.6f));
-	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 5.0f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 5.0f, 0.1f));
 	Model* window = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, 2.6f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, .001f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, .1f));
 	Model* door = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
 
 
@@ -2304,15 +2304,15 @@ Model* makeBuilding2Model(int vao) {
 	Model* base = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 4.0f, 1.005f));
-	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
 	Model* window1 = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 4.0f, 1.005f));
-	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
 	Model* window2 = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, 1.05f));
-	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.5f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.5f, 0.1f));
 	Model* door = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
 
 	vector<Model*> buildingChildren = vector<Model*>();
@@ -2363,15 +2363,15 @@ Model* makeBuilding3Model(int vao) {
 	Model* left = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, 2.35f));
-	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.0f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.0f, 0.1f));
 	Model* door = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 3.0f, 2.05f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
 	Model* window1 = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 3.0f, 2.05f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
 	Model* window2 = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
 	vector<Model*> buildingChildren = vector<Model*>();
@@ -2429,11 +2429,11 @@ Model* makeBuilding4Model(int vao) {
 	Model* leftSmall = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.5f, 2.1f));
-	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.5f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.5f, 0.1f));
 	Model* window = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, 2.1f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
 	Model* door = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
 
 	vector<Model*> buildingChildren = vector<Model*>();
@@ -2484,19 +2484,19 @@ Model* makeBuilding5Model(int vao) {
 	Model* middle = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, 0.8f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, 0.1f));
 	Model* door = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 3.75f, 1.05f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
 	Model* window1 = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(2.0f, 5.75f, 1.55f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
 	Model* window2 = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(2.0f, 2.75f, 1.55f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.001f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
 	Model* window3 = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
 	vector<Model*> buildingChildren = vector<Model*>();
@@ -2741,30 +2741,46 @@ int main(int argc, char* argv[])
 	
   windowFrame = {};
   windowFrame.texture = windowTexture;
+  windowFrame.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+  windowFrame.lightColor = vec3(1.0f);
 	
   brown = {};
   brown.texture = brownTexture;
+  brown.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+  brown.lightColor = vec3(1.0f);
 
   beige = {};
-  beige.texture = beigeTexture; 
-  
+  beige.texture = beigeTexture;
+  beige.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+  beige.lightColor = vec3(1.0f);
+
   black = {};
-  black.texture = blackTexture; 
-  
+  black.texture = blackTexture;
+  black.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+  black.lightColor = vec3(1.0f);
+
   red = {};
-  red.texture = redTexture; 
-  
+  red.texture = redTexture;
+  red.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+  red.lightColor = vec3(1.0f);
+
   blue = {};
-  blue.texture = blueTexture; 
-  
+  blue.texture = blueTexture;
+  blue.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+  blue.lightColor = vec3(1.0f);
+
   purple = {};
-  purple.texture = purpleTexture; 
-  
+  purple.texture = purpleTexture;
+  purple.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+  purple.lightColor = vec3(1.0f);
+
   yellow = {};
   yellow.texture = yellowTexture;
+  yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+  yellow.lightColor = vec3(1.0f);
 
 
-	// Compile and link shaders here ...
+  // Compile and link shaders here ...
   #if defined(PLATFORM_OSX) || __linux__
 	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
 	phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
