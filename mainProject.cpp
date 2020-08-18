@@ -11,6 +11,7 @@
 #include <glm/common.hpp>
 #include "shaders.h"
 #include "Model.h"
+#include "Skybox.h"
 #include "LightSource.h"
 #include "LightSourceManager.h"
 #include "texture.h"
@@ -28,9 +29,9 @@ using namespace std;
 
 int windowWidth = 1024, windowHeight = 764;
 
-GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture;
+GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture, skyTexture;
 
-Material brick, wood, metal, box, floorTiles;
+Material brick, wood, metal, box, floorTiles, sky;
 vec3 getShearMovement(float shearRotationAngle);
 
 #pragma region unitCubes
@@ -2194,6 +2195,10 @@ Model* makeFloorModel(Terrain terrain) {
 	return floorModel;
 }
 
+Skybox* makeSkyBoxModel(int vao) {
+	return new Skybox(vao, sphereVertices, uboWorldMatrixBlock, vector<Model*>(), mat4(1.0f), mat4(1.0f), mat4(1.0f), sky);
+}
+
 #pragma endregion
 
 void handleExitInput(GLFWwindow* window) {
@@ -2280,7 +2285,7 @@ Model* t9BottomModel;
 Model* c4Model;
 Model* C4BottomModel;
 Model* floorModel;
-mat4 L9Matrix, L9BottomMatrix, I9Matrix, I9BottomMatrix, U3Matrix, U3BottomMatrix, T9Matrix, t9BottomMatrix, C4Matrix, C4BottomMatrix, floorMatrix;
+mat4 L9Matrix, L9BottomMatrix, I9Matrix, I9BottomMatrix, U3Matrix, U3BottomMatrix, T9Matrix, T9BottomMatrix, C4Matrix, C4BottomMatrix, floorMatrix;
 
 void drawScene() {
 	l9Model->draw(L9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
@@ -2290,11 +2295,10 @@ void drawScene() {
 	u3Model->draw(U3Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 	U3BottomModel->draw(U3BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 	t9Model->draw(T9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	t9BottomModel->draw(t9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	t9BottomModel->draw(T9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 	c4Model->draw(C4Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 	C4BottomModel->draw(C4BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 	floorModel->draw(floorMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-
 }
 
 int main(int argc, char* argv[])
@@ -2345,12 +2349,14 @@ int main(int argc, char* argv[])
   metalTexture = loadTexture("metal2.jpg");
   boxTexture = loadTexture("box.jpg");
   floorTilesTexture = loadTexture("floortiles.jpg");
+  skyTexture = loadTexture("sky.jpg");
   #else
   brickTexture = loadTexture("../Source/COMP371-Group14-Project/brick.jpg");
   woodTexture = loadTexture("../Source/COMP371-Group14-Project/wood.jpg");
   metalTexture = loadTexture("../Source/COMP371-Group14-Project/metal2.jpg");
   boxTexture = loadTexture("../Source/COMP371-Group14-Project/box.jpg");
   floorTilesTexture = loadTexture("../Source/COMP371-Group14-Project/floortiles.jpg");
+  skyTexture = loadTexture("../Source/COMP371-Group14-Project/sky.jpg");
   #endif
 
   float globalAmbientIntensity = 0.15f;
@@ -2379,6 +2385,11 @@ int main(int argc, char* argv[])
   floorTiles.texture = floorTilesTexture;
   floorTiles.lightCoefficients = vec4(globalAmbientIntensity, 0.6f, 0.9f, 256);
   floorTiles.lightColor = vec3(1.0f, 1.0f, 1.0f);
+
+  sky = {};
+  sky.texture = skyTexture;
+  sky.lightCoefficients = vec4(1.0f, 0.0f, 0.0f, 0);
+  sky.lightColor = vec3(1.0f);
 
 
   Terrain terrain = Terrain(glm::vec3(200, 3, 200), 32);
@@ -2468,6 +2479,8 @@ int main(int argc, char* argv[])
 	mat4 floorBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
 	floorModel = makeFloorModel(terrain);
 
+	Skybox* skyBoxModel = makeSkyBoxModel(sphereVAO);
+
 	// For frame time
 	float lastFrameTime = glfwGetTime();
 	int lastMouseLeftState = GLFW_RELEASE;
@@ -2542,10 +2555,11 @@ int main(int argc, char* argv[])
 		U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix;
 		U3BottomMatrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix * modelShearingMatrix;
 		T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix;
-		t9BottomMatrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix * modelShearingMatrix;
+		T9BottomMatrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix * modelShearingMatrix;
 		C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix;
 		C4BottomMatrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix * modelShearingMatrix;
 		floorMatrix = worldOrientationModelMatrix * floorBaseTranslation * translate(mat4(1.0f), vec3(0.0f));
+		mat4 skyboxMatrix = translate(mat4(1.0f), vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z));
 #pragma endregion
 
 #pragma region shadowPass1
@@ -2567,8 +2581,8 @@ int main(int argc, char* argv[])
 
 		useLightingShader();
 		bindShadowMaps(phongLightShaderProgram);
+		skyBoxModel->draw(skyboxMatrix, GL_TRIANGLES, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		drawScene();
-
 #pragma endregion
 
 		useStandardShader();
