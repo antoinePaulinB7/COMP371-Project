@@ -696,7 +696,7 @@ float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
 float magnificationFactor = 1.0f;
-bool zoomMoveMode = false, fastCam = false;
+bool fastCam = false;
 
 // Camera parameters for view transform
 vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
@@ -716,17 +716,6 @@ mat4 viewMatrix = lookAt(cameraPosition,  // eye
 
 void handleCameraFlagInputs(GLFWwindow* window) {
 	fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
-
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-	{
-		zoomMoveMode = true;
-	}
-
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-	{
-		zoomMoveMode = false;
-	}
-
 }
 
 // Camera parameters for view transform
@@ -2646,17 +2635,6 @@ int main(int argc, char* argv[])
 
 		else if (dy > 0) {
 			cameraVerticalAngle -= (cameraAngularSpeed * dt * dy) / slowingFactor;
-		}
-
-		if (zoomMoveMode)
-		{
-			if (dy > 0) { //INCR
-				magnificationFactor = magnificationFactor * 1.5f;
-			}
-
-			else if (dy < 0) { // DECR
-				magnificationFactor = magnificationFactor / 1.5f;
-			}
 		}
 
 		// Update viewMatrix
