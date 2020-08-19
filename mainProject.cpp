@@ -2682,14 +2682,14 @@ int main(int argc, char* argv[])
   boxTexture = loadTexture("box.jpg");
   floorTilesTexture = loadTexture("floortiles.jpg");
   skyTexture = loadTexture("sky.jpg");
-  windowTexture = loadTexture("window");
-  brownTexture = loadTexture("brown");
-  beigeTexture = loadTexture("beige");
-  blackTexture = loadTexture("black");
-  redTexture = loadTexture("red");
-  blueTexture = loadTexture("blue");
-  purpleTexture = loadTexture("purple");
-  yellowTexture = loadTexture("yellow");
+  windowTexture = loadTexture("window.png");
+  brownTexture = loadTexture("brown.jpg");
+  beigeTexture = loadTexture("beige.jpg");
+  blackTexture = loadTexture("black.jpg");
+  redTexture = loadTexture("red.png");
+  blueTexture = loadTexture("blue.jpg");
+  purpleTexture = loadTexture("purple.jpg");
+  yellowTexture = loadTexture("yellow.jpg");
   #else
   brickTexture = loadTexture("../Source/COMP371-Group14-Project/brick.jpg");
   woodTexture = loadTexture("../Source/COMP371-Group14-Project/wood.jpg");
