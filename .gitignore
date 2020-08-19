@@ -2,3 +2,4 @@
 *.cmake
 *.sh
 *.vscode
+.idea/

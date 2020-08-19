@@ -15,6 +15,7 @@
 #include "LightSource.h"
 #include "LightSourceManager.h"
 #include "texture.h"
+#include "Terrain.h"
 #include <time.h>
 #include <algorithm>
 #include <list>
@@ -2213,7 +2214,7 @@ Model* makeT9Model(int vao) {
 	return modelT9;
 }
 
-Model* makeFloorModel(int vao) {
+Model* makeFloorModel(Terrain terrain) {
 	// Draw floor using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -2221,7 +2222,7 @@ Model* makeFloorModel(int vao) {
 	
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> children = vector<Model*>();
-	Model* floorModel = new Model(vao, 6, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, wood);
+	Model* floorModel = new Model(terrain.getVAO(), terrain.getNumberVertices(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, wood);
 
 	return floorModel;
 }
@@ -2779,8 +2780,9 @@ int main(int argc, char* argv[])
   yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
   yellow.lightColor = vec3(1.0f);
 
+  Terrain terrain = Terrain(glm::vec3(200, 3, 200), 32);
 
-  // Compile and link shaders here ...
+	// Compile and link shaders here ...
   #if defined(PLATFORM_OSX) || __linux__
 	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
 	phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
@@ -2863,7 +2865,7 @@ int main(int argc, char* argv[])
 	C4BottomModel = makeC4BottomModel(texturedCubeVAO);
 
 	mat4 floorBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
-	floorModel = makeFloorModel(gridSquare);
+	floorModel = makeFloorModel(terrain);
 
 	Skybox* skyBoxModel = makeSkyBoxModel(sphereVAO);
 	
