@@ -15,6 +15,7 @@
 #include "LightSource.h"
 #include "LightSourceManager.h"
 #include "RaycastCollisions.h"
+#include "TimexLetterModeler.h"
 #include "texture.h"
 #include "Terrain.h"
 #include <time.h>
@@ -32,9 +33,9 @@ using namespace std;
 int windowWidth = 1024, windowHeight = 764;
 
 GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture, skyTexture, windowTexture, brownTexture, beigeTexture,
-blackTexture, redTexture, blueTexture, purpleTexture, yellowTexture, cementTexture, marbleTexture;
+blackTexture, redTexture, blueTexture, purpleTexture, yellowTexture, whiteTexture, cementTexture, marbleTexture;
 
-Material brick, wood, metal, cement, marble, box, floorTiles, sky, windowFrame, brown, beige, black, red, blue, purple, yellow;
+Material brick, wood, metal, cement, marble, box, floorTiles, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, white;
 vec3 getShearMovement(float shearRotationAngle);
 
 void setRandomizedPositionScale(vec3& position, float& scaleFactor, Terrain terrain);
@@ -549,7 +550,7 @@ static bool BPressed = false;
 static bool MPressed = false;
 static bool NPressed = false;
 static bool XPressed = false;
-static bool ZPressed = false;
+static bool FPressed = false;
 void handleRenderingModeInput(GLFWwindow* window) {
 	//----------------------------------------------------------------------------------
 	//User can change the rendering mode
@@ -588,14 +589,14 @@ void handleRenderingModeInput(GLFWwindow* window) {
 		XPressed = false;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS && ZPressed == false)  //toggle main light
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && FPressed == false)  //toggle main light
 	{
 		isLightOn = !isLightOn;
-		ZPressed = true;
+		FPressed = true;
 	}
-	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_RELEASE && ZPressed == true)
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE && FPressed == true)
 	{
-		ZPressed = false;
+		FPressed = false;
 	}
 }
 
@@ -2165,6 +2166,7 @@ void checkErrors() {
 GLuint defaultShaderProgram;
 GLuint phongLightShaderProgram;
 GLuint shadowShaderProgram;
+GLuint uiShaderProgram;
 void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 	glUseProgram(shaderProgram);
 
@@ -2216,6 +2218,16 @@ void useLightingShader() {
 	glUniform1f(isLightOnLocation, isLightOn);
 }
 
+void useUIShader() {
+	projectionMatrix = perspective(70.0f, // field of view in degrees
+		(float)windowWidth / windowHeight,  // aspect ratio
+		0.01f, 300.0f);
+	useShader(uiShaderProgram, projectionMatrix, viewMatrix);
+
+	GLuint texture = glGetUniformLocation(phongLightShaderProgram, "someTexture");
+	glUniform1i(texture, 0);
+}
+
 // reference https://www.glfw.org/docs/latest/group__window.html#gae49ee6ebc03fa2da024b89943a331355
 void windowResizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -2258,6 +2270,8 @@ void drawScene(std::list<Model*> buildingModels, std::list<mat4> buildingMatrix,
 		std::advance(itMatrix, 1);
 	}
 }
+
+int texturedCubeVAO;
 
 int main(int argc, char* argv[])
 {
@@ -2316,6 +2330,7 @@ int main(int argc, char* argv[])
 	blueTexture = loadTexture("blue.jpg");
 	purpleTexture = loadTexture("purple.jpg");
 	yellowTexture = loadTexture("yellow.jpg");
+	whiteTexture = loadTexture("white.jpg");
 	cementTexture = loadTexture("cement.jpg");
 	marbleTexture = loadTexture("marble.jpg");
 #else
@@ -2333,6 +2348,7 @@ int main(int argc, char* argv[])
 	blueTexture = loadTexture("../Source/COMP371-Group14-Project/blue.jpg");
 	purpleTexture = loadTexture("../Source/COMP371-Group14-Project/purple.jpg");
 	yellowTexture = loadTexture("../Source/COMP371-Group14-Project/yellow.jpg");
+	whiteTexture = loadTexture("../Source/COMP371-Group14-Project/white.jpg");
 	cementTexture = loadTexture("../Source/COMP371-Group14-Project/cement.jpg");
 	marbleTexture = loadTexture("../Source/COMP371-Group14-Project/marble.jpg");
 #endif
@@ -2420,6 +2436,11 @@ int main(int argc, char* argv[])
 	yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
 	yellow.lightColor = vec3(1.0f);
 
+	white = {};
+	white.texture = whiteTexture;
+	white.lightCoefficients = vec4(1.0f, 0.0f, 0.0f, 0.0f);
+	white.lightColor = vec3(1.0f);
+
 	Terrain terrain = Terrain(glm::vec3(200, 3, 200), 32);
 
 	// Compile and link shaders here ...
@@ -2427,10 +2448,12 @@ int main(int argc, char* argv[])
 	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
 	phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
 	shadowShaderProgram = shader("shadowShader.vs", "shadowShader.fs");
+	uiShaderProgram = shader("uiShader.vs", "uiShader.fs");
 #else
 	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
 	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
 	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
+	uiShaderProgram = shader("../Source/COMP371-Group14-Project/uiShader.vs", "../Source/COMP371-Group14-Project/uiShader.fs");
 #endif
 
 
@@ -2472,7 +2495,7 @@ int main(int argc, char* argv[])
 #pragma endregion
 
 	// Define and upload geometry to the GPU here ...
-	int texturedCubeVAO = createTextureCubeVertexArrayObject();
+	texturedCubeVAO = createTextureCubeVertexArrayObject();
 	int gridVAO = createVertexArrayObjectGridLine();
 	int gridSquare = createGridSquareVertexArrayObject();
 	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
@@ -2547,6 +2570,9 @@ int main(int argc, char* argv[])
 		buildingModels.push_back(buildingModel);
 		collisionModels.push_back(buildingModel);
 	}
+
+	createPointedCornerVertexArrayObject();
+	Model* flashlightUIModel = makeFlashlightUIModel(white, texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock);
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -2668,12 +2694,14 @@ int main(int argc, char* argv[])
 		drawScene(buildingModels, buildingMatrix, numOfBuildings);
 #pragma endregion
 
-		useStandardShader();
-
-		//Draw spheres at light sources (easier to visualize)
-		glBindVertexArray(sphereVAO);
-		GLuint worldMatrixLocation = glGetUniformLocation(defaultShaderProgram, "worldMatrix");
-		drawLightSources(worldMatrixLocation, sphereVertices.size());
+		useUIShader();
+		vec3 UIPos = cameraPosition + 100.0f * cameraLookAt;
+		mat4 drawUIAT = inverse(lookAt(UIPos, cameraPosition, cameraUp))
+			* translate(mat4(1.0f), vec3(30.0f, -40.0f, 0.0f))
+			* rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
+		glDisable(GL_DEPTH_TEST);
+		flashlightUIModel->draw(drawUIAT, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		glEnable(GL_DEPTH_TEST);
 
 		// End Frame, include swap interval to prevent blurriness
 		glfwSwapBuffers(window);
