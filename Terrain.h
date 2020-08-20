@@ -20,7 +20,8 @@ class Terrain {
     glm::vec3 mapSize;
     int resolution;
     GLuint terrainVAO;
-    int numberOfVertices;
+	std::vector<glm::vec3> vertexPositions;
+
 public:
     Terrain();
     Terrain(glm::vec3 size, int resolution);
@@ -28,7 +29,7 @@ public:
     float getHeightAt(float x, float z);
     glm::vec3 getNormalAt(float x, float z);
     GLuint getVAO();
-    int getNumberVertices();
+	std::vector<glm::vec3> getVertices();
 private:
     std::vector<float> heightMap;
     std::vector<float> generateHeightMap();
