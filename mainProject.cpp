@@ -2986,21 +2986,8 @@ int main(int argc, char* argv[])
 
 		int slowingFactor = 3;
 
-		if (dx > 0) {
-			cameraHorizontalAngle -= (cameraAngularSpeed * dt * 1 * dx) / slowingFactor;
-		}
-		// If position goes toward negative axis, increase cameraposition
-		else if (dx < 0) {
-			cameraHorizontalAngle += (cameraAngularSpeed * dt * -1 * dx) / slowingFactor;
-		}
-
-		if (dy < 0) {
-			cameraVerticalAngle += (cameraAngularSpeed * dt * -1 * dy) / slowingFactor;
-		}
-
-		else if (dy > 0) {
-			cameraVerticalAngle -= (cameraAngularSpeed * dt * dy) / slowingFactor;
-		}
+		cameraHorizontalAngle += (cameraAngularSpeed * -1 * dt * dx) / slowingFactor;
+		cameraVerticalAngle += (cameraAngularSpeed * -1 * dt * dy) / slowingFactor;
 
 		// Update viewMatrix
 		cameraPosition = vec3(cameraPosition.x, 15.0f, cameraPosition.z)
