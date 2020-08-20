@@ -2273,9 +2273,9 @@ Model* makeBuilding1Model(int vao, Terrain terrain) {
 	buildingChildren.push_back(window);
 	buildingChildren.push_back(door);
 
-	float xRandScale = getRandomNumber(2, 5);
-	float yRandScale = getRandomNumber(2, 5);
-	float zRandScale = getRandomNumber(2, 5);
+	float xRandScale = getRandomNumber(3, 6);
+	float yRandScale = getRandomNumber(3, 6);
+	float zRandScale = getRandomNumber(3, 6);
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	
@@ -2285,7 +2285,7 @@ Model* makeBuilding1Model(int vao, Terrain terrain) {
 	float topRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate + zRandScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f + xRandScale, 1.0f + yRandScale, 1.0f + zRandScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xRandScale, yRandScale, zRandScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, 0, uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -2328,9 +2328,9 @@ Model* makeBuilding2Model(int vao, Terrain terrain) {
 	buildingChildren.push_back(window2);
 	buildingChildren.push_back(door);
 
-	float xRandScale = getRandomNumber(2, 5);
-	float yRandScale = getRandomNumber(2, 5);
-	float zRandScale = getRandomNumber(2, 5);
+	float xRandScale = getRandomNumber(3, 6);
+	float yRandScale = getRandomNumber(3, 6);
+	float zRandScale = getRandomNumber(3, 6);
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	
@@ -2395,9 +2395,9 @@ Model* makeBuilding3Model(int vao, Terrain terrain) {
 	buildingChildren.push_back(window1);
 	buildingChildren.push_back(window2);
 
-	float xRandScale = getRandomNumber(2, 5);
-	float yRandScale = getRandomNumber(2, 5);
-	float zRandScale = getRandomNumber(2, 5);
+	float xRandScale = getRandomNumber(3, 6);
+	float yRandScale = getRandomNumber(3, 6);
+	float zRandScale = getRandomNumber(3, 6);
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	
@@ -2407,7 +2407,7 @@ Model* makeBuilding3Model(int vao, Terrain terrain) {
 	float topRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate + zRandScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f + xRandScale, 1.0f + yRandScale, 1.0f + zRandScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xRandScale, yRandScale, zRandScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, 0, uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -2463,9 +2463,9 @@ Model* makeBuilding4Model(int vao, Terrain terrain) {
 	buildingChildren.push_back(window);
 	buildingChildren.push_back(door);
 
-	float xRandScale = getRandomNumber(2, 5);
-	float yRandScale = getRandomNumber(2, 5);
-	float zRandScale = getRandomNumber(2, 5);
+	float xRandScale = getRandomNumber(3, 6);
+	float yRandScale = getRandomNumber(3, 6);
+	float zRandScale = getRandomNumber(3, 6);
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	
@@ -2475,7 +2475,7 @@ Model* makeBuilding4Model(int vao, Terrain terrain) {
 	float topRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate + zRandScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f + xRandScale, 1.0f + yRandScale, 1.0f + zRandScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xRandScale, yRandScale, zRandScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, 0, uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -2533,9 +2533,9 @@ Model* makeBuilding5Model(int vao, Terrain terrain) {
 	buildingChildren.push_back(window2);
 	buildingChildren.push_back(window3);
 
-	float xRandScale = getRandomNumber(2, 5);
-	float yRandScale = getRandomNumber(2, 5);
-	float zRandScale = getRandomNumber(2, 5);
+	float xRandScale = getRandomNumber(3, 6);
+	float yRandScale = getRandomNumber(3, 6);
+	float zRandScale = getRandomNumber(3, 6);
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	
@@ -2545,7 +2545,7 @@ Model* makeBuilding5Model(int vao, Terrain terrain) {
 	float topRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate + zRandScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f + xRandScale, 1.0f + yRandScale, 1.0f + zRandScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xRandScale, yRandScale, zRandScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, 0, uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
