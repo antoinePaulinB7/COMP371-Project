@@ -36,6 +36,13 @@ GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture, s
 blackTexture, redTexture, blueTexture, purpleTexture, yellowTexture, cementTexture, marbleTexture;
 
 Material brick, wood, metal, cement, marble, box, floorTiles, sky, windowFrame, brown, beige, black, red, blue, purple, yellow;
+
+int texturedCubeVAO;
+int gridVAO;
+int gridSquare;
+int xyzVAO;
+int sphereVAO;
+
 vec3 getShearMovement(float shearRotationAngle);
 
 void setRandomizedPositionScale(vec3& position, float& scaleFactor, Terrain terrain);
@@ -468,7 +475,7 @@ float currentCamStrafingMovement = 0, currentCamFacingMovement = 0.0f;
 // Set projection matrix for shader, this won't change
 mat4 projectionMatrix = perspective(70.0f, // field of view in degrees
 	(float)windowWidth / windowHeight,  // aspect ratio
-	0.01f, 300.0f);   // near and far (near > 0)
+	0.01f, 1000.0f);   // near and far (near > 0)
 
 	// Set initial view matrix
 mat4 viewMatrix = lookAt(cameraPosition,  // eye
@@ -1810,7 +1817,7 @@ Model* makeC4BottomModel(int vao) {
 	return entireModel;
 }
 
-Model* makeFloorModel(Terrain terrain) {
+Model* makeFloorModel(Terrain terrain, City city) {
 	// Draw floor using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -1818,6 +1825,38 @@ Model* makeFloorModel(Terrain terrain) {
 
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> children = vector<Model*>();
+
+    for(int b = 0; b < city.buildings.size(); b++) {
+        Building* building = city.buildings[b];
+
+        children.push_back(
+                new Model(
+                        texturedCubeVAO,
+                        cubeVertexPositions,
+                        uboWorldMatrixBlock,
+                        vector<Model*>(),
+                        translate(
+                                mat4(1.0f),
+                                glm::vec3(
+                                        building->pos.x,
+                                        terrain.getHeightAt(
+                                                building->pos.x * 200,
+                                                building->pos.y * 200
+                                        ) + building->size.y / 2.0f,
+                                        building->pos.y) * glm::vec3(200, 1, 200)
+                        ),
+                        mat4(1.0f),
+                        scale(
+                                mat4(1.0f),
+                                building->size * glm::vec3(200, 200, 200)
+                        ),
+                        cement
+                )
+        );
+    }
+
+
+
 	Model* floorModel = new Model(terrain.getVAO(), terrain.getVertices(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, wood);
 
 	return floorModel;
@@ -2149,14 +2188,14 @@ void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 void useStandardShader() {
 	projectionMatrix = perspective(70.0f, // field of view in degrees
 		(float)windowWidth / windowHeight,  // aspect ratio
-		0.01f, 300.0f);
+		0.01f, 1000.0f);
 	useShader(defaultShaderProgram, projectionMatrix, viewMatrix);
 }
 
 void useLightingShader() {
 	projectionMatrix = perspective(70.0f, // field of view in degrees
 		(float)windowWidth / windowHeight,  // aspect ratio
-		0.01f, 300.0f);
+		0.01f, 1000.0f);
 	useShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
 
 	//Set up vertex shader uniforms
@@ -2270,6 +2309,7 @@ int main(int argc, char* argv[])
 
 	// Black background
 	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Load Textures
 #if defined(PLATFORM_OSX) || __linux__
@@ -2391,8 +2431,8 @@ int main(int argc, char* argv[])
 	yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
 	yellow.lightColor = vec3(1.0f);
 
-	Terrain terrain = Terrain(glm::vec3(200, 3, 200), 32);
-
+	Terrain terrain = Terrain(glm::vec3(2000, 3, 2000), 32);
+    City city = City(25, 25);
 	// Compile and link shaders here ...
 #if defined(PLATFORM_OSX) || __linux__
 	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
@@ -2443,14 +2483,14 @@ int main(int argc, char* argv[])
 #pragma endregion
 
 	// Define and upload geometry to the GPU here ...
-	int texturedCubeVAO = createTextureCubeVertexArrayObject();
-	int gridVAO = createVertexArrayObjectGridLine();
-	int gridSquare = createGridSquareVertexArrayObject();
-	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
+	texturedCubeVAO = createTextureCubeVertexArrayObject();
+	gridVAO = createVertexArrayObjectGridLine();
+	gridSquare = createGridSquareVertexArrayObject();
+	xyzVAO = createVertexArrayObjectCoordinateXYZ();
   #if defined(PLATFORM_OSX) || __linux__
-	int sphereVAO = createSphereObjectVAO("sphere.obj");
+	sphereVAO = createSphereObjectVAO("sphere.obj");
   #else
-	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/sphere.obj");
+	sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/sphere.obj");
   #endif
 
 
@@ -2483,13 +2523,13 @@ int main(int argc, char* argv[])
 	collisionModels.push_back(C4BottomModel);
 
 	mat4 floorBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
-	floorModel = makeFloorModel(terrain);
+	floorModel = makeFloorModel(terrain, city);
 
 	Skybox* skyBoxModel = makeSkyBoxModel(sphereVAO);
 
 	std::list<mat4> buildingBaseTranslations;
 	std::list<Model*> buildingModels;
-	float numOfBuildings = getRandomNumber(1, 5);
+	float numOfBuildings = 0; //getRandomNumber(1, 5);
 
 	for (int i = 0; i < numOfBuildings; i++) {
 		mat4 buildingBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
@@ -2540,8 +2580,6 @@ int main(int argc, char* argv[])
 	setRandomizedPositionScale(u3ModelPosition, u3ModelScaleFactor, terrain);
 	setRandomizedPositionScale(t9ModelPosition, t9ModelScaleFactor, terrain);
 	setRandomizedPositionScale(i9ModelPosition, i9ModelScaleFactor, terrain);
-
-	City c = City();
 
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
@@ -2636,7 +2674,7 @@ int main(int argc, char* argv[])
 
 		useLightingShader();
 		bindShadowMaps(phongLightShaderProgram);
-		skyBoxModel->draw(skyboxMatrix, GL_TRIANGLES, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+//		skyBoxModel->draw(skyboxMatrix, GL_TRIANGLES, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		drawScene(buildingModels, buildingMatrix, numOfBuildings);
 #pragma endregion
 
