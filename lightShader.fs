@@ -26,6 +26,51 @@
 	} light2;
 	uniform float isLight2On = 1.0f;
 	uniform sampler2D shadowMap2;
+	
+	in LIGHT_3 {
+		vec3 lightVectorL;
+		vec3 lightPointingDir;
+		vec4 shadowCoordinate;
+		float distanceToLightSource;
+	} light3;
+	uniform float isLight3On = 1.0f;
+	uniform sampler2D shadowMap3;
+
+	in LIGHT_4 {
+		vec3 lightVectorL;
+		vec3 lightPointingDir;
+		vec4 shadowCoordinate;
+		float distanceToLightSource;
+	} light4;
+	uniform float isLight4On = 1.0f;
+	uniform sampler2D shadowMap4;
+
+	in LIGHT_5 {
+		vec3 lightVectorL;
+		vec3 lightPointingDir;
+		vec4 shadowCoordinate;
+		float distanceToLightSource;
+	} light5;
+	uniform float isLight5On = 1.0f;
+	uniform sampler2D shadowMap5;
+
+	in LIGHT_6 {
+		vec3 lightVectorL;
+		vec3 lightPointingDir;
+		vec4 shadowCoordinate;
+		float distanceToLightSource;
+	} light6;
+	uniform float isLight6On = 1.0f;
+	uniform sampler2D shadowMap6;
+
+	in LIGHT_7 {
+		vec3 lightVectorL;
+		vec3 lightPointingDir;
+		vec4 shadowCoordinate;
+		float distanceToLightSource;
+	} light7;
+	uniform float isLight7On = 1.0f;
+	uniform sampler2D shadowMap7;
 
     uniform vec4 lightCoefficients = vec4(0.3f, 0.8f, 0.5f, 256);
     uniform vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
@@ -102,7 +147,6 @@
 			vec3 norm = normalize(normalN);
 			vec3 lightDirection = normalize(lightVector - fragPosition);
 
-			vec3 ambientIntensity = lightColor * coeffAmbient;
 			vec3 diffuseIntensity = (coeffDiffuse * lightColor) * getDiffuseIntensity(attenuationFactor, norm, lightDirection);
 			vec3 specularIntensity = (coeffSpecular * lightColor) * getSpecularIntensity(attenuationFactor, norm, lightDirection);
 
@@ -128,7 +172,7 @@
 				}
 			}
 
-			return ambientIntensity + ((visibility + lightOnness)/2.0f) * (diffuseIntensity + specularIntensity);
+			return ((visibility + lightOnness)/2.0f) * (diffuseIntensity + specularIntensity);
 		}
 
 	void main()
@@ -140,11 +184,40 @@
 
 		float angle = 0.9f; //0.76f is roughly cos(40), our spotlight covers 40 degrees
 		vec3 intensity1 = getTotalIntensity(light1.distanceToLightSource, light1.lightVectorL, light1.lightPointingDir, light1.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap, isLight1On > 0.5f, angle);
+
 		vec3 intensity2 = vec3(0.0f);
 		if (light2.lightVectorL != vec3(0.0f)) {
 			intensity2 = getTotalIntensity(light2.distanceToLightSource, light2.lightVectorL, light2.lightPointingDir, light2.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap2, isLight2On > 0.5f, angle);
 		}
-		vec3 totalIntensity = intensity1 + intensity2;	
+
+		vec3 intensity3 = vec3(0.0f);
+		if (light3.lightVectorL != vec3(0.0f)) {
+			intensity3 = getTotalIntensity(light3.distanceToLightSource, light3.lightVectorL, light3.lightPointingDir, light3.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap3, isLight3On > 0.5f, angle);
+		}
+
+		vec3 intensity4 = vec3(0.0f);
+		if (light4.lightVectorL != vec3(0.0f)) {
+			intensity4 = getTotalIntensity(light4.distanceToLightSource, light4.lightVectorL, light4.lightPointingDir, light4.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap4, isLight4On > 0.5f, angle);
+		}
+
+		vec3 intensity5 = vec3(0.0f);
+		if (light5.lightVectorL != vec3(0.0f)) {
+			intensity5 = getTotalIntensity(light5.distanceToLightSource, light5.lightVectorL, light5.lightPointingDir, light5.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap5, isLight5On > 0.5f, angle);
+		}
+
+		vec3 intensity6 = vec3(0.0f);
+		if (light6.lightVectorL != vec3(0.0f)) {
+			intensity6 = getTotalIntensity(light6.distanceToLightSource, light6.lightVectorL, light6.lightPointingDir, light6.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap6, isLight6On > 0.5f, angle);
+		}
+
+		vec3 intensity7 = vec3(0.0f);
+		if (light7.lightVectorL != vec3(0.0f)) {
+			intensity7 = getTotalIntensity(light7.distanceToLightSource, light7.lightVectorL, light7.lightPointingDir, light7.shadowCoordinate, bias, percentageCloserFilteringRadius, shadowMap7, isLight7On > 0.5f, angle);
+		}
+
+		float coeffAmbient = lightCoefficients[0]; //0.3f;
+		vec3 ambientIntensity = vec3(coeffAmbient);
+		vec3 totalIntensity = ambientIntensity + intensity1 + intensity2 + intensity3 + intensity4 + intensity5 + intensity6 + intensity7;	
 		vec4 texColor = vec4(1.0f);
 
 		if(shouldRenderTextures > 0.5f) {
