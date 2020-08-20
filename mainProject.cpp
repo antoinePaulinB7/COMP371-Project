@@ -14,6 +14,7 @@
 #include "Skybox.h"
 #include "LightSource.h"
 #include "LightSourceManager.h"
+#include "RaycastCollisions.h"
 #include "texture.h"
 #include "Terrain.h"
 #include <time.h>
@@ -2168,6 +2169,18 @@ int main(int argc, char* argv[])
 	c4Model = makeC4Model(texturedCubeVAO, sphereVAO);
 	C4BottomModel = makeC4BottomModel(texturedCubeVAO);
 
+	vector<Model*> collisionModels;
+	collisionModels.push_back(l9Model);
+	collisionModels.push_back(l9BottomModel);
+	collisionModels.push_back(i9Model);
+	collisionModels.push_back(l9BottomModel);
+	collisionModels.push_back(u3Model);
+	collisionModels.push_back(U3BottomModel);
+	collisionModels.push_back(t9Model);
+	collisionModels.push_back(t9BottomModel);
+	collisionModels.push_back(c4Model);
+	collisionModels.push_back(C4BottomModel);
+
 	mat4 floorBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
 	floorModel = makeFloorModel(terrain);
 
@@ -2284,31 +2297,6 @@ int main(int argc, char* argv[])
 		GLuint worldMatrixLocation = glGetUniformLocation(defaultShaderProgram, "worldMatrix");
 		drawLightSources(worldMatrixLocation, sphereVertices.size());
 
-#pragma region Grid and Coordinate Axis
-		/*
-		// Draw ground using Hierarchical Modeling
-		glBindVertexArray(gridVAO);
-
-		// Initialize variables for grid size
-		mat4 GridX = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(-1.0f * gridSize / 2.0f, 0.0f, -1.0f * gridSize / 2.0f));
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &GridX[0][0]);
-		glDrawArrays(GL_LINES, 0, 2 * (gridSize * 2));
-
-
-		// Set up Coordinate Axis Matrix using Hierarchical Modeling
-		mat4 Coordinates = worldOrientationModelMatrix * translate(mat4(1.0f), vec3(0.0f, 0.01f, 0.01f));
-
-		int numLines = 3;
-		glBindVertexArray(xyzVAO);
-
-		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &Coordinates[0][0]);
-		glLineWidth(5.0f);
-		glDrawArrays(GL_LINES, 0, 2 * numLines);
-
-		glLineWidth(1.0f);
-		*/
-#pragma endregion
-
 		// End Frame, include swap interval to prevent blurriness
 		glfwSwapBuffers(window);
 		glfwSwapInterval(1);
@@ -2396,6 +2384,16 @@ int main(int argc, char* argv[])
 			+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		viewMatrix = scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
+
+		if (doRaycastCollision(viewMatrix, collisionModels))
+		{
+			cameraPosition = vec3(cameraPosition.x, 15.0f, cameraPosition.z)
+				+ vec3(cameraLookAt.x * -currentCamFacingMovement, 0.0f, cameraLookAt.z * -currentCamFacingMovement)
+				+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
+			viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+			viewMatrix = scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
+		}
+
 		currentCamStrafingMovement = 0;
 		currentCamFacingMovement = 0;
 		vec3 flashlightPosition = cameraPosition + vec3(0.0f, -5.0f, 0.0f);
