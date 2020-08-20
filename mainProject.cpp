@@ -127,7 +127,7 @@ int createTextureCubeVertexArrayObject() {
 	//Copy the vertex positions, for ray casting later on.
 	for (int i = 0; i < sizeof(vertexArray) / sizeof(vertexArray[0]); )
 	{
-		cubeVertexPositions.push_back(vec3(vertexArray[i], vertexArray[i+1], vertexArray[i+2]));
+		cubeVertexPositions.push_back(vec3(vertexArray[i], vertexArray[i + 1], vertexArray[i + 2]));
 		i += 11; //skip to the start of the next vertex
 	}
 
@@ -235,7 +235,7 @@ GLuint createSphereObjectVAO(string path) {
 	glEnableVertexAttribArray(3);
 
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs, as we are using multiple VAOs)
-	
+
 	sphereVertices = vertices;
 
 	return VAO;
@@ -679,11 +679,11 @@ mat4 c4ModelMatrix;
 vec3 c4ModelPosition = vec3(1.0f);
 
 
-mat4 L9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize));
-mat4 I9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, -halfGridSize));
+mat4 L9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
+mat4 I9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
 mat4 U3StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
-mat4 C4StartTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, halfGridSize));
-mat4 T9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, halfGridSize));
+mat4 C4StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
+mat4 T9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
 mat4 L9BaseTranslation = L9StartTranslation;
 mat4 I9BaseTranslation = I9StartTranslation;
 mat4 U3BaseTranslation = U3StartTranslation;
@@ -1323,7 +1323,7 @@ Model* makeI9Model(int vao) {
 	//We can then very simply manipulate this modelI to transform the entire I
 	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
-	Model* modelI = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelI = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating top-part of the number 9
@@ -1354,7 +1354,7 @@ Model* makeI9Model(int vao) {
 	nineChildren.push_back(model9left);
 	nineChildren.push_back(model9bottom);
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
-	Model* model9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Setting up the entire I9
@@ -1362,13 +1362,13 @@ Model* makeI9Model(int vao) {
 	vector<Model*> I9Children = vector<Model*>();
 	I9Children.push_back(modelI);
 	I9Children.push_back(model9);
-	Model* modelI9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelI9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelI9);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
@@ -1397,7 +1397,7 @@ Model* makeI9BottomModel(int vao) {
 	//We can then very simply manipulate this modelI to transform the entire I
 	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
-	Model* modelI = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelI = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating right-part of the number 9
@@ -1410,7 +1410,7 @@ Model* makeI9BottomModel(int vao) {
 	vector<Model*> nineChildren = vector<Model*>();
 	nineChildren.push_back(model9right);
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
-	Model* model9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Setting up the entire I9
@@ -1418,13 +1418,13 @@ Model* makeI9BottomModel(int vao) {
 	vector<Model*> I9Children = vector<Model*>();
 	I9Children.push_back(modelI);
 	I9Children.push_back(model9);
-	Model* modelI9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelI9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelI9);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
@@ -1453,7 +1453,7 @@ Model* makeU3Model(int vao) {
 	//We can then very simply manipulate this modelU to transform the entire U
 	//for example, to scoot the U left to make room for the number, making the entire U3 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
-	Model* modelU = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelU = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Creating base-part of the number 3
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 2.0f, 0.0f));
@@ -1477,20 +1477,20 @@ Model* makeU3Model(int vao) {
 	threeChildren.push_back(model3middleArm);
 	//threeChildren.push_back(model3bottomArm);
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	Model* model3 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, threeChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model3 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, threeChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire U3
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> U3Children = vector<Model*>();
 	U3Children.push_back(modelU);
 	U3Children.push_back(model3);
-	Model* modelU3 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, U3Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelU3 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, U3Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelU3);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
@@ -1527,7 +1527,7 @@ Model* makeU3BottomModel(int vao) {
 	//We can then very simply manipulate this modelU to transform the entire U
 	//for example, to scoot the U left to make room for the number, making the entire U3 centered.
 	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 0.0f, 0.0f));
-	Model* modelU = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelU = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating base-part of the number 3
@@ -1546,7 +1546,7 @@ Model* makeU3BottomModel(int vao) {
 	threeChildren.push_back(model3base);
 	threeChildren.push_back(model3bottomArm);
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
-	Model* model3 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, threeChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model3 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, threeChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Setting up the entire U3
@@ -1554,13 +1554,13 @@ Model* makeU3BottomModel(int vao) {
 	vector<Model*> U3Children = vector<Model*>();
 	U3Children.push_back(modelU);
 	U3Children.push_back(model3);
-	Model* modelU3 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, U3Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelU3 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, U3Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelU3);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
@@ -1589,7 +1589,7 @@ Model* makeT9Model(int vao) {
 	//We can then very simply manipulate this modelI to transform the entire T
 	//for example, to scoot the T left to make room for the number, making the entire I9 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
-	Model* modelT = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelT = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Creating top-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 4.5f, 0.0f));
@@ -1619,7 +1619,7 @@ Model* makeT9Model(int vao) {
 	nineChildren.push_back(model9left);
 	nineChildren.push_back(model9bottom);
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
-	Model* model9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Setting up the entire T9
@@ -1627,13 +1627,13 @@ Model* makeT9Model(int vao) {
 	vector<Model*> T9Children = vector<Model*>();
 	T9Children.push_back(modelT);
 	T9Children.push_back(model9);
-	Model* modelT9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelT9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelT9);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
@@ -1656,7 +1656,7 @@ Model* makeT9BottomModel(int vao) {
 	//We can then very simply manipulate this modelI to transform the entire I
 	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
-	Model* modelI = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelI = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating right-part of the number 9
@@ -1669,7 +1669,7 @@ Model* makeT9BottomModel(int vao) {
 	vector<Model*> nineChildren = vector<Model*>();
 	nineChildren.push_back(model9right);
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
-	Model* model9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Setting up the entire T9
@@ -1677,13 +1677,13 @@ Model* makeT9BottomModel(int vao) {
 	vector<Model*> T9Children = vector<Model*>();
 	T9Children.push_back(modelI);
 	T9Children.push_back(model9);
-	Model* modelT9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelT9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelT9);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
@@ -1712,7 +1712,7 @@ Model* makeC4Model(int vao) {
 	//We can then very simply manipulate this modelC to transform the entire C
 	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-5.0f, -2.0f, 0.0f));
-	Model* modelC = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelC = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Creating right-part of the number 4
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, 2.5f, 0.0f));
@@ -1735,20 +1735,20 @@ Model* makeC4Model(int vao) {
 	fourChildren.push_back(model4middle);
 	fourChildren.push_back(model4right);
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, -2.0f, 0.0f));
-	Model* model4 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model4 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire C4
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> C4Children = vector<Model*>();
 	C4Children.push_back(modelC);
 	C4Children.push_back(model4);
-	Model* modelC4 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelC4 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelC4);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
@@ -1777,7 +1777,7 @@ Model* makeC4BottomModel(int vao) {
 	//We can then very simply manipulate this modelC to transform the entire C
 	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-7.0f, -2.0f, 0.0f));
-	Model* modelC = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelC = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating right-part of the number 4
@@ -1790,7 +1790,7 @@ Model* makeC4BottomModel(int vao) {
 	vector<Model*> fourChildren = vector<Model*>();
 	fourChildren.push_back(model4right);
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, -2.0f, 0.0f));
-	Model* model4 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model4 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire C4
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -1798,13 +1798,13 @@ Model* makeC4BottomModel(int vao) {
 	vector<Model*> C4Children = vector<Model*>();
 	C4Children.push_back(modelC);
 	C4Children.push_back(model4);
-	Model* modelC4 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelC4 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelC4);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f), marble);
+	Model* entireModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f), marble);
 
 	return entireModel;
 }
@@ -1846,7 +1846,7 @@ Model* makeBuilding1Model(int vao) {
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 7.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 4.0f));
-	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock,  vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 8.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 3.0f));
@@ -2446,11 +2446,11 @@ int main(int argc, char* argv[])
 	int gridVAO = createVertexArrayObjectGridLine();
 	int gridSquare = createGridSquareVertexArrayObject();
 	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
-  #if defined(PLATFORM_OSX) || __linux__
+#if defined(PLATFORM_OSX) || __linux__
 	int sphereVAO = createSphereObjectVAO("sphere.obj");
-  #else
+#else
 	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/sphere.obj");
-  #endif
+#endif
 
 
 	//Create hierarchical models
@@ -2799,7 +2799,7 @@ vec3 getShearMovement(float shearRotationAngle) {
 
 void setRandomizedPositionScale(vec3& position, float& scaleFactor, Terrain terrain) {
 
-	scaleFactor = getRandomNumber(1, 3);
+	scaleFactor = getRandomNumber(0.5, 1.5);
 
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
