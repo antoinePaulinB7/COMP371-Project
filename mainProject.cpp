@@ -36,6 +36,8 @@ blackTexture, redTexture, blueTexture, purpleTexture, yellowTexture, cementTextu
 Material brick, wood, metal, cement, marble, box, floorTiles, sky, windowFrame, brown, beige, black, red, blue, purple, yellow;
 vec3 getShearMovement(float shearRotationAngle);
 
+void setRandomizedPositionScale(vec3& position, float& scaleFactor, Terrain terrain);
+
 float getRandomNumber(int lowerBound, int upperBound) {
 	std::random_device rd;
 	std::mt19937 mt(rd());
@@ -630,7 +632,7 @@ int createVertexArrayObjectGridLine()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
+		3,                   // sizel9
 		GL_FLOAT,            // type
 		GL_FALSE,            // normalized?
 		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
@@ -903,52 +905,52 @@ mat4 sharedModelMatrix;
 // L9 PRESETS
 float l9ModelXRotationAngle = 0.0f;
 float l9ModelYRotationAngle = 0.0f;
-float l9ModelScaleFactor = getRandomNumber(1, 3);
+float l9ModelScaleFactor = 1.0f;
 mat4 l9ModelScalingMatrix = mat4(1.0f);
 mat4 l9ModelRotationMatrix;
 mat4 l9ModelTranslationMatrix;
 mat4 l9ModelMatrix;
-vec3 l9ModelPosition = vec3(getRandomNumber(-halfGridSize, halfGridSize), 1.0f, getRandomNumber(-halfGridSize, halfGridSize));
+vec3 l9ModelPosition = vec3(1.0f);
 
 // T9 PRESETS
 float t9ModelXRotationAngle = 0.0f;
 float t9ModelYRotationAngle = 0.0f;
-float t9ModelScaleFactor = getRandomNumber(1, 3);
+float t9ModelScaleFactor = 1.0f;
 mat4 t9ModelScalingMatrix = mat4(1.0f);
 mat4 t9ModelRotationMatrix;
 mat4 t9ModelTranslationMatrix;
 mat4 t9ModelMatrix;
-vec3 t9ModelPosition = vec3(getRandomNumber(-halfGridSize, halfGridSize), 1.0f, getRandomNumber(-halfGridSize, halfGridSize));
+vec3 t9ModelPosition = vec3(1.0f);
 
 // E PRESETS
 float u3ModelXRotationAngle = 0.0f;
 float u3ModelYRotationAngle = 0.0f;
-float u3ModelScaleFactor = getRandomNumber(1, 3);
+float u3ModelScaleFactor = 1.0f;
 mat4 u3ModelScalingMatrix = mat4(1.0f);
 mat4 u3ModelRotationMatrix;
 mat4 u3ModelTranslationMatrix;
 mat4 u3ModelMatrix;
-vec3 u3ModelPosition = vec3(getRandomNumber(-halfGridSize, halfGridSize), 1.0f, getRandomNumber(-halfGridSize, halfGridSize));
+vec3 u3ModelPosition = vec3(1.0f);
 
 // I9 PRESETS
 float i9ModelXRotationAngle = 0.0f;
 float i9ModelYRotationAngle = 0.0f;
-float i9ModelScaleFactor = getRandomNumber(1, 3);
+float i9ModelScaleFactor = 1.0f;
 mat4 i9ModelScalingMatrix = mat4(1.0f);
 mat4 i9ModelRotationMatrix;
 mat4 i9ModelTranslationMatrix;
 mat4 i9ModelMatrix;
-vec3 i9ModelPosition = vec3(getRandomNumber(-halfGridSize, halfGridSize), 1.0f, getRandomNumber(-halfGridSize, halfGridSize));
+vec3 i9ModelPosition = vec3(1.0f);
 
 // C4 PRESETS
 float c4ModelXRotationAngle = 0.0f;
 float c4ModelYRotationAngle = 0.0f;
-float c4ModelScaleFactor = getRandomNumber(1, 3);
+float c4ModelScaleFactor = 1.0f;
 mat4 c4ModelScalingMatrix = mat4(1.0f);
 mat4 c4ModelRotationMatrix;
 mat4 c4ModelTranslationMatrix;
 mat4 c4ModelMatrix;
-vec3 c4ModelPosition = vec3(getRandomNumber(-halfGridSize, halfGridSize), 1.0f, getRandomNumber(-halfGridSize, halfGridSize));
+vec3 c4ModelPosition = vec3(1.0f);
 
 
 mat4 L9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize));
@@ -1458,7 +1460,7 @@ Model* makeL9Model(int vao) {
 	// Creating left-part of the letter L
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 1.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Setting up the letter L
 	vector<Model*> LChildren = vector<Model*>();
@@ -1467,7 +1469,7 @@ Model* makeL9Model(int vao) {
 	//We can then very simply manipulate this modelL to transform the entire L
 	//for example, to scoot the L left to make room for the number, making the entire L9 centered.
 	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 0.0f, 0.0f));
-	Model* modelL = new Model(vao, 0, uboWorldMatrixBlock, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f), marble);
+	Model* modelL = new Model(vao, 0, uboWorldMatrixBlock, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f), cement);
 
 
 	// Creating top-part of the number 9
@@ -1525,12 +1527,12 @@ Model* makeL9BottomModel(int vao) {
 	// Creating bottom-part of the letter L
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -1.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelLbottomBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Creating right-part of the letter L
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.5f, -1.75f, 0.0f));
-	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelLverticalBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Setting up the letter L
 	vector<Model*> LChildren = vector<Model*>();
@@ -1602,22 +1604,22 @@ Model* makeI9Model(int vao) {
 	// Creating top-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
-	Model* model9top = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model9top = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating left-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 3.25f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
-	Model* model9left = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model9left = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating bottom-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-	Model* model9bottom = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model9bottom = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating right-part of the number 9
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 3.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
-	Model* model9right = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model9right = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 
 	// Setting up the number 9
@@ -1676,7 +1678,7 @@ Model* makeI9BottomModel(int vao) {
 	// Creating right-part of the number 9
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* model9right = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model9right = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 
 	// Setting up the number 9
@@ -1711,12 +1713,12 @@ Model* makeU3Model(int vao) {
 	// Creating left-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUleftBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelUleftBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Creating right-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUrightBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelUrightBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Setting up the letter U
 	vector<Model*> UChildren = vector<Model*>();
@@ -1778,18 +1780,18 @@ Model* makeU3BottomModel(int vao) {
 	// Creating left-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUleftBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelUleftBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 
 	// Creating bottom-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -1.25f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
-	Model* modelUbottomBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelUbottomBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Creating right-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUrightBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelUrightBar = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Setting up the letter U
 	vector<Model*> UChildren = vector<Model*>();
@@ -1867,22 +1869,22 @@ Model* makeT9Model(int vao) {
 	// Creating top-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
-	Model* model9top = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model9top = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating left-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 3.25f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
-	Model* model9left = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model9left = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating bottom-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-	Model* model9bottom = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model9bottom = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating right-part of the number 9
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 3.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
-	Model* model9right = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model9right = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 
 	// Setting up the number 9
@@ -1990,17 +1992,17 @@ Model* makeC4Model(int vao) {
 	// Creating right-part of the number 4
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, 2.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.75f, 1.0f));
-	Model* model4right = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model4right = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating middle-part of the number 4
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-	Model* model4middle = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model4middle = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating left-part of the number 4
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 3.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-	Model* model4left = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model4left = new Model(vao, numVerticesPerCube, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Setting up the number 4
 	vector<Model*> fourChildren = vector<Model*>();
@@ -2799,6 +2801,13 @@ int main(int argc, char* argv[])
 	//Create light sources
 	createLightSources();
 
+	setRandomizedPositionScale(l9ModelPosition, l9ModelScaleFactor, terrain);
+	setRandomizedPositionScale(c4ModelPosition, c4ModelScaleFactor, terrain);
+	setRandomizedPositionScale(u3ModelPosition, u3ModelScaleFactor, terrain);
+	setRandomizedPositionScale(t9ModelPosition, t9ModelScaleFactor, terrain);
+	setRandomizedPositionScale(i9ModelPosition, i9ModelScaleFactor, terrain);
+
+
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -3081,4 +3090,21 @@ vec3 getShearMovement(float shearRotationAngle) {
 	else if (shearRotationAngle <= -270 && shearRotationAngle > -360 || shearRotationAngle > 0 && shearRotationAngle <= 90) {
 		return(vec3(1.0 * abs(sin(shearRotationAngle)), 0.0f, 1.0 * abs(cos(shearRotationAngle))));
 	}
+}
+
+void setRandomizedPositionScale(vec3& position, float& scaleFactor, Terrain terrain) {
+
+	scaleFactor = getRandomNumber(1, 3);
+
+	cout << scaleFactor;
+
+	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
+	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - scaleFactor / 2, zRandTranslate - scaleFactor / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + scaleFactor / 2, zRandTranslate - scaleFactor / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - scaleFactor / 2, zRandTranslate + scaleFactor / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + scaleFactor / 2, zRandTranslate + scaleFactor / 2);
+	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
+
+	position = vec3(xRandTranslate, minSide, zRandTranslate);
 }
