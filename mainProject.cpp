@@ -466,6 +466,8 @@ const float cameraAngularSpeed = 60.0f;
 float magnificationFactor = 1.0f;
 bool fastCam = false;
 
+float viewDistance = 32000.0f;
+
 // Camera parameters for view transform
 vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
 vec3 cameraUp(0.0f, 1.0f, 0.0f);
@@ -475,7 +477,7 @@ float currentCamStrafingMovement = 0, currentCamFacingMovement = 0.0f;
 // Set projection matrix for shader, this won't change
 mat4 projectionMatrix = perspective(70.0f, // field of view in degrees
 	(float)windowWidth / windowHeight,  // aspect ratio
-	0.01f, 1000.0f);   // near and far (near > 0)
+	0.01f, viewDistance);   // near and far (near > 0)
 
 	// Set initial view matrix
 mat4 viewMatrix = lookAt(cameraPosition,  // eye
@@ -2188,14 +2190,14 @@ void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 void useStandardShader() {
 	projectionMatrix = perspective(70.0f, // field of view in degrees
 		(float)windowWidth / windowHeight,  // aspect ratio
-		0.01f, 1000.0f);
+		0.01f, viewDistance);
 	useShader(defaultShaderProgram, projectionMatrix, viewMatrix);
 }
 
 void useLightingShader() {
 	projectionMatrix = perspective(70.0f, // field of view in degrees
 		(float)windowWidth / windowHeight,  // aspect ratio
-		0.01f, 1000.0f);
+		0.01f, viewDistance);
 	useShader(phongLightShaderProgram, projectionMatrix, viewMatrix);
 
 	//Set up vertex shader uniforms
@@ -2431,7 +2433,7 @@ int main(int argc, char* argv[])
 	yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
 	yellow.lightColor = vec3(1.0f);
 
-	Terrain terrain = Terrain(glm::vec3(2000, 3, 2000), 32);
+	Terrain terrain = Terrain(glm::vec3(32000, 3, 32000), 32);
     City city = City(25, 25);
 	// Compile and link shaders here ...
 #if defined(PLATFORM_OSX) || __linux__
