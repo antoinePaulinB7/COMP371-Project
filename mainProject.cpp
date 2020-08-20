@@ -16,6 +16,7 @@
 #include "LightSourceManager.h"
 #include "texture.h"
 #include "Terrain.h"
+#include "City.h"
 #include <time.h>
 #include <algorithm>
 #include <list>
@@ -2807,6 +2808,7 @@ int main(int argc, char* argv[])
 	setRandomizedPositionScale(t9ModelPosition, t9ModelScaleFactor, terrain);
 	setRandomizedPositionScale(i9ModelPosition, i9ModelScaleFactor, terrain);
 
+	City c = City();
 
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
