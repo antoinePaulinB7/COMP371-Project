@@ -152,15 +152,11 @@ std::vector<float> Terrain::generateHeightMap() {
 
 
 float Terrain::getHeightAt(float x, float z) {
-    return getNoiseAt(x, z) * mapSize.y;
-//    TODO: fix this method
-//    if (x < 0 || x >= resolution || z < 0 || z >= resolution) {
-//        return getNoiseAt(x, z);
-//    } else {
-//        float height = heightMap[(int)x * resolution + (int)z];
-//
-//        return height;
-//    }
+    float centerOffset = (float)(resolution - 1) / 2.0f;
+
+    glm::vec3 scale = mapSize / glm::vec3(resolution - 1, 1.0f, resolution - 1);
+
+    return getNoiseAt(x / scale.x + centerOffset, z / scale.z + centerOffset) * mapSize.y;
 }
 
 glm::vec3 Terrain::getNormalAt(float x, float z) {
@@ -170,10 +166,10 @@ glm::vec3 Terrain::getNormalAt(float x, float z) {
         float offX = (mapSize.x / mapSize.z) / (resolution - 1);
         float offZ = (mapSize.z / mapSize.x) / (resolution - 1);
 
-        float hL = getHeightAt(x - offX, z);
-        float hR = getHeightAt(x + offX, z);
-        float hD = getHeightAt(x, z - offZ);
-        float hU = getHeightAt(x, z + offZ);
+        float hL = getNoiseAt(x - offX, z) * mapSize.y;
+        float hR = getNoiseAt(x + offX, z) * mapSize.y;
+        float hD = getNoiseAt(x, z - offZ) * mapSize.y;
+        float hU = getNoiseAt(x, z + offZ) * mapSize.y;
 
         glm::vec3 normal = glm::vec3(hL-hR, 2.0, hD-hU);
         normal = glm::normalize(normal);
