@@ -110,7 +110,7 @@ Terrain::Terrain(glm::vec3 size, int res) {
 
     glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs, as we are using multiple VAOs)
 
-    numberOfVertices = vertices.size();
+	vertexPositions = vertices;
 
     std::vector<glm::vec3>().swap(vertices);
     std::vector<glm::vec3>().swap(colors);
@@ -122,8 +122,8 @@ GLuint Terrain::getVAO() {
     return terrainVAO;
 }
 
-int Terrain::getNumberVertices() {
-    return numberOfVertices;
+std::vector<glm::vec3> Terrain::getVertices() {
+    return vertexPositions;
 }
 
 float Terrain::getNoiseAt(float x, float y, float z) {
