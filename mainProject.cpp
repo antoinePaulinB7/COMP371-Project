@@ -2780,7 +2780,7 @@ int main(int argc, char* argv[])
   yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
   yellow.lightColor = vec3(1.0f);
 
-  Terrain terrain = Terrain(glm::vec3(200, 3, 200), 32);
+  Terrain terrain = Terrain(glm::vec3(1000, 3, 1000), 32);
 
 	// Compile and link shaders here ...
   #if defined(PLATFORM_OSX) || __linux__

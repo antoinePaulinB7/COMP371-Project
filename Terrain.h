@@ -22,8 +22,6 @@ class Terrain {
     GLuint terrainVAO;
     int numberOfVertices;
 public:
-    // constructor generates the shader on the fly
-    // ------------------------------------------------------------------------
     Terrain();
     Terrain(glm::vec3 size, int resolution);
 

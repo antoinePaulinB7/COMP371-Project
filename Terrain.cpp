@@ -130,8 +130,8 @@ float Terrain::getNoiseAt(float x, float y, float z = 0.1f) {
     float dx = ((float)x - ((float)(resolution-1) / (float)2)) / (float)(resolution-1);
     float dy = ((float)y - ((float)(resolution-1) / (float)2)) / (float)(resolution-1);
 
-    float noise = 8.0f * pn.noise(dx, dy, 0.1) // Low detail
-                  + 8 * pn.noise(dx, dy, 0.2) * pn.noise(dx * 4.0f, dy * 4.0f, 0.1)
+    float noise = 2.0f * pn.noise(dx, dy, 0.1) // Low detail
+                  + 2 * pn.noise(dx, dy, 0.2) * pn.noise(dx * 4.0f, dy * 4.0f, 0.1)
                   + (1.0f / 16.0f) * pn.noise(dx * 16.0f, dy * 16.0f, z);
 
     return noise;
