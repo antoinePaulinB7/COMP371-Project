@@ -20,13 +20,14 @@ protected:
 	unsigned int uboWorldMatrixBlock;
 	std::vector<Model*> children;
 	glm::mat4 translation, rotation, scaling;
+	glm::mat4 currentTRS;
 	Material material;
+	std::vector<glm::vec3> vertexPositions;
 
 public:
-	Model(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, std::vector<Model*> children);
-	Model(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, std::vector<Model*> children, Material material);
-	Model(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, std::vector<Model*> children, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scaling);
-	Model(int vao, int numberOfVertices, unsigned int uboWorldMatrixBlock, std::vector<Model*> children, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scaling, Material material);
+	Model(int vao, std::vector<glm::vec3> vertexPositions, unsigned int uboWorldMatrixBlock, std::vector<Model*> children, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scaling);
+	Model(int vao, std::vector<glm::vec3> vertexPositions, unsigned int uboWorldMatrixBlock, std::vector<Model*> children, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scaling, Material material);
 	virtual void const draw(glm::mat4 parentTRS, int renderingMode, GLuint lightCoeffsLocation, GLuint lightColorLocation);
 	Material getDefaultMaterial();
+	float IntersectsRay(glm::vec3 source, glm::vec3 direction);
 };
