@@ -3096,8 +3096,6 @@ void setRandomizedPositionScale(vec3& position, float& scaleFactor, Terrain terr
 
 	scaleFactor = getRandomNumber(1, 3);
 
-	cout << scaleFactor;
-
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float bottomLeft = terrain.getHeightAt(xRandTranslate - scaleFactor / 2, zRandTranslate - scaleFactor / 2);
