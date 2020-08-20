@@ -24,13 +24,13 @@ Terrain::Terrain(glm::vec3 size, int res) {
 
     for (float i = 0; i < resolution - 1; i += 1.0f) {
         for (float j = 0; j < resolution - 1; j += 1.0f) {
-            vertices.push_back(glm::vec3(i - centerOffset, getHeightAt(i, j), j - centerOffset) * (scale));
-            vertices.push_back(glm::vec3(i - centerOffset, getHeightAt(i, j+1.0f), j+1.0f - centerOffset) * (scale));
-            vertices.push_back(glm::vec3(i+1.0f - centerOffset, getHeightAt(i+1.0f, j), j - centerOffset) * (scale));
+            vertices.push_back(glm::vec3(i - centerOffset, getNoiseAt(i, j), j - centerOffset) * (scale));
+            vertices.push_back(glm::vec3(i - centerOffset, getNoiseAt(i, j+1.0f), j+1.0f - centerOffset) * (scale));
+            vertices.push_back(glm::vec3(i+1.0f - centerOffset, getNoiseAt(i+1.0f, j), j - centerOffset) * (scale));
 
-            vertices.push_back(glm::vec3(i+1.0f - centerOffset, getHeightAt(i+1.0f, j), j - centerOffset) * (scale));
-            vertices.push_back(glm::vec3(i - centerOffset, getHeightAt(i, j+1.0f), j+1.0f - centerOffset) * (scale));
-            vertices.push_back(glm::vec3(i+1.0f - centerOffset, getHeightAt(i+1.0f, j+1.0f), j+1.0f - centerOffset) * (scale));
+            vertices.push_back(glm::vec3(i+1.0f - centerOffset, getNoiseAt(i+1.0f, j), j - centerOffset) * (scale));
+            vertices.push_back(glm::vec3(i - centerOffset, getNoiseAt(i, j+1.0f), j+1.0f - centerOffset) * (scale));
+            vertices.push_back(glm::vec3(i+1.0f - centerOffset, getNoiseAt(i+1.0f, j+1.0f), j+1.0f - centerOffset) * (scale));
         }
     }
 
@@ -126,7 +126,7 @@ int Terrain::getNumberVertices() {
     return numberOfVertices;
 }
 
-float Terrain::getNoiseAt(float x, float y, float z = 0.1f) {
+float Terrain::getNoiseAt(float x, float y, float z) {
     float dx = ((float)x - ((float)(resolution-1) / (float)2)) / (float)(resolution-1);
     float dy = ((float)y - ((float)(resolution-1) / (float)2)) / (float)(resolution-1);
 
@@ -142,7 +142,7 @@ std::vector<float> Terrain::generateHeightMap() {
 
     for (unsigned int i = 0; i < resolution; i++) {
         for (unsigned int j = 0; j < resolution; j++) {
-            map.push_back(getNoiseAt((float)i, (float)j));
+            map.push_back(getNoiseAt((float)i, (float)j) * mapSize.y);
         }
     }
 
@@ -152,7 +152,7 @@ std::vector<float> Terrain::generateHeightMap() {
 
 
 float Terrain::getHeightAt(float x, float z) {
-    return getNoiseAt(x, z);
+    return getNoiseAt(x, z) * mapSize.y;
 //    TODO: fix this method
 //    if (x < 0 || x >= resolution || z < 0 || z >= resolution) {
 //        return getNoiseAt(x, z);
