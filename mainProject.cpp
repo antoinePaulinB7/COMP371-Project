@@ -36,9 +36,8 @@ GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture, s
 blackTexture, redTexture, blueTexture, purpleTexture, yellowTexture, whiteTexture, cementTexture, marbleTexture;
 
 Material brick, wood, metal, cement, marble, box, floorTiles, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, white;
-vec3 getShearMovement(float shearRotationAngle);
 
-void setRandomizedPositionScale(vec3& position, float& scaleFactor, Terrain terrain);
+void setRandomizedPositionScale(mat4& modelMatrix, Terrain terrain);
 
 float getRandomNumber(int lowerBound, int upperBound) {
 	std::random_device rd;
@@ -243,221 +242,11 @@ GLuint createSphereObjectVAO(string path) {
 }
 #pragma endregion
 
-#pragma region lines
-int createVertexArrayObjectCoordinateXYZ()
-{
-	// Cube model (position, colors)
-	vec3 vertexArray[] = {
-		vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), // middle, red
-		vec3(5.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), // right, red
-		vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), // middle, green
-		vec3(0.0f, 5.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), // up, green
-		vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), // middle, blue
-		vec3(0.0f, 0.0f, 5.0f), vec3(0.0f, 0.0f, 1.0f) // near, blue
-	};
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		2 * sizeof(vec3),
-		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	return vertexBufferObject;
-}
-
-// Initialize variables for grid size
-const int gridSize = 101; // Change only this value to change the grid size. If gridSize is 101 it Will make 100 x 100 squares in a grid
-float halfGridSize = gridSize / 2.0f;
-float lineLength = gridSize - 1.0f;
-
-vec3 gridColor = vec3(0.25f, 0.25f, 0.25f);
-
-int createVertexArrayObjectGridLine()
-{
-	// Line Vertices Array containing position & colors 
-	// One line is drawn by 4 vertices and it's doubled because we need lines in X and in Z therefore it's gridSize * 8
-	vec3 vertexArray[gridSize * 8];
-
-	// For loops to add every vertex of position and color of X lines to the grid in the vertex array
-	for (int i = 0; i < (gridSize * 8) / 2.0f; ++i)
-	{
-		if (i % 4 == 1 || i % 4 == 3) {
-			vertexArray[i] = {
-				gridColor
-			};
-		}
-		else if (i % 4 == 0) {
-			vertexArray[i] = {
-				vec3(0.0f, 0.0f, 1.0f * i / 4.0f) // First vertex of position
-			};
-		}
-		else {
-			vertexArray[i] = {
-				vec3(1.0f * lineLength, 0.0f, 1.0f * ((i - 2) / 4.0f)) // Last vertex of position
-			};
-		}
-	}
-
-	// For loops to add every vertex of position and color of Z lines to the grid in the vertex array starting at index 400
-	for (int i = 0; i < (gridSize * 8) / 2.0f; ++i)
-	{
-		if (i % 4 == 1 || i % 4 == 3) {
-			vertexArray[i + (gridSize * 8) / 2] = {
-				gridColor
-			};
-		}
-		else if (i % 4 == 0) {
-			vertexArray[i + (gridSize * 8) / 2] = {
-				vec3(1.0f * i / 4, 0.0f, 0.0f) // First vertex of position
-			};
-		}
-		else {
-			vertexArray[i + (gridSize * 8) / 2] = {
-				vec3(1.0f * ((i - 2) / 4), 0.0f, 1.0f * lineLength) // Last vertex of position
-			};
-		}
-	}
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // sizel9
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		2 * sizeof(vec3),
-		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	return vertexBufferObject;
-}
-
-int createGridSquareVertexArrayObject() {
-	// Cube model (position, colors, normals, texture coordinates)
-	float vertexArray[] = {
-		-lineLength / 2, -0.5f, -lineLength / 2,        	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f, //left 
-		-lineLength / 2, -0.5f, lineLength / 2,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 8.0f,
-		lineLength / 2, -0.5f, lineLength / 2,         	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     8.0f, 8.0f,
-
-		-lineLength / 2, -0.5f,-lineLength / 2,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f, //right
-		lineLength / 2, -0.5f, lineLength / 2,          	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     8.0f, 8.0f,
-		lineLength / 2, -0.5f,-lineLength / 2,          	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     8.0f, 0.0f,
-	};
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		11 * sizeof(float), // stride - each vertex contain 3 vec3 (position, color, normal)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		11 * sizeof(float),
-		(void*)(3 * sizeof(float))      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2,                            // attribute 2 matches aNormal in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		11 * sizeof(float),
-		(void*)(2 * 3 * sizeof(float))      // normal is offseted 2 vec3 (comes after position and color)
-	);
-	glEnableVertexAttribArray(2);
-
-	glVertexAttribPointer(3,                            // attribute 3 matches aText in Vertex Shader
-		2,
-		GL_FLOAT,
-		GL_FALSE,
-		11 * sizeof(float),
-		(void*)(3 * 3 * sizeof(float))      // texture is offseted 2 vec3 (comes after position and color)
-	);
-	glEnableVertexAttribArray(3);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	return vertexArrayObject;
-}
-#pragma endregion
-
 #pragma region cameraInput
 // Camera parameters
-float cameraSpeed = 1.0f;
-float cameraFastSpeed = 2 * cameraSpeed;
 float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
-float magnificationFactor = 1.0f;
-bool fastCam = false;
 
 // Camera parameters for view transform
 vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
@@ -467,89 +256,42 @@ float currentCamStrafingMovement = 0, currentCamFacingMovement = 0.0f;
 
 // Set projection matrix for shader, this won't change
 mat4 projectionMatrix = perspective(70.0f, // field of view in degrees
-	(float)windowWidth / windowHeight,  // aspect ratio
-	0.01f, 300.0f);   // near and far (near > 0)
+(float)windowWidth / windowHeight,  // aspect ratio
+0.01f, 300.0f);   // near and far (near > 0)
 
-	// Set initial view matrix
+// Set initial view matrix
 mat4 viewMatrix = lookAt(cameraPosition,  // eye
 	cameraPosition + cameraLookAt,  // center
 	cameraUp); // up
-
-void handleCameraFlagInputs(GLFWwindow* window) {
-	fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
-}
-
-// Camera parameters for view transform
-int xShift = 12, zShift = 4;
-vec3 presetCameraPositions[] = { vec3(0.0f, 15.0f, 30.0f), vec3(-xShift, 5.0f, -zShift),
-vec3(xShift, 5.0f, -zShift), vec3(0.0f, 5.0f, 8.0f), vec3(-xShift, 5.0f, 5 * zShift),
-vec3(xShift, 5.0f, 5 * zShift) };
-int cameraPresetPosCount = 6;
-int currentCamPresetPositionIndex = 0;
 
 //Add a delay of 10 frames between camera angle changes, otherwise is can change every
 //frame which is pretty chaotic and confusing
 int changeDelay = 10;
 void handleCameraPositionInputs(GLFWwindow* window) {
-	if (changeDelay <= 0) {
-		if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS)
-		{
-			currentCamPresetPositionIndex++;
-			if (currentCamPresetPositionIndex >= cameraPresetPosCount) {
-				currentCamPresetPositionIndex = 0;
-			}
-			cameraPosition = presetCameraPositions[currentCamPresetPositionIndex];
-			changeDelay = 10;
-			cameraHorizontalAngle = 90.0f;
-			cameraVerticalAngle = -25.0f;
-			magnificationFactor = 1.0f;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
-		{
-			currentCamPresetPositionIndex--;
-			if (currentCamPresetPositionIndex < 0) {
-				currentCamPresetPositionIndex = cameraPresetPosCount - 1;
-			}
-			cameraPosition = presetCameraPositions[currentCamPresetPositionIndex];
-			changeDelay = 10;
-			cameraHorizontalAngle = 90.0f;
-			cameraVerticalAngle = -25.0f;
-			magnificationFactor = 1.0f;
-		}
-	}
-	else {
-		changeDelay--;
-	}
-
 	float walkSpeed = 1.5f;
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
 		currentCamStrafingMovement -= walkSpeed;
 	}
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
 		currentCamStrafingMovement += walkSpeed;
 	}
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		currentCamFacingMovement += walkSpeed;
 	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
 		currentCamFacingMovement -= walkSpeed;
 	}
 }
 #pragma endregion
-#pragma region modelInput
+
+#pragma region renderingInput
 //storing the redering mode in a variable 
 int renderingMode = GL_TRIANGLES;
-bool renderShadows = true;
-bool renderTextures = true, isLightOn = true;
-static bool BPressed = false;
-static bool MPressed = false;
-static bool NPressed = false;
-static bool XPressed = false;
+bool isFlashLightOn = true;
 static bool FPressed = false;
 void handleRenderingModeInput(GLFWwindow* window) {
 	//----------------------------------------------------------------------------------
@@ -569,584 +311,14 @@ void handleRenderingModeInput(GLFWwindow* window) {
 		renderingMode = GL_TRIANGLES;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS && BPressed == false) //toggle shadow rendering
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && FPressed == false)  //toggle flashlight
 	{
-		renderShadows = !renderShadows;
-		BPressed = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE && BPressed == true) //toggle shadow rendering
-	{
-		BPressed = false;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && XPressed == false) //toggle shadow rendering
-	{
-		renderTextures = !renderTextures;
-		XPressed = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_RELEASE && XPressed == true) //toggle shadow rendering
-	{
-		XPressed = false;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && FPressed == false)  //toggle main light
-	{
-		isLightOn = !isLightOn;
+		isFlashLightOn = !isFlashLightOn;
 		FPressed = true;
 	}
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE && FPressed == true)
 	{
 		FPressed = false;
-	}
-}
-
-mat4 worldOrientationModelMatrix = mat4(1.0f);
-
-// Control variables
-float moveSpeed = 1.0f;
-float scaleFactor = 1.0f;
-float scaleSpeed = 0.25f;
-
-// Model variables
-float rotationSpeed = 90.0f;
-float modelXRotationAngle = 0.0f;
-float modelYRotationAngle = 0.0f;
-float modelScaleFactor = 1.0f;
-vec3 modelPosition = vec3(0.0f, 0.0f, 0.0f);
-float modelShearFactor = 0.0f;
-bool shearForward = true;
-bool shearStepping = false;
-bool shearSteppingBackward = false;
-bool shearWalking = false;
-int shearDirection = 0;
-
-// Declaring model matrices
-mat4 modelShearingMatrix = mat4(1.0f);
-mat4 modelScalingMatrix = mat4(1.0f);
-mat4 modelRotationMatrix;
-mat4 modelTranslationMatrix;
-mat4 sharedModelMatrix;
-
-/* declaring individual CHAR matrices values to allow for individual movement */
-
-// L9 PRESETS
-float l9ModelXRotationAngle = 0.0f;
-float l9ModelYRotationAngle = 0.0f;
-float l9ModelScaleFactor = 1.0f;
-mat4 l9ModelScalingMatrix = mat4(1.0f);
-mat4 l9ModelRotationMatrix;
-mat4 l9ModelTranslationMatrix;
-mat4 l9ModelMatrix;
-vec3 l9ModelPosition = vec3(1.0f);
-
-// T9 PRESETS
-float t9ModelXRotationAngle = 0.0f;
-float t9ModelYRotationAngle = 0.0f;
-float t9ModelScaleFactor = 1.0f;
-mat4 t9ModelScalingMatrix = mat4(1.0f);
-mat4 t9ModelRotationMatrix;
-mat4 t9ModelTranslationMatrix;
-mat4 t9ModelMatrix;
-vec3 t9ModelPosition = vec3(1.0f);
-
-// E PRESETS
-float u3ModelXRotationAngle = 0.0f;
-float u3ModelYRotationAngle = 0.0f;
-float u3ModelScaleFactor = 1.0f;
-mat4 u3ModelScalingMatrix = mat4(1.0f);
-mat4 u3ModelRotationMatrix;
-mat4 u3ModelTranslationMatrix;
-mat4 u3ModelMatrix;
-vec3 u3ModelPosition = vec3(1.0f);
-
-// I9 PRESETS
-float i9ModelXRotationAngle = 0.0f;
-float i9ModelYRotationAngle = 0.0f;
-float i9ModelScaleFactor = 1.0f;
-mat4 i9ModelScalingMatrix = mat4(1.0f);
-mat4 i9ModelRotationMatrix;
-mat4 i9ModelTranslationMatrix;
-mat4 i9ModelMatrix;
-vec3 i9ModelPosition = vec3(1.0f);
-
-// C4 PRESETS
-float c4ModelXRotationAngle = 0.0f;
-float c4ModelYRotationAngle = 0.0f;
-float c4ModelScaleFactor = 1.0f;
-mat4 c4ModelScalingMatrix = mat4(1.0f);
-mat4 c4ModelRotationMatrix;
-mat4 c4ModelTranslationMatrix;
-mat4 c4ModelMatrix;
-vec3 c4ModelPosition = vec3(1.0f);
-
-
-mat4 L9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
-mat4 I9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
-mat4 U3StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
-mat4 C4StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
-mat4 T9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
-mat4 L9BaseTranslation = L9StartTranslation;
-mat4 I9BaseTranslation = I9StartTranslation;
-mat4 U3BaseTranslation = U3StartTranslation;
-mat4 T9BaseTranslation = T9StartTranslation;
-mat4 C4BaseTranslation = C4StartTranslation;
-
-void handleWorldOrientationInput(GLFWwindow* window, float dt) {
-	//Changing World Orientation 
-	//Not sure we want these controls for P3
-	/*
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) //rotate X axis in anti-clockwise direction
-	{
-		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(-1.0f, 0.f, 0.f));
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) //rotate X axis in clockwise direction
-	{
-		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(1.0f, 0.f, 0.f));
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) //rotate Y axis in anti-clockwise direction
-	{
-		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, -1.f, 0.f));
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) //rotate Y axis in clockwise direction
-	{
-		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, 1.0f, 0.f));
-	}
-	*/
-	//reset world orientation to original settings
-	//used Tab to test as I do not have a Home button
-	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS)
-	{
-		worldOrientationModelMatrix = mat4(1.0f);
-		modelScaleFactor = 1.0f;
-		l9ModelScaleFactor = 1.0f;
-		t9ModelScaleFactor = 1.0f;
-		u3ModelScaleFactor = 1.0f;
-		i9ModelScaleFactor = 1.0f;
-		c4ModelScaleFactor = 1.0f;
-		modelPosition = vec3(0.0f);
-		l9ModelPosition = vec3(0.0f);
-		t9ModelPosition = vec3(0.0f);
-		u3ModelPosition = vec3(0.0f);
-		i9ModelPosition = vec3(0.0f);
-		c4ModelPosition = vec3(0.0f);
-		modelXRotationAngle = 0.0f;
-		modelYRotationAngle = 0.0f;
-		modelShearFactor = 0.0f;
-		l9ModelYRotationAngle = 0.0f;
-		t9ModelYRotationAngle = 0.0f;
-		u3ModelYRotationAngle = 0.0f;
-		i9ModelYRotationAngle = 0.0f;
-		c4ModelYRotationAngle = 0.0f;
-		l9ModelXRotationAngle = 0.0f;
-		t9ModelXRotationAngle = 0.0f;
-		u3ModelXRotationAngle = 0.0f;
-		i9ModelXRotationAngle = 0.0f;
-		c4ModelXRotationAngle = 0.0f;
-
-		L9BaseTranslation = L9StartTranslation;
-		I9BaseTranslation = I9StartTranslation;
-		U3BaseTranslation = U3StartTranslation;
-		T9BaseTranslation = T9StartTranslation;
-		C4BaseTranslation = C4StartTranslation;
-	}
-	// Move/Shear model forward
-	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && MPressed == false)
-	{
-		shearWalking = !shearWalking;
-		shearDirection = 1;
-		MPressed = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_RELEASE && MPressed == true)
-	{
-		MPressed = false;
-	}
-
-	//ONE STEP FORWARD
-	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS || shearStepping)
-	{
-		if (!shearStepping) {
-			shearStepping = true;
-			shearWalking = false;
-			shearForward = true;
-			modelShearFactor = 0.0f;
-		}
-		if (shearStepping) {
-			float shearRotationAngle = (int)modelYRotationAngle % 360;
-
-			modelPosition += getShearMovement(shearRotationAngle) * moveSpeed * dt;
-
-			if (shearForward)
-			{
-				if (modelShearFactor < -1)
-				{
-					shearForward = false;
-					modelShearFactor += 0.1;
-				}
-				else
-				{
-					modelShearFactor -= 0.1;
-				}
-				if (modelShearFactor > -0.1 && modelShearFactor < 0.1) {
-					shearStepping = false;
-				}
-			}
-			else
-			{
-				if (modelShearFactor > 1)
-				{
-					shearForward = true;
-					modelShearFactor -= 0.1;
-				}
-				else {
-					modelShearFactor += 0.1;
-				}
-
-			}
-		}
-	}
-
-	//ONE STEP BACKWARD
-	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS || shearSteppingBackward)
-	{
-		if (!shearSteppingBackward) {
-			shearSteppingBackward = true;
-			shearWalking = false;
-			shearForward = false;
-			modelShearFactor = 0.0f;
-		}
-		if (shearSteppingBackward) {
-
-			float shearRotationAngle = (int)modelYRotationAngle % 360;
-
-			modelPosition -= getShearMovement(shearRotationAngle) * moveSpeed * dt;
-
-			if (shearForward)
-			{
-				if (modelShearFactor < -1)
-				{
-					shearForward = false;
-					modelShearFactor += 0.1;
-				}
-				else
-				{
-					modelShearFactor -= 0.1;
-				}
-			}
-			else
-			{
-				if (modelShearFactor > 1)
-				{
-					shearForward = true;
-					modelShearFactor -= 0.1;
-				}
-				else {
-					modelShearFactor += 0.1;
-				}
-				if (modelShearFactor > -0.1 && modelShearFactor < 0.1) {
-					shearSteppingBackward = false;
-				}
-
-			}
-		}
-	}
-
-	// Move/Shear model backwards
-	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS && NPressed == false)
-	{
-		shearWalking = !shearWalking;
-		shearDirection = -1;
-		NPressed = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_RELEASE && NPressed == true)
-	{
-		NPressed = false;
-	}
-
-	/* INDIVIDUAL MOVEMENT CONTROLS */
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE))
-	{
-		float directionOfChange = 0.0f;
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-			directionOfChange = -1.0f;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-			directionOfChange = 1.0f;
-		}
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-		else {
-			modelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelYRotationAngle += rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelYRotationAngle += rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelYRotationAngle += rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelYRotationAngle += rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelYRotationAngle += rotationSpeed * dt;
-		}
-		else {
-			modelYRotationAngle += rotationSpeed * dt;
-		}
-
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelYRotationAngle -= rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelYRotationAngle -= rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelYRotationAngle -= rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelYRotationAngle -= rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelYRotationAngle -= rotationSpeed * dt;
-		}
-		else {
-			modelYRotationAngle -= rotationSpeed * dt;
-		}
-	}
-
-	// INDIVICDUAL CHARACTER SCALE CONTROLS
-
-	/* Simultaneously pressing U + (1 OR 2 OR 3 OR 4 OR 5) will scale UP the chosen character*/
-
-	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelScaleFactor += scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelScaleFactor += scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelScaleFactor += scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelScaleFactor += scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelScaleFactor += scaleSpeed * dt;
-		}
-		else {
-			modelScaleFactor += scaleSpeed * dt;
-		}
-
-	}
-
-	/* Simultaneously pressing J + (1 OR 2 OR 3 OR 4 OR 5) will scale DOWN the chosen character*/
-	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelScaleFactor -= scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelScaleFactor -= scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelScaleFactor -= scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelScaleFactor -= scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelScaleFactor -= scaleSpeed * dt;
-		}
-		else {
-			modelScaleFactor -= scaleSpeed * dt;
-		}
-
-	}
-
-	/* Simultaneously pressing SHIFT + (1 OR 2 OR 3 OR 4 OR 5) will translate the chosen character on Y*/
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else {
-			modelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-
-	}
-
-	/* Simultaneously pressing S + (1 OR 2 OR 3 OR 4 OR 5 OR 6 ) will translate the chosen character on Y*/
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else {
-			modelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-
-	}
-
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
-	{
-		float directionOfChange = 0.0f;
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-			directionOfChange = -1.0f;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-			directionOfChange = 1.0f;
-		}
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-		else {
-			modelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-
-	}
-
-	/* Simultaneously pressing SPACE + (1 OR 2 OR 3 OR 4 OR 5) will change chars location to a random spot*/
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-	{
-		float randl9_x = (rand() % (90 - 0 + 1) + 0);
-		float randl9_z = (rand() % (90 - 0 + 1) + 0);
-		mat4 newLocation = translate(mat4(1.0f), vec3(randl9_x - halfGridSize, 2.5f, randl9_z - halfGridSize));
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelPosition = vec3(0.0f);
-			L9BaseTranslation = newLocation;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelPosition = vec3(0.0f);
-			T9BaseTranslation = newLocation;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelPosition = vec3(0.0f);
-			U3BaseTranslation = newLocation;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelPosition = vec3(0.0f);
-			I9BaseTranslation = newLocation;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelPosition = vec3(0.0f);
-			C4BaseTranslation = newLocation;
-		}
 	}
 }
 #pragma endregion
@@ -1872,9 +1044,9 @@ Model* makeBuilding1Model(int vao, Terrain terrain) {
 	float xRandScale = getRandomNumber(3, 6);
 	float yRandScale = getRandomNumber(3, 6);
 	float zRandScale = getRandomNumber(3, 6);
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
+
 	float bottomLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate - zRandScale / 2);
 	float bottomRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate - zRandScale / 2);
 	float topLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate + zRandScale / 2);
@@ -1927,9 +1099,9 @@ Model* makeBuilding2Model(int vao, Terrain terrain) {
 	float xRandScale = getRandomNumber(3, 6);
 	float yRandScale = getRandomNumber(3, 6);
 	float zRandScale = getRandomNumber(3, 6);
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
+
 	float bottomLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate - zRandScale / 2);
 	float bottomRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate - zRandScale / 2);
 	float topLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate + zRandScale / 2);
@@ -1994,9 +1166,9 @@ Model* makeBuilding3Model(int vao, Terrain terrain) {
 	float xRandScale = getRandomNumber(3, 6);
 	float yRandScale = getRandomNumber(3, 6);
 	float zRandScale = getRandomNumber(3, 6);
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
+
 	float bottomLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate - zRandScale / 2);
 	float bottomRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate - zRandScale / 2);
 	float topLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate + zRandScale / 2);
@@ -2062,9 +1234,9 @@ Model* makeBuilding4Model(int vao, Terrain terrain) {
 	float xRandScale = getRandomNumber(3, 6);
 	float yRandScale = getRandomNumber(3, 6);
 	float zRandScale = getRandomNumber(3, 6);
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
+
 	float bottomLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate - zRandScale / 2);
 	float bottomRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate - zRandScale / 2);
 	float topLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate + zRandScale / 2);
@@ -2132,9 +1304,9 @@ Model* makeBuilding5Model(int vao, Terrain terrain) {
 	float xRandScale = getRandomNumber(3, 6);
 	float yRandScale = getRandomNumber(3, 6);
 	float zRandScale = getRandomNumber(3, 6);
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
+
 	float bottomLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate - zRandScale / 2);
 	float bottomRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate - zRandScale / 2);
 	float topLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate + zRandScale / 2);
@@ -2154,13 +1326,6 @@ Model* makeBuilding5Model(int vao, Terrain terrain) {
 void handleExitInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-}
-
-void checkErrors() {
-	int errorValue = glGetError();
-	if (errorValue != 0) {
-		cout << "error of some sort: " << errorValue << endl;
-	}
 }
 
 GLuint defaultShaderProgram;
@@ -2207,15 +1372,8 @@ void useLightingShader() {
 	GLuint camPosition = glGetUniformLocation(phongLightShaderProgram, "cameraPosition");
 	glUniform3f(camPosition, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
-	//Set up fragment shader uniforms
-	GLuint shouldRenderShadowsLocation = glGetUniformLocation(phongLightShaderProgram, "shouldRenderShadows");
-	glUniform1f(shouldRenderShadowsLocation, renderShadows);
-
-	GLuint shouldRenderTexturesLocation = glGetUniformLocation(phongLightShaderProgram, "shouldRenderTextures");
-	glUniform1f(shouldRenderTexturesLocation, renderTextures);
-
 	GLuint isLightOnLocation = glGetUniformLocation(phongLightShaderProgram, "isLight1On");
-	glUniform1f(isLightOnLocation, isLightOn);
+	glUniform1f(isLightOnLocation, isFlashLightOn);
 }
 
 void useUIShader() {
@@ -2275,8 +1433,6 @@ int texturedCubeVAO;
 
 int main(int argc, char* argv[])
 {
-	checkErrors();
-
 #pragma region windowSetUp
 	// Initialize GLFW and OpenGL version
 	glfwInit();
@@ -2496,9 +1652,6 @@ int main(int argc, char* argv[])
 
 	// Define and upload geometry to the GPU here ...
 	texturedCubeVAO = createTextureCubeVertexArrayObject();
-	int gridVAO = createVertexArrayObjectGridLine();
-	int gridSquare = createGridSquareVertexArrayObject();
-	int xyzVAO = createVertexArrayObjectCoordinateXYZ();
 #if defined(PLATFORM_OSX) || __linux__
 	int sphereVAO = createSphereObjectVAO("sphere.obj");
 #else
@@ -2534,7 +1687,6 @@ int main(int argc, char* argv[])
 	collisionModels.push_back(c4Model);
 	collisionModels.push_back(C4BottomModel);
 
-	mat4 floorBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
 	floorModel = makeFloorModel(terrain);
 
 	Skybox* skyBoxModel = makeSkyBoxModel(sphereVAO);
@@ -2590,11 +1742,12 @@ int main(int argc, char* argv[])
 	//Create light sources
 	createLightSources();
 
-	setRandomizedPositionScale(l9ModelPosition, l9ModelScaleFactor, terrain);
-	setRandomizedPositionScale(c4ModelPosition, c4ModelScaleFactor, terrain);
-	setRandomizedPositionScale(u3ModelPosition, u3ModelScaleFactor, terrain);
-	setRandomizedPositionScale(t9ModelPosition, t9ModelScaleFactor, terrain);
-	setRandomizedPositionScale(i9ModelPosition, i9ModelScaleFactor, terrain);
+	setRandomizedPositionScale(L9Matrix, terrain);
+	setRandomizedPositionScale(C4Matrix, terrain);
+	setRandomizedPositionScale(U3Matrix, terrain);
+	setRandomizedPositionScale(T9Matrix, terrain);
+	setRandomizedPositionScale(I9Matrix, terrain);
+
 
 
 	// Entering Main Loop
@@ -2605,60 +1758,9 @@ int main(int argc, char* argv[])
 		lastFrameTime += dt;
 
 #pragma region buildTransformMatrices
-		// Model Matrices - they control the transformations of the letters model
-		modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
-		modelRotationMatrix = rotate(mat4(1.0f), radians(modelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(modelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
-		modelShearingMatrix = {
-			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, modelShearFactor, 0.0f,
-			0.0f, 0.0f,  1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f
-		};
 
-		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
 
-		// Building L9 scalable/translatable/rotateable matrix for individual letter
-		l9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * l9ModelScaleFactor);
-		l9ModelRotationMatrix = rotate(mat4(1.0f), radians(l9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(l9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		l9ModelTranslationMatrix = translate(mat4(1.0f), l9ModelPosition);
-		l9ModelMatrix = l9ModelTranslationMatrix * l9ModelScalingMatrix * l9ModelRotationMatrix;
-
-		// Building I9 scalable/translatable/rotateable matrix for individual letter
-		i9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * i9ModelScaleFactor);
-		i9ModelRotationMatrix = rotate(mat4(1.0f), radians(i9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(i9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		i9ModelTranslationMatrix = translate(mat4(1.0f), i9ModelPosition);
-		i9ModelMatrix = i9ModelTranslationMatrix * i9ModelScalingMatrix * i9ModelRotationMatrix;
-
-		// Building U3 scalable/translatable/rotateable matrix for individual letter
-		u3ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * u3ModelScaleFactor);
-		u3ModelRotationMatrix = rotate(mat4(1.0f), radians(u3ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(u3ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		u3ModelTranslationMatrix = translate(mat4(1.0f), u3ModelPosition);
-		u3ModelMatrix = u3ModelTranslationMatrix * u3ModelScalingMatrix * u3ModelRotationMatrix;
-
-		// Building T9 scalable/translatable/rotateable matrix for individual letter
-		t9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * t9ModelScaleFactor);
-		t9ModelRotationMatrix = rotate(mat4(1.0f), radians(t9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(t9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		t9ModelTranslationMatrix = translate(mat4(1.0f), t9ModelPosition);
-		t9ModelMatrix = t9ModelTranslationMatrix * t9ModelScalingMatrix * t9ModelRotationMatrix;
-
-		// Building C4 scalable/translatable/rotateable matrix for individual letter
-		c4ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * c4ModelScaleFactor);
-		c4ModelRotationMatrix = rotate(mat4(1.0f), radians(c4ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(c4ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		c4ModelTranslationMatrix = translate(mat4(1.0f), c4ModelPosition);
-		c4ModelMatrix = c4ModelTranslationMatrix * c4ModelScalingMatrix * c4ModelRotationMatrix;
-
-		L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix;
-		L9BottomMatrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix * modelShearingMatrix;
-		I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix;
-		I9BottomMatrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix * modelShearingMatrix;
-		U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix;
-		U3BottomMatrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix * modelShearingMatrix;
-		T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix;
-		T9BottomMatrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix * modelShearingMatrix;
-		C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix;
-		C4BottomMatrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix * modelShearingMatrix;
-		floorMatrix = worldOrientationModelMatrix * floorBaseTranslation * translate(mat4(1.0f), vec3(0.0f));
+		floorMatrix = translate(mat4(1.0f), vec3(0.0f));
 		mat4 skyboxMatrix = translate(mat4(1.0f), vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z));
 
 		std::list<mat4> buildingMatrix;
@@ -2666,7 +1768,7 @@ int main(int argc, char* argv[])
 
 		for (int i = 0; i < numOfBuildings; i++) {
 
-			buildingMatrix.push_back(worldOrientationModelMatrix * (*it) * translate(mat4(1.0f), vec3(0.0f)));
+			buildingMatrix.push_back((*it) * translate(mat4(1.0f), vec3(0.0f)));
 			std::advance(it, 1);
 		}
 #pragma endregion
@@ -2709,14 +1811,10 @@ int main(int argc, char* argv[])
 		glfwPollEvents();
 
 		// Handle inputs
-		handleCameraFlagInputs(window);
 		handleRenderingModeInput(window);
-		handleWorldOrientationInput(window, dt);
 		handleExitInput(window);
 		handleCameraPositionInputs(window);
 
-
-		float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
 
 		// Retrieving mouse coordinates
 		double mousePosX, mousePosY;
@@ -2760,7 +1858,6 @@ int main(int argc, char* argv[])
 			+ vec3(cameraLookAt.x * currentCamFacingMovement, 0.0f, cameraLookAt.z * currentCamFacingMovement)
 			+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-		viewMatrix = scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
 
 		if (doRaycastCollision(viewMatrix, collisionModels))
 		{
@@ -2768,7 +1865,6 @@ int main(int argc, char* argv[])
 				+ vec3(cameraLookAt.x * -currentCamFacingMovement, 0.0f, cameraLookAt.z * -currentCamFacingMovement)
 				+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
 			viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-			viewMatrix = scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
 		}
 
 		currentCamStrafingMovement = 0;
@@ -2777,45 +1873,6 @@ int main(int argc, char* argv[])
 		updateFlashlight(flashlightPosition, flashlightPosition + cameraLookAt + vec3(0.0f, 0.2f, 0.0f));
 
 #pragma endregion
-
-		if (shearWalking)
-		{
-			float shearRotationAngle = (int)modelYRotationAngle % 360;
-
-			if (shearDirection > 0)
-			{
-				modelPosition += getShearMovement(shearRotationAngle) * moveSpeed * dt;
-			}
-			else if (shearDirection < 0)
-			{
-				modelPosition -= getShearMovement(shearRotationAngle) * moveSpeed * dt;
-			}
-
-			if (shearForward)
-			{
-				if (modelShearFactor < -0.5)
-				{
-					shearForward = false;
-					modelShearFactor += 0.1;
-				}
-				else
-				{
-					modelShearFactor -= 0.1;
-				}
-			}
-			else
-			{
-				if (modelShearFactor > 0.5)
-				{
-					shearForward = true;
-					modelShearFactor -= 0.1;
-				}
-				else {
-					modelShearFactor += 0.1;
-				}
-
-			}
-		}
 	}
 
 	// Shutdown GLFW
@@ -2855,17 +1912,23 @@ vec3 getShearMovement(float shearRotationAngle) {
 	}
 }
 
-void setRandomizedPositionScale(vec3& position, float& scaleFactor, Terrain terrain) {
+void setRandomizedPositionScale(mat4& modelMatrix, Terrain terrain) {
 
-	scaleFactor = getRandomNumber(0.5, 1.5);
+	float scaleFactor = getRandomNumber(0.5, 1.5);
 
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
+	//TODO use Antoine's system to place the letters/numbers
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
 	float bottomLeft = terrain.getHeightAt(xRandTranslate - scaleFactor / 2, zRandTranslate - scaleFactor / 2);
 	float bottomRight = terrain.getHeightAt(xRandTranslate + scaleFactor / 2, zRandTranslate - scaleFactor / 2);
 	float topLeft = terrain.getHeightAt(xRandTranslate - scaleFactor / 2, zRandTranslate + scaleFactor / 2);
 	float topRight = terrain.getHeightAt(xRandTranslate + scaleFactor / 2, zRandTranslate + scaleFactor / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	position = vec3(xRandTranslate, minSide, zRandTranslate);
+	vec3 position = vec3(xRandTranslate, minSide, zRandTranslate);
+
+	// Building L9 scalable/translatable/rotateable matrix for individual letter
+	mat4 modelScalingMatrix = scale(mat4(1.0f), vec3(scaleFactor));
+	mat4 modelTranslationMatrix = translate(mat4(1.0f), position);
+	modelMatrix = modelTranslationMatrix * modelScalingMatrix;
 }

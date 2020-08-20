@@ -5,8 +5,6 @@
     in vec3 eyeVectorV;
 	in vec3 fragPosition;
 
-	uniform float shouldRenderShadows = 1.0f;
-	uniform float shouldRenderTextures = 1.0f;
 	uniform sampler2D someTexture;	
 
 	in LIGHT_1 {
@@ -150,11 +148,6 @@
 			vec3 diffuseIntensity = (coeffDiffuse * lightColor) * getDiffuseIntensity(attenuationFactor, norm, lightDirection);
 			vec3 specularIntensity = (coeffSpecular * lightColor) * getSpecularIntensity(attenuationFactor, norm, lightDirection);
 
-			//Phong Lighting Model combines the 3 lighting components
-			if (shouldRenderShadows < 0.5f) {
-				visibility = 1.0f;
-			} 
-
 			//Only for use with spotlights
 			float spotLitness = dot(lightDirection, lightPointingDir);
 			spotLitness = (spotLitness > angle ? spotLitness : 0.0f);
@@ -218,11 +211,7 @@
 		float coeffAmbient = lightCoefficients[0]; //0.3f;
 		vec3 ambientIntensity = vec3(coeffAmbient);
 		vec3 totalIntensity = ambientIntensity + intensity1 + intensity2 + intensity3 + intensity4 + intensity5 + intensity6 + intensity7;	
-		vec4 texColor = vec4(1.0f);
-
-		if(shouldRenderTextures > 0.5f) {
-		  texColor = texture(someTexture, texCoord);
-		}
+		vec4 texColor = texture(someTexture, texCoord);
 
 		//Calculate each color channel  (R,G,B) separately
 		//Clamp the final result to [0, 1]
