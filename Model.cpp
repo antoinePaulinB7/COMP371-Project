@@ -32,8 +32,8 @@ void const Model::draw(mat4 parentTRS, int renderingMode, GLuint lightCoeffsLoca
     glBindVertexArray(vao);
 	currentTRS = parentTRS * translation * rotation * scaling;
 
-	//A model which just holds and transforms children does not need to be drawn, only calculated
-	if (children.size() == 0) {
+	//A model which just holds and transforms children has no vertices and does not need to be drawn, only calculated
+	if (numberOfVertices > 0) {
 		glBindBuffer(GL_UNIFORM_BUFFER, uboWorldMatrixBlock);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &currentTRS[0][0]);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -74,7 +74,7 @@ Material getDefaultMaterial() {
 float Model::IntersectsRay(glm::vec3 source, glm::vec3 direction)
 {
 	float intersection = std::numeric_limits<float>::infinity() * -1.0f;
-	if (children.size() == 0) {
+	if (numberOfVertices > 0) {
 		for (int i = 0; i != numberOfVertices; i += 3)
 		{
 			//Three corners of a triangle
