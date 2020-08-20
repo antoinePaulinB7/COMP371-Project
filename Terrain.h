@@ -35,7 +35,7 @@ public:
 private:
     std::vector<float> heightMap;
     std::vector<float> generateHeightMap();
-    float getNoiseAt(float x, float y, float z);
+    float getNoiseAt(float x, float y, float z = 0.1f);
 };
 
 #endif
