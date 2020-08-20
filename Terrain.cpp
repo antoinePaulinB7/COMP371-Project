@@ -152,13 +152,15 @@ std::vector<float> Terrain::generateHeightMap() {
 
 
 float Terrain::getHeightAt(float x, float z) {
-    if (x < 0 || x >= resolution || z < 0 || z >= resolution) {
-        return getNoiseAt(x, z);
-    } else {
-        float height = heightMap[(int)x * resolution + (int)z];
-
-        return height;
-    }
+    return getNoiseAt(x, z);
+//    TODO: fix this method
+//    if (x < 0 || x >= resolution || z < 0 || z >= resolution) {
+//        return getNoiseAt(x, z);
+//    } else {
+//        float height = heightMap[(int)x * resolution + (int)z];
+//
+//        return height;
+//    }
 }
 
 glm::vec3 Terrain::getNormalAt(float x, float z) {
