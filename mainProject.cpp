@@ -33,9 +33,9 @@ using namespace std;
 int windowWidth = 1024, windowHeight = 764;
 
 GLuint woodTexture, skyTexture, windowTexture, brownTexture, beigeTexture, blackTexture, redTexture, blueTexture, 
-purpleTexture, yellowTexture, whiteTexture, cementTexture, marbleTexture;
+purpleTexture, yellowTexture, grayTexture, whiteTexture, cementTexture, marbleTexture;
 
-Material wood, cement, marble, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, white;
+Material wood, cement, marble, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, gray, white;
 
 void setRandomizedPositionScale(mat4& modelMatrix, Terrain terrain);
 
@@ -1629,6 +1629,42 @@ Model* makeBuilding5Model(int vao, Terrain terrain, float yScale, float numOfFlo
 	return buildingModel;
 }
 
+Model* makeCarModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	pair<int, Material> carMaterial = getRandomMaterial();
+	return new Model(vao, vector<vec3>(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, carMaterial.second);
+}
+
+Model* makeLampModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	return new Model(vao, vector<vec3>(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, gray);
+}
+
+Model* makeHydrantModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	return new Model(vao, vector<vec3>(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, red);
+}
+
+Model* makeGarbageModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	return new Model(vao, vector<vec3>(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, gray);
+}
 #pragma endregion
 
 #pragma usingShaders
@@ -1769,6 +1805,7 @@ int main(int argc, char* argv[])
 	blueTexture = loadTexture("blue.jpg");
 	purpleTexture = loadTexture("purple.jpg");
 	yellowTexture = loadTexture("yellow.jpg");
+	grayTexture = loadTexture("gray.jpg");
 	whiteTexture = loadTexture("white.jpg");
 	cementTexture = loadTexture("cement.jpg");
 	marbleTexture = loadTexture("marble.jpg");
@@ -1783,6 +1820,7 @@ int main(int argc, char* argv[])
 	blueTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/blue.jpg");
 	purpleTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/purple.jpg");
 	yellowTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/yellow.jpg");
+	grayTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/gray.jpg");
 	whiteTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/white.jpg");
 	cementTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/cement.jpg");
 	marbleTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/marble.jpg");
@@ -1849,6 +1887,11 @@ int main(int argc, char* argv[])
 	yellow.texture = yellowTexture;
 	yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
 	yellow.lightColor = vec3(1.0f);
+
+	gray = {};
+	gray.texture = grayTexture;
+	gray.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+	gray.lightColor = vec3(1.0f);
 
 	white = {};
 	white.texture = whiteTexture;
