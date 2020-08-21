@@ -24,13 +24,6 @@ City::City(int w, int h) {
 
     generateMainStreets();
 
-    for(int i = 0; i < gridWidth; i++) {
-        for(int j = 0; j < gridHeight; j++) {
-            std::cout << grid[j * gridWidth + i];
-        }
-        std::cout << std::endl;
-    }
-
     generateSmallStreets();
 
     generateStreetBlocks();
@@ -39,18 +32,9 @@ City::City(int w, int h) {
 
     for(int i = 0; i < gridWidth; i++) {
         for(int j = 0; j < gridHeight; j++) {
-            std::cout << grid[j * gridWidth + i];
+            std::cout << grid[(j * gridWidth) + i];
         }
         std::cout << std::endl;
-    }
-
-    std::cout << mainStreets.size() << std::endl;
-    std::cout << smallStreets.size() << std::endl;
-    std::cout << cityBlocks.size() << std::endl;
-    std::cout << buildings.size() << std::endl;
-
-    for(int d = 0; d < cityDistricts.size(); d++) {
-        std::cout << cityDistricts[d]->blocks.size() << std::endl;
     }
 
 }
@@ -92,11 +76,11 @@ void City::generateDistricts() {
             noiseValue = (noiseValue + 1.0f) / 2.0f;
 
             if (noiseValue > 0.6f) {
-                grid[i * gridWidth + j] = DISTRICT_1;
+                grid[(j * gridWidth) + i] = DISTRICT_1;
             } else if (noiseValue > 0.35f) {
-                grid[i * gridWidth + j] = DISTRICT_2;
+                grid[(j * gridWidth) + i] = DISTRICT_2;
             } else {
-                grid[i * gridWidth + j] = DISTRICT_3;
+                grid[(j * gridWidth) + i] = DISTRICT_3;
             }
         }
     }
@@ -149,22 +133,26 @@ void City::generateSmallStreets() {
             noiseValue *= (j - lastSmallRoad);
 
             if (noiseValue > 2.0f) {
-                traceLine(j, (i-1>=0?mainStreets[i-1]->start.x:-1)+1, ((i>=gridWidth)?gridWidth-2:mainStreets[i]->start.x), false, SMALL_STREET);
+                int start_x, start_y, end_x, end_y;
+                start_x = (int)(((i - 1 >= 0) ? mainStreets[i-1]->start.x:-1) + 1);
+                start_y = j;
+
+                end_x = (int)((i < mainStreets.size() - 1) ? (mainStreets[i]->start.x - 1) : (gridWidth - 1));
+                end_y = j;
+
+                traceLine(j, start_x, end_x, false, SMALL_STREET);
                 lastSmallRoad = j;
 
                 SmallStreet* road = new SmallStreet();
                 road->start = glm::vec2(
-                        (int)((i-1>=0?mainStreets[i-1]->start.x:-1) + 1),
+                        start_x,
                         j
                         );
 
                 road->end = glm::vec2(
-                        (int)((i>=gridWidth)?gridWidth-2:mainStreets[i]->start.x),
+                        end_x,
                         j
                         );
-
-                std::cout << i << " " << road->start.x << road->end.x << std::endl;
-                //new SmallStreet((int)(i-1>=0?listOfMainStreets.get(i-1).start.x:-1)+1,j, (int)listOfMainStreets.get(i).start.x, j);
 
                 if(i-1>=0) {
                     mainStreets[i-1]->eastStreets.push_back(road);
@@ -185,44 +173,57 @@ void City::generateStreetBlocks() {
         MainStreet* ms = mainStreets[i];
 
         for(int j = 0; j < ms->westStreets.size() + 1; j++) {
-            SmallStreet* s1 = j - 1 >= 0 ? ms->westStreets[j-1] : nullptr;
-            SmallStreet* s2 = j < ms->westStreets.size() ? ms->westStreets[j] : nullptr;
+            SmallStreet* s1 = (j - 1 >= 0) ? ms->westStreets[j-1] : nullptr;
+            SmallStreet* s2 = (j < ms->westStreets.size()) ? ms->westStreets[j] : nullptr;
 
             int start_x, start_y, end_x, end_y;
 
             if(s1 == nullptr) {
                 start_x = (int) s2->start.x;
                 start_y = 0;
-                end_x = (int) s2->end.x - 1;
+                end_x = (int) s2->end.x;
                 end_y = (int) s2->end.y - 1;
             } else if(s1 && s2){
                 start_x = (int) s1->start.x;
                 start_y = (int) s1->start.y + 1;
-                end_x = (int) s2->end.x - 1;
-                end_y = (int) s2->end.y - 1;
+                end_x = (int) s1->end.x;
+                end_y = (int) s2->start.y - 1;
             } else if(s1->start.y < gridHeight - 1){
                 start_x = (int) s1->start.x;
                 start_y = (int) s1->start.y + 1;
-                end_x = (int) s1->end.x - 1;
+                end_x = (int) s1->end.x;
                 end_y = (int) gridHeight - 1;
             } else {
                 std::cout << "skip because no start case" << std::endl;
                 continue;
             }
 
-            if(start_y >= gridHeight) {
-                std::cout << "skip because start y too big" << std::endl;
-                continue;
+            start_x = std::min(start_x, gridWidth-1);
+            start_y = std::min(start_y, gridHeight-1);
+            end_x = std::min(end_x, gridWidth-1);
+            end_y = std::min(end_y, gridHeight-1);
+
+            District* type = getDistrict(grid[(start_y * gridWidth) + start_x]);
+
+            std::cout << type << std::endl;
+
+
+            Block* block = new Block();
+
+            if (type == nullptr) {
+                for(int i = 0; i < gridWidth; i++) {
+                    for(int j = 0; j < gridHeight; j++) {
+                        std::cout << grid[(j * gridWidth) + i];
+                    }
+                    std::cout << std::endl;
+                }
+
+                std::cout << start_x << " " << start_y << std::endl;
+                std::cout << grid[(start_y * gridWidth) + start_x] << std::endl;
+                std::cout << ((gridHeight-1) * gridWidth) + (gridWidth-1) << std::endl;
+                std::cout << grid.size() << std::endl;
+                std::cout << grid[((gridHeight-1) * gridWidth) + (gridWidth-1)] << std::endl;
             } else {
-                std::cout << grid[start_x * gridWidth + start_y] << std::endl;
-
-                District* type = getDistrict(grid[start_x * gridWidth + start_y]);
-
-                std::cout << type << std::endl;
-
-
-                Block* block = new Block();
-
                 type->blocks.push_back(block);
 
                 block->type = type;
@@ -231,26 +232,37 @@ void City::generateStreetBlocks() {
 
                 cityBlocks.push_back(block);
             }
-
         }
     }
 }
 
 void City::generateBuildings() {
+    int numBuildings = 0;
+
     for (int b = 0; b < cityBlocks.size(); b++) {
         Block* block = cityBlocks[b];
 
+
         for(int i = block->start.x; i <= block->end.x; i++) {
             for(int j = block->start.y; j <= block->end.y; j++) {
-                Building* building = new Building();
-                building->pos = glm::vec2(i,j);
-                building->size.y += 1.0f + pn.noise((float)i,
-                                             (float)j,
-                                             0.1f);
-                building->type = block->type;
+                if (i != block->start.x && i != block->end.x
+                && j != block->start.y && j != block->end.y) {
+                    grid[(j * gridWidth) + i] = ' ';
+                } else {
+                    numBuildings++;
 
-                block->buildings.push_back(building);
-                buildings.push_back(building);
+                    Building* building = new Building();
+                    building->pos = glm::vec2((float)i, (float) j);
+                    building->size.y += 1.0f + pn.noise((float)i,
+                                                        (float)j,
+                                                        0.1f);
+                    building->type = block->type;
+
+                    grid[(j * gridWidth) + i] = BUILDING;
+
+                    block->buildings.push_back(building);
+                    buildings.push_back(building);
+                }
             }
         }
     }
@@ -258,12 +270,12 @@ void City::generateBuildings() {
 
 void City::traceLine(int line, float start, float end, bool vertical, char c) {
     if (vertical) {
-        for (int j = (int)(start > 0 ? start : 0); j < (end > 0 ? end : gridHeight); j++) {
-            grid[line * gridWidth + j] = c;
+        for (int j = (int)(start > 0 ? start : 0); j <= (end > 0 ? end : gridHeight - 1); j++) {
+            grid[(j * gridWidth) + line] = c;
         }
     } else { // horizontal
-        for (int i = (int)(start > 0 ? start : 0); i < (end > 0 ? end : gridWidth); i++) {
-            grid[i * gridWidth + line] = c;
+        for (int i = (int)(start > 0 ? start : 0); i <= (end > 0 ? end : gridWidth - 1); i++) {
+            grid[(line * gridWidth) + i] = c;
         }
     }
 
@@ -278,4 +290,6 @@ District* City::getDistrict(char type) {
         case '3':
             return district_3;
     }
+
+    return nullptr;
 }

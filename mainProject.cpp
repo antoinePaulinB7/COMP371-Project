@@ -1846,12 +1846,12 @@ Model* makeFloorModel(Terrain terrain, City city) {
                                                 building->pos.x * 200,
                                                 building->pos.y * 100
                                         ) + building->size.y * 100.0f / 2.0f,
-                                        building->pos.y) * glm::vec3(200, 1, 200)
+                                        building->pos.y) * glm::vec3(200, 1, 200) - glm::vec3(-100,0,-100)
                         ),
                         mat4(1.0f),
                         scale(
                                 mat4(1.0f),
-                                building->size * glm::vec3(200, 100, 200)
+                                building->size * glm::vec3(175, 100, 175)
                         ),
                         beige
                 )
@@ -1872,11 +1872,11 @@ Model* makeFloorModel(Terrain terrain, City city) {
                                 glm::vec3(
                                         ms->start.x,
                                         terrain.getHeightAt(
-                                                (ms->end.x - ms->start.x + 1) * 200,
-                                                (ms->end.y - ms->start.y + 1) * 200
+                                                (ms->end.x - ms->start.x + 1) * 200 - 100,
+                                                (ms->end.y - ms->start.y + 1) * 200 - 100
                                         ) + 10.0f / 2.0f,
                                         (ms->end.y - ms->start.y - 1) / 2.0f
-                                ) * glm::vec3(200, 1, 200)
+                                ) * glm::vec3(200, 1, 200) - glm::vec3(-100,0,-100)
                         ),
                         mat4(1.0f),
                         scale(
@@ -1884,7 +1884,7 @@ Model* makeFloorModel(Terrain terrain, City city) {
                                 glm::vec3(
                                         (ms->end.x - ms->start.x) + 1,
                                         1,
-                                        ms->end.y - ms->start.y
+                                        (ms->end.y - ms->start.y)
                                 ) * glm::vec3(200, 10, 200)
                         ),
                         yellow
@@ -1896,8 +1896,6 @@ Model* makeFloorModel(Terrain terrain, City city) {
     for (int s = 0; s < city.smallStreets.size(); s++) {
         SmallStreet* ms = city.smallStreets[s];
 
-        cout << ms->start.x << endl;
-
         children.push_back(
                 new Model(
                         texturedCubeVAO,
@@ -1907,22 +1905,22 @@ Model* makeFloorModel(Terrain terrain, City city) {
                         translate(
                                 mat4(1.0f),
                                 glm::vec3(
-                                        glm::min(ms->start.x + 1.0f, 24.0f),
+                                        ms->start.x + (ms->end.x - ms->start.x) / 2.0f,
                                         terrain.getHeightAt(
                                                 (ms->end.x - ms->start.x + 1) * 200,
                                                 (ms->end.y - ms->start.y + 1) * 200
                                         ) + 10.0f / 2.0f,
                                         ms->start.y
 
-                                ) * glm::vec3(200, 1, 200)
+                                ) * glm::vec3(200, 1, 200) - glm::vec3(-100,0,-100)
                         ),
                         mat4(1.0f),
                         scale(
                                 mat4(1.0f),
                                 glm::vec3(
-                                        ms->end.x - ms->start.x,
+                                        ms->end.x - ms->start.x + 1,
                                         1.5f,
-                                        ms->end.y - ms->start.y + 1
+                                        1
                                 ) * glm::vec3(200, 10, 200)
                         ),
                         yellow
@@ -1930,7 +1928,6 @@ Model* makeFloorModel(Terrain terrain, City city) {
         );
 
     }
-
 
     Model* floorModel = new Model(terrain.getVAO(), terrain.getVertices(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, blue);
 
@@ -2506,7 +2503,7 @@ int main(int argc, char* argv[])
 	yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
 	yellow.lightColor = vec3(1.0f);
 
-	Terrain terrain = Terrain(glm::vec3(32000, 1000, 32000), 128);
+	Terrain terrain = Terrain(glm::vec3(32000, 1, 32000), 128);
     City city = City(25, 25);
 	// Compile and link shaders here ...
 #if defined(PLATFORM_OSX) || __linux__

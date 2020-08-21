@@ -66,6 +66,7 @@ class City {
     char DISTRICT_1 = '1';
     char DISTRICT_2 = '2';
     char DISTRICT_3 = '3';
+    char BUILDING = 'b';
 
     District* district_1;
     District* district_2;
@@ -80,11 +81,11 @@ public:
     std::vector<Block*> cityBlocks;
     std::vector<District*> cityDistricts;
     std::vector<Building*> buildings;
-private:
+
     std::vector<char> grid;
     int gridWidth;
     int gridHeight;
-
+private:
     PerlinNoise pn;
 
     std::vector<char> generateGrid();
