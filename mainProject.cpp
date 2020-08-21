@@ -1827,7 +1827,7 @@ Skybox* makeSkyBoxModel(int vao) {
 	return new Skybox(vao, sphereVertices, uboWorldMatrixBlock, vector<Model*>(), mat4(1.0f), mat4(1.0f), mat4(1.0f), sky);
 }
 
-Model* makeBuilding1Model(int vao, Terrain terrain) {
+Model* makeBuilding1Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -1890,10 +1890,9 @@ Model* makeBuilding1Model(int vao, Terrain terrain) {
 
 	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
 
-	float repeatNum = getRandomNumber(2, 10);
 	float repeatTranslate = 0.5f;
 
-	for (int i = 0; i < repeatNum; i++)
+	for (int i = 0; i < numOfFloors; i++)
 	{
 		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
 		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
@@ -1917,7 +1916,6 @@ Model* makeBuilding1Model(int vao, Terrain terrain) {
 
 
 	float xScale = 5;
-	float yRandScale = getRandomNumber(3, 6);
 	float zScale = 5;
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
@@ -1928,7 +1926,7 @@ Model* makeBuilding1Model(int vao, Terrain terrain) {
 	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(xScale, yRandScale, zScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -1936,7 +1934,7 @@ Model* makeBuilding1Model(int vao, Terrain terrain) {
 	return buildingModel;
 }
 
-Model* makeBuilding2Model(int vao, Terrain terrain) {
+Model* makeBuilding2Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -2019,10 +2017,9 @@ Model* makeBuilding2Model(int vao, Terrain terrain) {
 
 	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
 
-	float repeatNum = getRandomNumber(2, 10);
 	float repeatTranslate = 0.5f;
 
-	for (int i = 0; i < repeatNum; i++)
+	for (int i = 0; i < numOfFloors; i++)
 	{
 		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
 		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
@@ -2033,7 +2030,6 @@ Model* makeBuilding2Model(int vao, Terrain terrain) {
 	}
 
 	float xScale = 5;
-	float yRandScale = getRandomNumber(3, 6);
 	float zScale = 5;
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
@@ -2044,7 +2040,7 @@ Model* makeBuilding2Model(int vao, Terrain terrain) {
 	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(xScale, yRandScale, zScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -2053,7 +2049,7 @@ Model* makeBuilding2Model(int vao, Terrain terrain) {
 	return buildingModel;
 }
 
-Model* makeBuilding3Model(int vao, Terrain terrain) {
+Model* makeBuilding3Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -2147,10 +2143,9 @@ Model* makeBuilding3Model(int vao, Terrain terrain) {
 
 	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
 
-	float repeatNum = getRandomNumber(2, 10);
 	float repeatTranslate = 0.0f;
 
-	for (int i = 0; i < repeatNum; i++)
+	for (int i = 0; i < numOfFloors; i++)
 	{
 		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
 		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
@@ -2161,7 +2156,6 @@ Model* makeBuilding3Model(int vao, Terrain terrain) {
 	}
 
 	float xScale = 5;
-	float yRandScale = getRandomNumber(3, 6);
 	float zScale = 5;
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
@@ -2172,7 +2166,7 @@ Model* makeBuilding3Model(int vao, Terrain terrain) {
 	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(xScale, yRandScale, zScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -2180,7 +2174,7 @@ Model* makeBuilding3Model(int vao, Terrain terrain) {
 	return buildingModel;
 }
 
-Model* makeBuilding4Model(int vao, Terrain terrain) {
+Model* makeBuilding4Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -2260,10 +2254,9 @@ Model* makeBuilding4Model(int vao, Terrain terrain) {
 
 	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
 
-	float repeatNum = getRandomNumber(2, 10);
 	float repeatTranslate = 0.0f;
 
-	for (int i = 0; i < repeatNum; i++)
+	for (int i = 0; i < numOfFloors; i++)
 	{
 		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
 		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
@@ -2282,7 +2275,6 @@ Model* makeBuilding4Model(int vao, Terrain terrain) {
 
 
 	float xScale = 5;
-	float yRandScale = getRandomNumber(3, 6);
 	float zScale = 5;
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
@@ -2293,7 +2285,7 @@ Model* makeBuilding4Model(int vao, Terrain terrain) {
 	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(xScale, yRandScale, zScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -2301,7 +2293,7 @@ Model* makeBuilding4Model(int vao, Terrain terrain) {
 	return buildingModel;
 }
 
-Model* makeBuilding5Model(int vao, Terrain terrain) {
+Model* makeBuilding5Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -2380,10 +2372,10 @@ Model* makeBuilding5Model(int vao, Terrain terrain) {
 	
 	Model* buildingLeftModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingLeftChildren, setUpTranslation, mat4(1.0f), setUpScaling);
 
-	float repeatNum = getRandomNumber(2, 10);
+	float diff = getRandomNumber(-(numOfFloors - 2), numOfFloors-2);
 	float repeatTranslate = 0.0f;
 
-	for (int i = 0; i < repeatNum; i++)
+	for (int i = 0; i < numOfFloors-diff; i++)
 	{
 		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
 		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingLeftChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
@@ -2393,10 +2385,9 @@ Model* makeBuilding5Model(int vao, Terrain terrain) {
 		buildingChildren.push_back(buildingRepeatModel);
 	}
 
-	repeatNum = getRandomNumber(2, 10);
 	repeatTranslate = 0.0f;
 
-	for (int i = 0; i < repeatNum; i++)
+	for (int i = 0; i < numOfFloors+diff; i++)
 	{
 		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
 		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingRightChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
@@ -2408,7 +2399,6 @@ Model* makeBuilding5Model(int vao, Terrain terrain) {
 
 
 	float xScale = 5;
-	float yRandScale = getRandomNumber(3, 6);
 	float zScale = 5;
 	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
 	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
@@ -2419,7 +2409,7 @@ Model* makeBuilding5Model(int vao, Terrain terrain) {
 	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(xScale, yRandScale, zScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -2829,19 +2819,19 @@ int main(int argc, char* argv[])
 
 		switch (buildingType) {
 		case 1:
-			buildingModel = makeBuilding1Model(texturedCubeVAO, terrain);
+			buildingModel = makeBuilding1Model(texturedCubeVAO, terrain, 5, 2);
 			break;
 		case 2:
-			buildingModel = makeBuilding2Model(texturedCubeVAO, terrain);
+			buildingModel = makeBuilding2Model(texturedCubeVAO, terrain, 7, 3);
 			break;
 		case 3:
-			buildingModel = makeBuilding3Model(texturedCubeVAO, terrain);
+			buildingModel = makeBuilding3Model(texturedCubeVAO, terrain, 2, 8);
 			break;
 		case 4:
-			buildingModel = makeBuilding4Model(texturedCubeVAO, terrain);
+			buildingModel = makeBuilding4Model(texturedCubeVAO, terrain, 5, 10);
 			break;
 		case 5:
-			buildingModel = makeBuilding5Model(texturedCubeVAO, terrain);
+			buildingModel = makeBuilding5Model(texturedCubeVAO, terrain, 5, 6);
 			break;
 		}
 		buildingBaseTranslations.push_back(buildingBaseTranslation);
