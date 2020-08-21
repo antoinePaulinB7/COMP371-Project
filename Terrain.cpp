@@ -75,7 +75,7 @@ Terrain::Terrain(glm::vec3 size, glm::vec3 offset, int res) {
     glBindVertexArray(terrainVAO); //Becomes active VAO
     // Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
 
-    std::cout << terrainVAO << std::endl;
+    //std::cout << terrainVAO << std::endl;
 
     //Vertex VBO setup
     GLuint vertices_VBO;

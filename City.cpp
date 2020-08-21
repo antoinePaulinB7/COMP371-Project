@@ -4,6 +4,7 @@
 
 #include "City.h"
 #include <iostream>
+#include <algorithm>
 
 City::City() : City(25, 25, glm::vec3(0)) {}
 City::City(int w, int h, glm::vec3 offset) {
@@ -31,13 +32,14 @@ City::City(int w, int h, glm::vec3 offset) {
 
     generateBuildings();
 
+	/*
     for(int i = 0; i < this->gridWidth; i++) {
         for(int j = 0; j < this->gridHeight; j++) {
             std::cout << this->grid[(j * this->gridWidth) + i];
         }
         std::cout << std::endl;
     }
-
+	*/
 }
 
 std::vector<char> City::generateGrid() {
@@ -195,7 +197,7 @@ void City::generateStreetBlocks() {
                 end_x = (int) s1->end.x;
                 end_y = (int) this->gridHeight - 1;
             } else {
-                std::cout << "skip because no start case" << std::endl;
+                //std::cout << "skip because no start case" << std::endl;
                 continue;
             }
 
@@ -206,12 +208,13 @@ void City::generateStreetBlocks() {
 
             District* type = getDistrict(this->grid[(start_y * this->gridWidth) + start_x]);
 
-            std::cout << type << std::endl;
+            //std::cout << type << std::endl;
 
 
             Block* block = new Block();
 
             if (type == nullptr) {
+				/*
                 for(int i = 0; i < this->gridWidth; i++) {
                     for(int j = 0; j < this->gridHeight; j++) {
                         std::cout << this->grid[(j * this->gridWidth) + i];
@@ -224,6 +227,7 @@ void City::generateStreetBlocks() {
                 std::cout << ((this->gridHeight-1) * this->gridWidth) + (this->gridWidth-1) << std::endl;
                 std::cout << this->grid.size() << std::endl;
                 std::cout << this->grid[((this->gridHeight-1) * this->gridWidth) + (this->gridWidth-1)] << std::endl;
+				*/
             } else {
                 type->blocks.push_back(block);
 
