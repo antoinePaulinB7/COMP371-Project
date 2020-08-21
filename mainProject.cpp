@@ -10,20 +10,20 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
 #include "shaders.h"
-#include "Model.h"
-#include "Skybox.h"
-#include "LightSource.h"
-#include "LightSourceManager.h"
-#include "RaycastCollisions.h"
-#include "TimexLetterModeler.h"
-#include "texture.h"
-#include "Terrain.h"
+#include "Models/Model.h"
+#include "Models/Skybox.h"
+#include "LightingSystem/LightSource.h"
+#include "LightingSystem/LightSourceManager.h"
+#include "CollisionSystem/RaycastCollisions.h"
+#include "UISystem/TimexLetterModeler.h"
+#include "Textures/texture.h"
+#include "Terrain/Terrain.h"
 #include <time.h>
 #include <algorithm>
 #include <list>
 #include <vector>
 #include <random>
-#include "OBJloader.h"  //For loading .obj files using a polygon list format
+#include "Objects/OBJloader.h"  //For loading .obj files using a polygon list format
 
 
 //define namespaces for glm and c++ std
@@ -32,10 +32,10 @@ using namespace std;
 
 int windowWidth = 1024, windowHeight = 764;
 
-GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture, skyTexture, windowTexture, brownTexture, beigeTexture,
-blackTexture, redTexture, blueTexture, purpleTexture, yellowTexture, whiteTexture, cementTexture, marbleTexture;
+GLuint woodTexture, skyTexture, windowTexture, brownTexture, beigeTexture, blackTexture, redTexture, blueTexture, 
+purpleTexture, yellowTexture, whiteTexture, cementTexture, marbleTexture;
 
-Material brick, wood, metal, cement, marble, box, floorTiles, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, white;
+Material wood, cement, marble, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, white;
 
 void setRandomizedPositionScale(mat4& modelMatrix, Terrain terrain);
 
@@ -1708,11 +1708,7 @@ int main(int argc, char* argv[])
 
 	// Load Textures
 #if defined(PLATFORM_OSX) || __linux__
-	brickTexture = loadTexture("brick.jpg");
 	woodTexture = loadTexture("wood.jpg");
-	metalTexture = loadTexture("metal2.jpg");
-	boxTexture = loadTexture("box.jpg");
-	floorTilesTexture = loadTexture("floortiles.jpg");
 	skyTexture = loadTexture("sky.jpg");
 	windowTexture = loadTexture("window.png");
 	brownTexture = loadTexture("brown.jpg");
@@ -1726,41 +1722,27 @@ int main(int argc, char* argv[])
 	cementTexture = loadTexture("cement.jpg");
 	marbleTexture = loadTexture("marble.jpg");
 #else
-	brickTexture = loadTexture("../Source/COMP371-Group14-Project/brick.jpg");
-	woodTexture = loadTexture("../Source/COMP371-Group14-Project/wood.jpg");
-	metalTexture = loadTexture("../Source/COMP371-Group14-Project/metal2.jpg");
-	boxTexture = loadTexture("../Source/COMP371-Group14-Project/box.jpg");
-	floorTilesTexture = loadTexture("../Source/COMP371-Group14-Project/floortiles.jpg");
-	skyTexture = loadTexture("../Source/COMP371-Group14-Project/sky.jpg");
-	windowTexture = loadTexture("../Source/COMP371-Group14-Project/window.png");
-	brownTexture = loadTexture("../Source/COMP371-Group14-Project/brown.jpg");
-	beigeTexture = loadTexture("../Source/COMP371-Group14-Project/beige.jpg");
-	blackTexture = loadTexture("../Source/COMP371-Group14-Project/black.jpg");
-	redTexture = loadTexture("../Source/COMP371-Group14-Project/red.png");
-	blueTexture = loadTexture("../Source/COMP371-Group14-Project/blue.jpg");
-	purpleTexture = loadTexture("../Source/COMP371-Group14-Project/purple.jpg");
-	yellowTexture = loadTexture("../Source/COMP371-Group14-Project/yellow.jpg");
-	whiteTexture = loadTexture("../Source/COMP371-Group14-Project/white.jpg");
-	cementTexture = loadTexture("../Source/COMP371-Group14-Project/cement.jpg");
-	marbleTexture = loadTexture("../Source/COMP371-Group14-Project/marble.jpg");
+	woodTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/wood.jpg");
+	skyTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/sky.jpg");
+	windowTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/window.png");
+	brownTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/brown.jpg");
+	beigeTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/beige.jpg");
+	blackTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/black.jpg");
+	redTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/red.png");
+	blueTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/blue.jpg");
+	purpleTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/purple.jpg");
+	yellowTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/yellow.jpg");
+	whiteTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/white.jpg");
+	cementTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/cement.jpg");
+	marbleTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/marble.jpg");
 #endif
 
 	float globalAmbientIntensity = 0.15f;
-
-	brick = {};
-	brick.texture = brickTexture;
-	brick.lightCoefficients = vec4(globalAmbientIntensity, 0.4f, 0.4f, 0);
-	brick.lightColor = vec3(0.9f);
 
 	wood = {};
 	wood.texture = woodTexture;
 	wood.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.9f, 52);
 	wood.lightColor = vec3(252.0f / 255.0f, 244.0f / 255.0f, 202.0f / 255.0f);
-
-	metal = {};
-	metal.texture = metalTexture;
-	metal.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
-	metal.lightColor = vec3(1.0f, 1.0f, 0.0f);
 
 	cement = {};
 	cement.texture = cementTexture;
@@ -1771,17 +1753,6 @@ int main(int argc, char* argv[])
 	marble.texture = marbleTexture;
 	marble.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.9f, 52);
 	marble.lightColor = vec3(252.0f / 255.0f, 244.0f / 255.0f, 202.0f / 255.0f);
-
-
-	box = {};
-	box.texture = boxTexture;
-	box.lightCoefficients = vec4(globalAmbientIntensity, 0.4f, 0.4f, 0);
-	box.lightColor = vec3(0.9f);
-
-	floorTiles = {};
-	floorTiles.texture = floorTilesTexture;
-	floorTiles.lightCoefficients = vec4(globalAmbientIntensity, 0.6f, 0.9f, 256);
-	floorTiles.lightColor = vec3(1.0f, 1.0f, 1.0f);
 
 	sky = {};
 	sky.texture = skyTexture;
@@ -1842,10 +1813,10 @@ int main(int argc, char* argv[])
 	shadowShaderProgram = shader("shadowShader.vs", "shadowShader.fs");
 	uiShaderProgram = shader("uiShader.vs", "uiShader.fs");
 #else
-	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
-	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
-	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
-	uiShaderProgram = shader("../Source/COMP371-Group14-Project/uiShader.vs", "../Source/COMP371-Group14-Project/uiShader.fs");
+	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/Models/modelShader.vs", "../Source/COMP371-Group14-Project/Models/modelShader.fs");
+	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/LightingSystem/lightShader.vs", "../Source/COMP371-Group14-Project/LightingSystem/lightShader.fs");
+	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/LightingSystem/shadowShader.vs", "../Source/COMP371-Group14-Project/LightingSystem/shadowShader.fs");
+	uiShaderProgram = shader("../Source/COMP371-Group14-Project/UISystem/uiShader.vs", "../Source/COMP371-Group14-Project/UISystem/uiShader.fs");
 #endif
 
 
@@ -1891,7 +1862,7 @@ int main(int argc, char* argv[])
 #if defined(PLATFORM_OSX) || __linux__
 	int sphereVAO = createSphereObjectVAO("sphere.obj");
 #else
-	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/sphere.obj");
+	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/Objects/sphere.obj");
 #endif
 
 	//Create hierarchical models
