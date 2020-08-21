@@ -240,11 +240,12 @@ GLuint createSphereObjectVAO(string path) {
 	return VAO;
 }
 
-GLuint createObjectVAO(string path) {
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec3> colors;
-	std::vector<glm::vec3> normals;
-	std::vector<glm::vec2> UVs;
+vector<vec3> carVertices, lampVertices, garbageVertices, hydrantVertices;
+GLuint createObjectVAO(string path, vector<vec3> numOfVertices) {
+	vector<vec3> vertices;
+	vector<vec3> colors;
+	vector<vec3> normals;
+	vector<vec2> UVs;
 
 	//read the vertex data from the model's OBJ file
 	loadOBJ(path.c_str(), vertices, colors, normals, UVs);
@@ -287,6 +288,8 @@ GLuint createObjectVAO(string path) {
 	glEnableVertexAttribArray(3);
 
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs, as we are using multiple VAOs)
+
+	numOfVertices = vertices;
 
 	return VAO;
 }
@@ -1630,7 +1633,7 @@ Model* makeBuilding5Model(int vao, Terrain terrain, float yScale, float numOfFlo
 }
 
 Model* makeCarModel(int vao) {
-	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(50.0f, 50.0f, 50.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
 	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
 
@@ -1733,7 +1736,8 @@ Model* u3Model;
 Model* t9Model;
 Model* c4Model;
 Model* floorModel;
-mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix;
+Model* carModel;
+mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix, carMatrix;
 void drawScene(std::list<Model*> buildingModels, std::list<mat4> buildingMatrix, int numOfBuildings) {
 	GLuint lightCoefLocation = glGetUniformLocation(phongLightShaderProgram, "lightCoefficients");
 	GLuint lightColorLocation = glGetUniformLocation(phongLightShaderProgram, "lightColor");
@@ -1743,6 +1747,7 @@ void drawScene(std::list<Model*> buildingModels, std::list<mat4> buildingMatrix,
 	t9Model->draw(T9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
 	c4Model->draw(C4Matrix, renderingMode, lightCoefLocation, lightColorLocation);
 	floorModel->draw(mat4(1.0f), renderingMode, lightCoefLocation, lightColorLocation);
+	carModel->draw(carMatrix, renderingMode, lightCoefLocation, lightColorLocation);
 
 	std::list<Model*>::iterator itModel = buildingModels.begin();
 	std::list<mat4>::iterator itMatrix = buildingMatrix.begin();
@@ -1961,10 +1966,10 @@ int main(int argc, char* argv[])
 	int hydrantVAO = createObjectVAO("fire-hydrant.obj");
 #else
 	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/Objects/sphere.obj");
-	int carVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/car.obj");
-	int lampVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/lamp-post.obj");
-	int garbageVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/garbage.obj");
-	int hydrantVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/fire-hydrant.obj");
+	int carVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/car.obj", carVertices);
+	int lampVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/lamp-post.obj", lampVertices);
+	int garbageVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/garbage.obj", garbageVertices);
+	int hydrantVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/fire-hydrant.obj", hydrantVertices);
 #endif
 
 	//Create hierarchical models
@@ -1973,6 +1978,7 @@ int main(int argc, char* argv[])
 	u3Model = makeU3Model();
 	t9Model = makeT9Model();
 	c4Model = makeC4Model();
+	carModel = makeCarModel(carVAO);
 
 	vector<Model*> collisionModels;
 	collisionModels.push_back(l9Model);
@@ -1980,6 +1986,8 @@ int main(int argc, char* argv[])
 	collisionModels.push_back(u3Model);
 	collisionModels.push_back(t9Model);
 	collisionModels.push_back(c4Model);
+
+	collisionModels.push_back(carModel);
 
 	floorModel = makeFloorModel(terrain);
 
@@ -2042,6 +2050,7 @@ int main(int argc, char* argv[])
 	setRandomizedPositionScale(U3Matrix, terrain);
 	setRandomizedPositionScale(T9Matrix, terrain);
 	setRandomizedPositionScale(I9Matrix, terrain);
+	setRandomizedPositionScale(carMatrix, terrain);
 
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
