@@ -531,7 +531,7 @@ void handleCameraPositionInputs(GLFWwindow* window) {
 		changeDelay--;
 	}
 
-	float walkSpeed = 1.5f;
+	float walkSpeed = 15.0f;
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 	{
 		currentCamStrafingMovement -= walkSpeed;
@@ -1128,7 +1128,8 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 	/* Simultaneously pressing SPACE + (1 OR 2 OR 3 OR 4 OR 5) will change chars location to a random spot*/
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
-		float randl9_x = (rand() % (90 - 0 + 1) + 0);
+		cameraPosition.y += 5.0f;
+	    float randl9_x = (rand() % (90 - 0 + 1) + 0);
 		float randl9_z = (rand() % (90 - 0 + 1) + 0);
 		mat4 newLocation = translate(mat4(1.0f), vec3(randl9_x - halfGridSize, 2.5f, randl9_z - halfGridSize));
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
@@ -1843,23 +1844,95 @@ Model* makeFloorModel(Terrain terrain, City city) {
                                         building->pos.x,
                                         terrain.getHeightAt(
                                                 building->pos.x * 200,
-                                                building->pos.y * 200
-                                        ) + building->size.y / 2.0f,
+                                                building->pos.y * 100
+                                        ) + building->size.y * 100.0f / 2.0f,
                                         building->pos.y) * glm::vec3(200, 1, 200)
                         ),
                         mat4(1.0f),
                         scale(
                                 mat4(1.0f),
-                                building->size * glm::vec3(200, 200, 200)
+                                building->size * glm::vec3(200, 100, 200)
                         ),
                         cement
                 )
         );
     }
 
+    for (int m = 0; m < city.mainStreets.size() - 1; m++) {
+        MainStreet* ms = city.mainStreets[m];
+
+        children.push_back(
+                new Model(
+                        texturedCubeVAO,
+                        cubeVertexPositions,
+                        uboWorldMatrixBlock,
+                        vector<Model*>(),
+                        translate(
+                                mat4(1.0f),
+                                glm::vec3(
+                                        ms->start.x,
+                                        terrain.getHeightAt(
+                                                (ms->end.x - ms->start.x + 1) * 200,
+                                                (ms->end.y - ms->start.y + 1) * 200
+                                        ) + 10.0f / 2.0f,
+                                        (ms->end.y - ms->start.y - 1) / 2.0f
+                                ) * glm::vec3(200, 1, 200)
+                        ),
+                        mat4(1.0f),
+                        scale(
+                                mat4(1.0f),
+                                glm::vec3(
+                                        (ms->end.x - ms->start.x) + 1,
+                                        1,
+                                        ms->end.y - ms->start.y
+                                ) * glm::vec3(200, 10, 200)
+                        ),
+                        floorTiles
+                )
+        );
+
+    }
+
+    for (int s = 0; s < city.smallStreets.size(); s++) {
+        SmallStreet* ms = city.smallStreets[s];
+
+        cout << ms->start.x << endl;
+
+        children.push_back(
+                new Model(
+                        texturedCubeVAO,
+                        cubeVertexPositions,
+                        uboWorldMatrixBlock,
+                        vector<Model*>(),
+                        translate(
+                                mat4(1.0f),
+                                glm::vec3(
+                                        glm::min(ms->start.x + 1.0f, 24.0f),
+                                        terrain.getHeightAt(
+                                                (ms->end.x - ms->start.x + 1) * 200,
+                                                (ms->end.y - ms->start.y + 1) * 200
+                                        ) + 10.0f / 2.0f,
+                                        ms->start.y
+
+                                ) * glm::vec3(200, 1, 200)
+                        ),
+                        mat4(1.0f),
+                        scale(
+                                mat4(1.0f),
+                                glm::vec3(
+                                        ms->end.x - ms->start.x,
+                                        1.5f,
+                                        ms->end.y - ms->start.y + 1
+                                ) * glm::vec3(200, 10, 200)
+                        ),
+                        floorTiles
+                )
+        );
+
+    }
 
 
-	Model* floorModel = new Model(terrain.getVAO(), terrain.getVertices(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, wood);
+    Model* floorModel = new Model(terrain.getVAO(), terrain.getVertices(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, wood);
 
 	return floorModel;
 }
@@ -2311,7 +2384,7 @@ int main(int argc, char* argv[])
 
 	// Black background
 	glClearColor(0.0f, 0.0f, 25 / 225.0f, 1.0f);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Load Textures
 #if defined(PLATFORM_OSX) || __linux__
@@ -2433,7 +2506,7 @@ int main(int argc, char* argv[])
 	yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
 	yellow.lightColor = vec3(1.0f);
 
-	Terrain terrain = Terrain(glm::vec3(32000, 3, 32000), 32);
+	Terrain terrain = Terrain(glm::vec3(32000, 3, 32000), 128);
     City city = City(25, 25);
 	// Compile and link shaders here ...
 #if defined(PLATFORM_OSX) || __linux__
@@ -2676,7 +2749,7 @@ int main(int argc, char* argv[])
 
 		useLightingShader();
 		bindShadowMaps(phongLightShaderProgram);
-//		skyBoxModel->draw(skyboxMatrix, GL_TRIANGLES, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		skyBoxModel->draw(skyboxMatrix, GL_TRIANGLES, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		drawScene(buildingModels, buildingMatrix, numOfBuildings);
 #pragma endregion
 
@@ -2740,7 +2813,7 @@ int main(int argc, char* argv[])
 		cameraVerticalAngle += (cameraAngularSpeed * -1 * dt * dy) / slowingFactor;
 
 		// Update viewMatrix
-		cameraPosition = vec3(cameraPosition.x, 15.0f, cameraPosition.z)
+		cameraPosition = vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z)
 			+ vec3(cameraLookAt.x * currentCamFacingMovement, 0.0f, cameraLookAt.z * currentCamFacingMovement)
 			+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);

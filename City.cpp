@@ -24,6 +24,13 @@ City::City(int w, int h) {
 
     generateMainStreets();
 
+    for(int i = 0; i < gridWidth; i++) {
+        for(int j = 0; j < gridHeight; j++) {
+            std::cout << grid[j * gridWidth + i];
+        }
+        std::cout << std::endl;
+    }
+
     generateSmallStreets();
 
     generateStreetBlocks();
@@ -142,18 +149,21 @@ void City::generateSmallStreets() {
             noiseValue *= (j - lastSmallRoad);
 
             if (noiseValue > 2.0f) {
-                traceLine(j, (i-1>=0?mainStreets[i-1]->start.x:-1)+1, mainStreets[i]->start.x, false, SMALL_STREET);
+                traceLine(j, (i-1>=0?mainStreets[i-1]->start.x:-1)+1, ((i>=gridWidth)?gridWidth-2:mainStreets[i]->start.x), false, SMALL_STREET);
                 lastSmallRoad = j;
 
                 SmallStreet* road = new SmallStreet();
                 road->start = glm::vec2(
-                        (int)(i-1>=0?mainStreets[i-1]->start.x:-1)+1,
+                        (int)((i-1>=0?mainStreets[i-1]->start.x:-1) + 1),
                         j
                         );
+
                 road->end = glm::vec2(
-                        (int)mainStreets[i]->start.x,
+                        (int)((i>=gridWidth)?gridWidth-2:mainStreets[i]->start.x),
                         j
                         );
+
+                std::cout << i << " " << road->start.x << road->end.x << std::endl;
                 //new SmallStreet((int)(i-1>=0?listOfMainStreets.get(i-1).start.x:-1)+1,j, (int)listOfMainStreets.get(i).start.x, j);
 
                 if(i-1>=0) {
@@ -204,7 +214,13 @@ void City::generateStreetBlocks() {
                 std::cout << "skip because start y too big" << std::endl;
                 continue;
             } else {
+                std::cout << grid[start_x * gridWidth + start_y] << std::endl;
+
                 District* type = getDistrict(grid[start_x * gridWidth + start_y]);
+
+                std::cout << type << std::endl;
+
+
                 Block* block = new Block();
 
                 type->blocks.push_back(block);
