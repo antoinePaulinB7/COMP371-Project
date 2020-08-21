@@ -35,3 +35,6 @@ Briana Toia - 40097889
   Briana - Role 5:
 • Make procedurally generated buildings out of cubes - Created 5 distinct building models with 7 textures and implemented randomized generation.
 • Organize the report with Laura, create architecture diagrams and report content.
+
+  Everyone:
+• Contribute to report content.
