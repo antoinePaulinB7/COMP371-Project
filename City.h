@@ -68,13 +68,11 @@ class City {
     char DISTRICT_3 = '3';
     char BUILDING = 'b';
 
-    District* district_1;
-    District* district_2;
-    District* district_3;
+    PerlinNoise pn;
 
 public:
     City();
-    City(int w, int h);
+    City(int w, int h, glm::vec3 offset);
 
     std::vector<MainStreet*> mainStreets;
     std::vector<SmallStreet*> smallStreets;
@@ -85,8 +83,13 @@ public:
     std::vector<char> grid;
     int gridWidth;
     int gridHeight;
+
+    glm::vec3 offset;
 private:
-    PerlinNoise pn;
+
+    District* district_1;
+    District* district_2;
+    District* district_3;
 
     std::vector<char> generateGrid();
     void generateDistricts();
