@@ -2092,6 +2092,7 @@ int main(int argc, char* argv[])
             floorModel = makeFloorModel(*terrain, *city, glm::vec3(i * 200, 0, j * 200));
 
             floorModels.push_back(floorModel);
+			collisionModels.push_back(floorModel);
         }
     }
 
@@ -2235,7 +2236,7 @@ int main(int argc, char* argv[])
 
 		if (doRaycastCollision(viewMatrix, collisionModels))
 		{
-			cameraPosition = vec3(cameraPosition.x, 15.0f, cameraPosition.z)
+			cameraPosition = vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z)
 				+ vec3(cameraLookAt.x * -currentCamFacingMovement, 0.0f, cameraLookAt.z * -currentCamFacingMovement)
 				+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
 			viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
