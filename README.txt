@@ -15,7 +15,7 @@ Briana Toia - 40097889
 
 ********************** ROLES *********************
   Melissa - Role 1:
-• Make world models using Blender, and populate the world with them. Add some randomized elements like color, length, etc.
+• Make world models (car, lamp post, garbage bin, and fire hydrant) using Blender, and populate the world with them. Add some randomized elements like color, length, etc.
 
   Antoine - Role 2:
 • Procedurally generated terrain using Perlin Noise.
