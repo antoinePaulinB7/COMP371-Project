@@ -2079,13 +2079,14 @@ int main(int argc, char* argv[])
 
     floorModels = std::vector<Model*>();
 
-    City* city = new City(15, 15, glm::vec3(0));
-    Terrain* terrain = new Terrain(glm::vec3(15, 1, 15), glm::vec3(0),16);
+	int citySize = 5;
+    City* city = new City(citySize, citySize, glm::vec3(0));
+    Terrain* terrain = new Terrain(glm::vec3(citySize, 1, citySize), glm::vec3(0), citySize + 1);
 
-    for (int i = 0; i < 15; i++) {
-        for (int j = 0; j < 15; j++) {
-            City* city = new City(15, 15, glm::vec3(i * 15, 0, j * 15));
-            Terrain* terrain = new Terrain(glm::vec3(15, 1, 15), glm::vec3(i * 15, 0, j * 15),16);
+    for (int i = 0; i < citySize; i++) {
+        for (int j = 0; j < citySize; j++) {
+            City* city = new City(citySize, citySize, glm::vec3(i * citySize, 0, j * citySize));
+            Terrain* terrain = new Terrain(glm::vec3(citySize, 1, citySize), glm::vec3(i * citySize, 0, j * citySize), citySize + 1);
 
             worldMap.push_back(std::make_pair(terrain, city));
 
@@ -2228,16 +2229,16 @@ int main(int argc, char* argv[])
 		cameraHorizontalAngle += (cameraAngularSpeed * -1 * dt * dx) / slowingFactor;
 		cameraVerticalAngle += (cameraAngularSpeed * -1 * dt * dy) / slowingFactor;
 
-		// Update viewMatrix
-		cameraPosition = vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z)
-			+ vec3(cameraLookAt.x * currentCamFacingMovement, 0.0f, cameraLookAt.z * currentCamFacingMovement)
-			+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
-		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 
-		if (doRaycastCollision(viewMatrix, collisionModels))
-		{
+		if (doRaycastCollision(viewMatrix, collisionModels) && currentCamFacingMovement > 0.0f) //The player is trying to move forward into an object, allow only strafing or backwards movement
+		{ 
 			cameraPosition = vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z)
-				+ vec3(cameraLookAt.x * -currentCamFacingMovement, 0.0f, cameraLookAt.z * -currentCamFacingMovement)
+				+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
+			viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+		}
+		else {
+			cameraPosition = vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z)
+				+ vec3(cameraLookAt.x * currentCamFacingMovement, 0.0f, cameraLookAt.z * currentCamFacingMovement)
 				+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
 			viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		}
