@@ -14,7 +14,7 @@ int currentLightIndex = 0;
 GLuint uboDepthVPBlockCopy;
 
 LightSource* lights[totalNumLights];
-vec3 lightPositions[totalNumLights] = { vec3(0.0f, 5.0f, 30.0f),
+vec3 lightPositions[totalNumLights] = { vec3(0.0f, 5.0f, -30.0f),
 										vec3(-45, 30.0f, -45) };
 vec3 lightLookAtPositions[totalNumLights] = { vec3(0.0f, 0.0f, 0.0f),
 										vec3(-45, 0.0f, -45) };
@@ -25,8 +25,8 @@ void setUBODepthVPBlockInLightSourceManager(GLuint value) {
 
 void createLightSources()
 {
-	const float bigShadowMapSize = 2048, smallShadowMapSize = 1024;
-	mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 100.0f);
+	const float bigShadowMapSize = 2048 * 4, smallShadowMapSize = 1024;
+	mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 8000.0f);
 	currentLightIndex = 0;
 	while (currentLightIndex < totalNumLights) {
 		lights[currentLightIndex] = new LightSource(lightPositions[currentLightIndex], lightLookAtPositions[currentLightIndex],

@@ -1853,7 +1853,7 @@ Model* makeFloorModel(Terrain terrain, City city) {
                                 mat4(1.0f),
                                 building->size * glm::vec3(200, 100, 200)
                         ),
-                        cement
+                        beige
                 )
         );
     }
@@ -1887,7 +1887,7 @@ Model* makeFloorModel(Terrain terrain, City city) {
                                         ms->end.y - ms->start.y
                                 ) * glm::vec3(200, 10, 200)
                         ),
-                        floorTiles
+                        yellow
                 )
         );
 
@@ -1925,14 +1925,14 @@ Model* makeFloorModel(Terrain terrain, City city) {
                                         ms->end.y - ms->start.y + 1
                                 ) * glm::vec3(200, 10, 200)
                         ),
-                        floorTiles
+                        yellow
                 )
         );
 
     }
 
 
-    Model* floorModel = new Model(terrain.getVAO(), terrain.getVertices(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, wood);
+    Model* floorModel = new Model(terrain.getVAO(), terrain.getVertices(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, blue);
 
 	return floorModel;
 }
@@ -2506,7 +2506,7 @@ int main(int argc, char* argv[])
 	yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
 	yellow.lightColor = vec3(1.0f);
 
-	Terrain terrain = Terrain(glm::vec3(32000, 3, 32000), 128);
+	Terrain terrain = Terrain(glm::vec3(32000, 1000, 32000), 128);
     City city = City(25, 25);
 	// Compile and link shaders here ...
 #if defined(PLATFORM_OSX) || __linux__
