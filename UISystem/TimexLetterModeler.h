@@ -5,7 +5,7 @@
 #include <glm/common.hpp>
 #include <GL/glew.h>
 #include <vector>
-#include "Model.h"
+#include "Models/Model.h"
 
 using namespace glm;
 using namespace std;
