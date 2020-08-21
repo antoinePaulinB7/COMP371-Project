@@ -15,6 +15,7 @@
 #include "LightSource.h"
 #include "LightSourceManager.h"
 #include "RaycastCollisions.h"
+#include "TimexLetterModeler.h"
 #include "texture.h"
 #include "Terrain.h"
 #include "City.h"
@@ -33,19 +34,11 @@ using namespace std;
 int windowWidth = 1024, windowHeight = 764;
 
 GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture, skyTexture, windowTexture, brownTexture, beigeTexture,
-blackTexture, redTexture, blueTexture, purpleTexture, yellowTexture, cementTexture, marbleTexture;
+blackTexture, redTexture, blueTexture, purpleTexture, yellowTexture, whiteTexture, cementTexture, marbleTexture;
 
-Material brick, wood, metal, cement, marble, box, floorTiles, sky, windowFrame, brown, beige, black, red, blue, purple, yellow;
+Material brick, wood, metal, cement, marble, box, floorTiles, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, white;
 
-int texturedCubeVAO;
-int gridVAO;
-int gridSquare;
-int xyzVAO;
-int sphereVAO;
-
-vec3 getShearMovement(float shearRotationAngle);
-
-void setRandomizedPositionScale(vec3& position, float& scaleFactor, Terrain terrain);
+void setRandomizedPositionScale(mat4& modelMatrix, Terrain terrain);
 
 float getRandomNumber(int lowerBound, int upperBound) {
 	std::random_device rd;
@@ -135,7 +128,7 @@ int createTextureCubeVertexArrayObject() {
 	//Copy the vertex positions, for ray casting later on.
 	for (int i = 0; i < sizeof(vertexArray) / sizeof(vertexArray[0]); )
 	{
-		cubeVertexPositions.push_back(vec3(vertexArray[i], vertexArray[i+1], vertexArray[i+2]));
+		cubeVertexPositions.push_back(vec3(vertexArray[i], vertexArray[i + 1], vertexArray[i + 2]));
 		i += 11; //skip to the start of the next vertex
 	}
 
@@ -195,7 +188,6 @@ int createTextureCubeVertexArrayObject() {
 }
 
 vector<vec3> sphereVertices;
-
 GLuint createSphereObjectVAO(string path) {
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> colors;
@@ -243,228 +235,18 @@ GLuint createSphereObjectVAO(string path) {
 	glEnableVertexAttribArray(3);
 
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs, as we are using multiple VAOs)
-	
+
 	sphereVertices = vertices;
 
 	return VAO;
 }
 #pragma endregion
 
-#pragma region lines
-int createVertexArrayObjectCoordinateXYZ()
-{
-	// Cube model (position, colors)
-	vec3 vertexArray[] = {
-		vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), // middle, red
-		vec3(5.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), // right, red
-		vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), // middle, green
-		vec3(0.0f, 5.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), // up, green
-		vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), // middle, blue
-		vec3(0.0f, 0.0f, 5.0f), vec3(0.0f, 0.0f, 1.0f) // near, blue
-	};
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		2 * sizeof(vec3),
-		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	return vertexBufferObject;
-}
-
-// Initialize variables for grid size
-const int gridSize = 101; // Change only this value to change the grid size. If gridSize is 101 it Will make 100 x 100 squares in a grid
-float halfGridSize = gridSize / 2.0f;
-float lineLength = gridSize - 1.0f;
-
-vec3 gridColor = vec3(0.25f, 0.25f, 0.25f);
-
-int createVertexArrayObjectGridLine()
-{
-	// Line Vertices Array containing position & colors 
-	// One line is drawn by 4 vertices and it's doubled because we need lines in X and in Z therefore it's gridSize * 8
-	vec3 vertexArray[gridSize * 8];
-
-	// For loops to add every vertex of position and color of X lines to the grid in the vertex array
-	for (int i = 0; i < (gridSize * 8) / 2.0f; ++i)
-	{
-		if (i % 4 == 1 || i % 4 == 3) {
-			vertexArray[i] = {
-				gridColor
-			};
-		}
-		else if (i % 4 == 0) {
-			vertexArray[i] = {
-				vec3(0.0f, 0.0f, 1.0f * i / 4.0f) // First vertex of position
-			};
-		}
-		else {
-			vertexArray[i] = {
-				vec3(1.0f * lineLength, 0.0f, 1.0f * ((i - 2) / 4.0f)) // Last vertex of position
-			};
-		}
-	}
-
-	// For loops to add every vertex of position and color of Z lines to the grid in the vertex array starting at index 400
-	for (int i = 0; i < (gridSize * 8) / 2.0f; ++i)
-	{
-		if (i % 4 == 1 || i % 4 == 3) {
-			vertexArray[i + (gridSize * 8) / 2] = {
-				gridColor
-			};
-		}
-		else if (i % 4 == 0) {
-			vertexArray[i + (gridSize * 8) / 2] = {
-				vec3(1.0f * i / 4, 0.0f, 0.0f) // First vertex of position
-			};
-		}
-		else {
-			vertexArray[i + (gridSize * 8) / 2] = {
-				vec3(1.0f * ((i - 2) / 4), 0.0f, 1.0f * lineLength) // Last vertex of position
-			};
-		}
-	}
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // sizel9
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		2 * sizeof(vec3),
-		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	return vertexBufferObject;
-}
-
-int createGridSquareVertexArrayObject() {
-	// Cube model (position, colors, normals, texture coordinates)
-	float vertexArray[] = {
-		-lineLength / 2, -0.5f, -lineLength / 2,        	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f, //left 
-		-lineLength / 2, -0.5f, lineLength / 2,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 8.0f,
-		lineLength / 2, -0.5f, lineLength / 2,         	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     8.0f, 8.0f,
-
-		-lineLength / 2, -0.5f,-lineLength / 2,          1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     0.0f, 0.0f, //right
-		lineLength / 2, -0.5f, lineLength / 2,          	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     8.0f, 8.0f,
-		lineLength / 2, -0.5f,-lineLength / 2,          	1.0f, 1.0f, 1.0f,     0.0f, 1.0f, 0.0f,     8.0f, 0.0f,
-	};
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		11 * sizeof(float), // stride - each vertex contain 3 vec3 (position, color, normal)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		11 * sizeof(float),
-		(void*)(3 * sizeof(float))      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2,                            // attribute 2 matches aNormal in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		11 * sizeof(float),
-		(void*)(2 * 3 * sizeof(float))      // normal is offseted 2 vec3 (comes after position and color)
-	);
-	glEnableVertexAttribArray(2);
-
-	glVertexAttribPointer(3,                            // attribute 3 matches aText in Vertex Shader
-		2,
-		GL_FLOAT,
-		GL_FALSE,
-		11 * sizeof(float),
-		(void*)(3 * 3 * sizeof(float))      // texture is offseted 2 vec3 (comes after position and color)
-	);
-	glEnableVertexAttribArray(3);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	return vertexArrayObject;
-}
-#pragma endregion
-
 #pragma region cameraInput
 // Camera parameters
-float cameraSpeed = 1.0f;
-float cameraFastSpeed = 2 * cameraSpeed;
 float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
-float magnificationFactor = 1.0f;
-bool fastCam = false;
 
 float viewDistance = 32000.0f;
 
@@ -476,90 +258,40 @@ float currentCamStrafingMovement = 0, currentCamFacingMovement = 0.0f;
 
 // Set projection matrix for shader, this won't change
 mat4 projectionMatrix = perspective(70.0f, // field of view in degrees
-	(float)windowWidth / windowHeight,  // aspect ratio
-	0.01f, viewDistance);   // near and far (near > 0)
+(float)windowWidth / windowHeight,  // aspect ratio
+0.01f, 300.0f);   // near and far (near > 0)
 
-	// Set initial view matrix
+// Set initial view matrix
 mat4 viewMatrix = lookAt(cameraPosition,  // eye
 	cameraPosition + cameraLookAt,  // center
 	cameraUp); // up
 
-void handleCameraFlagInputs(GLFWwindow* window) {
-	fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
-}
-
-// Camera parameters for view transform
-int xShift = 12, zShift = 4;
-vec3 presetCameraPositions[] = { vec3(0.0f, 15.0f, 30.0f), vec3(-xShift, 5.0f, -zShift),
-vec3(xShift, 5.0f, -zShift), vec3(0.0f, 5.0f, 8.0f), vec3(-xShift, 5.0f, 5 * zShift),
-vec3(xShift, 5.0f, 5 * zShift) };
-int cameraPresetPosCount = 6;
-int currentCamPresetPositionIndex = 0;
-
-//Add a delay of 10 frames between camera angle changes, otherwise is can change every
-//frame which is pretty chaotic and confusing
-int changeDelay = 10;
 void handleCameraPositionInputs(GLFWwindow* window) {
-	if (changeDelay <= 0) {
-		if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS)
-		{
-			currentCamPresetPositionIndex++;
-			if (currentCamPresetPositionIndex >= cameraPresetPosCount) {
-				currentCamPresetPositionIndex = 0;
-			}
-			cameraPosition = presetCameraPositions[currentCamPresetPositionIndex];
-			changeDelay = 10;
-			cameraHorizontalAngle = 90.0f;
-			cameraVerticalAngle = -25.0f;
-			magnificationFactor = 1.0f;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS)
-		{
-			currentCamPresetPositionIndex--;
-			if (currentCamPresetPositionIndex < 0) {
-				currentCamPresetPositionIndex = cameraPresetPosCount - 1;
-			}
-			cameraPosition = presetCameraPositions[currentCamPresetPositionIndex];
-			changeDelay = 10;
-			cameraHorizontalAngle = 90.0f;
-			cameraVerticalAngle = -25.0f;
-			magnificationFactor = 1.0f;
-		}
-	}
-	else {
-		changeDelay--;
-	}
-
-	float walkSpeed = 15.0f;
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+	float walkSpeed = 1.5f;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
 		currentCamStrafingMovement -= walkSpeed;
 	}
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
 		currentCamStrafingMovement += walkSpeed;
 	}
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		currentCamFacingMovement += walkSpeed;
 	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
 		currentCamFacingMovement -= walkSpeed;
 	}
 }
 #pragma endregion
-#pragma region modelInput
+
+#pragma region renderingInput
 //storing the redering mode in a variable 
 int renderingMode = GL_TRIANGLES;
-bool renderShadows = true;
-bool renderTextures = true, isLightOn = true;
-static bool BPressed = false;
-static bool MPressed = false;
-static bool NPressed = false;
-static bool XPressed = false;
-static bool ZPressed = false;
+bool isFlashLightOn = true;
+static bool FPressed = false;
 void handleRenderingModeInput(GLFWwindow* window) {
 	//----------------------------------------------------------------------------------
 	//User can change the rendering mode
@@ -578,586 +310,27 @@ void handleRenderingModeInput(GLFWwindow* window) {
 		renderingMode = GL_TRIANGLES;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS && BPressed == false) //toggle shadow rendering
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && FPressed == false)  //toggle flashlight
 	{
-		renderShadows = !renderShadows;
-		BPressed = true;
+		isFlashLightOn = !isFlashLightOn;
+		FPressed = true;
 	}
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE && BPressed == true) //toggle shadow rendering
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_RELEASE && FPressed == true)
 	{
-		BPressed = false;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && XPressed == false) //toggle shadow rendering
-	{
-		renderTextures = !renderTextures;
-		XPressed = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_RELEASE && XPressed == true) //toggle shadow rendering
-	{
-		XPressed = false;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS && ZPressed == false)  //toggle main light
-	{
-		isLightOn = !isLightOn;
-		ZPressed = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_RELEASE && ZPressed == true)
-	{
-		ZPressed = false;
+		FPressed = false;
 	}
 }
 
-mat4 worldOrientationModelMatrix = mat4(1.0f);
+void handleExitInput(GLFWwindow* window) {
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+}
 
-// Control variables
-float moveSpeed = 1.0f;
-float scaleFactor = 1.0f;
-float scaleSpeed = 0.25f;
-
-// Model variables
-float rotationSpeed = 90.0f;
-float modelXRotationAngle = 0.0f;
-float modelYRotationAngle = 0.0f;
-float modelScaleFactor = 1.0f;
-vec3 modelPosition = vec3(0.0f, 0.0f, 0.0f);
-float modelShearFactor = 0.0f;
-bool shearForward = true;
-bool shearStepping = false;
-bool shearSteppingBackward = false;
-bool shearWalking = false;
-int shearDirection = 0;
-
-// Declaring model matrices
-mat4 modelShearingMatrix = mat4(1.0f);
-mat4 modelScalingMatrix = mat4(1.0f);
-mat4 modelRotationMatrix;
-mat4 modelTranslationMatrix;
-mat4 sharedModelMatrix;
-
-/* declaring individual CHAR matrices values to allow for individual movement */
-
-// L9 PRESETS
-float l9ModelXRotationAngle = 0.0f;
-float l9ModelYRotationAngle = 0.0f;
-float l9ModelScaleFactor = 1.0f;
-mat4 l9ModelScalingMatrix = mat4(1.0f);
-mat4 l9ModelRotationMatrix;
-mat4 l9ModelTranslationMatrix;
-mat4 l9ModelMatrix;
-vec3 l9ModelPosition = vec3(1.0f);
-
-// T9 PRESETS
-float t9ModelXRotationAngle = 0.0f;
-float t9ModelYRotationAngle = 0.0f;
-float t9ModelScaleFactor = 1.0f;
-mat4 t9ModelScalingMatrix = mat4(1.0f);
-mat4 t9ModelRotationMatrix;
-mat4 t9ModelTranslationMatrix;
-mat4 t9ModelMatrix;
-vec3 t9ModelPosition = vec3(1.0f);
-
-// E PRESETS
-float u3ModelXRotationAngle = 0.0f;
-float u3ModelYRotationAngle = 0.0f;
-float u3ModelScaleFactor = 1.0f;
-mat4 u3ModelScalingMatrix = mat4(1.0f);
-mat4 u3ModelRotationMatrix;
-mat4 u3ModelTranslationMatrix;
-mat4 u3ModelMatrix;
-vec3 u3ModelPosition = vec3(1.0f);
-
-// I9 PRESETS
-float i9ModelXRotationAngle = 0.0f;
-float i9ModelYRotationAngle = 0.0f;
-float i9ModelScaleFactor = 1.0f;
-mat4 i9ModelScalingMatrix = mat4(1.0f);
-mat4 i9ModelRotationMatrix;
-mat4 i9ModelTranslationMatrix;
-mat4 i9ModelMatrix;
-vec3 i9ModelPosition = vec3(1.0f);
-
-// C4 PRESETS
-float c4ModelXRotationAngle = 0.0f;
-float c4ModelYRotationAngle = 0.0f;
-float c4ModelScaleFactor = 1.0f;
-mat4 c4ModelScalingMatrix = mat4(1.0f);
-mat4 c4ModelRotationMatrix;
-mat4 c4ModelTranslationMatrix;
-mat4 c4ModelMatrix;
-vec3 c4ModelPosition = vec3(1.0f);
-
-
-mat4 L9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, -halfGridSize));
-mat4 I9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, -halfGridSize));
-mat4 U3StartTranslation = translate(glm::mat4(1.0f), glm::vec3(0, 2.5f, 0));
-mat4 C4StartTranslation = translate(glm::mat4(1.0f), glm::vec3(halfGridSize - 1, 2.5f, halfGridSize));
-mat4 T9StartTranslation = translate(glm::mat4(1.0f), glm::vec3(-halfGridSize, 2.5f, halfGridSize));
-mat4 L9BaseTranslation = L9StartTranslation;
-mat4 I9BaseTranslation = I9StartTranslation;
-mat4 U3BaseTranslation = U3StartTranslation;
-mat4 T9BaseTranslation = T9StartTranslation;
-mat4 C4BaseTranslation = C4StartTranslation;
-
-void handleWorldOrientationInput(GLFWwindow* window, float dt) {
-	//Changing World Orientation 
-	//Not sure we want these controls for P3
-	/*
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) //rotate X axis in anti-clockwise direction
-	{
-		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(-1.0f, 0.f, 0.f));
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) //rotate X axis in clockwise direction
-	{
-		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(1.0f, 0.f, 0.f));
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) //rotate Y axis in anti-clockwise direction
-	{
-		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, -1.f, 0.f));
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) //rotate Y axis in clockwise direction
-	{
-		worldOrientationModelMatrix = worldOrientationModelMatrix * rotate(mat4(1.0f), radians(5.0f), vec3(0.0f, 1.0f, 0.f));
-	}
-	*/
-	//reset world orientation to original settings
-	//used Tab to test as I do not have a Home button
-	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS)
-	{
-		worldOrientationModelMatrix = mat4(1.0f);
-		modelScaleFactor = 1.0f;
-		l9ModelScaleFactor = 1.0f;
-		t9ModelScaleFactor = 1.0f;
-		u3ModelScaleFactor = 1.0f;
-		i9ModelScaleFactor = 1.0f;
-		c4ModelScaleFactor = 1.0f;
-		modelPosition = vec3(0.0f);
-		l9ModelPosition = vec3(0.0f);
-		t9ModelPosition = vec3(0.0f);
-		u3ModelPosition = vec3(0.0f);
-		i9ModelPosition = vec3(0.0f);
-		c4ModelPosition = vec3(0.0f);
-		modelXRotationAngle = 0.0f;
-		modelYRotationAngle = 0.0f;
-		modelShearFactor = 0.0f;
-		l9ModelYRotationAngle = 0.0f;
-		t9ModelYRotationAngle = 0.0f;
-		u3ModelYRotationAngle = 0.0f;
-		i9ModelYRotationAngle = 0.0f;
-		c4ModelYRotationAngle = 0.0f;
-		l9ModelXRotationAngle = 0.0f;
-		t9ModelXRotationAngle = 0.0f;
-		u3ModelXRotationAngle = 0.0f;
-		i9ModelXRotationAngle = 0.0f;
-		c4ModelXRotationAngle = 0.0f;
-
-		L9BaseTranslation = L9StartTranslation;
-		I9BaseTranslation = I9StartTranslation;
-		U3BaseTranslation = U3StartTranslation;
-		T9BaseTranslation = T9StartTranslation;
-		C4BaseTranslation = C4StartTranslation;
-	}
-	// Move/Shear model forward
-	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && MPressed == false)
-	{
-		shearWalking = !shearWalking;
-		shearDirection = 1;
-		MPressed = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_RELEASE && MPressed == true)
-	{
-		MPressed = false;
-	}
-
-	//ONE STEP FORWARD
-	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS || shearStepping)
-	{
-		if (!shearStepping) {
-			shearStepping = true;
-			shearWalking = false;
-			shearForward = true;
-			modelShearFactor = 0.0f;
-		}
-		if (shearStepping) {
-			float shearRotationAngle = (int)modelYRotationAngle % 360;
-
-			modelPosition += getShearMovement(shearRotationAngle) * moveSpeed * dt;
-
-			if (shearForward)
-			{
-				if (modelShearFactor < -1)
-				{
-					shearForward = false;
-					modelShearFactor += 0.1;
-				}
-				else
-				{
-					modelShearFactor -= 0.1;
-				}
-				if (modelShearFactor > -0.1 && modelShearFactor < 0.1) {
-					shearStepping = false;
-				}
-			}
-			else
-			{
-				if (modelShearFactor > 1)
-				{
-					shearForward = true;
-					modelShearFactor -= 0.1;
-				}
-				else {
-					modelShearFactor += 0.1;
-				}
-
-			}
-		}
-	}
-
-	//ONE STEP BACKWARD
-	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS || shearSteppingBackward)
-	{
-		if (!shearSteppingBackward) {
-			shearSteppingBackward = true;
-			shearWalking = false;
-			shearForward = false;
-			modelShearFactor = 0.0f;
-		}
-		if (shearSteppingBackward) {
-
-			float shearRotationAngle = (int)modelYRotationAngle % 360;
-
-			modelPosition -= getShearMovement(shearRotationAngle) * moveSpeed * dt;
-
-			if (shearForward)
-			{
-				if (modelShearFactor < -1)
-				{
-					shearForward = false;
-					modelShearFactor += 0.1;
-				}
-				else
-				{
-					modelShearFactor -= 0.1;
-				}
-			}
-			else
-			{
-				if (modelShearFactor > 1)
-				{
-					shearForward = true;
-					modelShearFactor -= 0.1;
-				}
-				else {
-					modelShearFactor += 0.1;
-				}
-				if (modelShearFactor > -0.1 && modelShearFactor < 0.1) {
-					shearSteppingBackward = false;
-				}
-
-			}
-		}
-	}
-
-	// Move/Shear model backwards
-	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS && NPressed == false)
-	{
-		shearWalking = !shearWalking;
-		shearDirection = -1;
-		NPressed = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_RELEASE && NPressed == true)
-	{
-		NPressed = false;
-	}
-
-	/* INDIVIDUAL MOVEMENT CONTROLS */
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE))
-	{
-		float directionOfChange = 0.0f;
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-			directionOfChange = -1.0f;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-			directionOfChange = 1.0f;
-		}
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-		else {
-			modelXRotationAngle += rotationSpeed * dt * directionOfChange;
-		}
-
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelYRotationAngle += rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelYRotationAngle += rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelYRotationAngle += rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelYRotationAngle += rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelYRotationAngle += rotationSpeed * dt;
-		}
-		else {
-			modelYRotationAngle += rotationSpeed * dt;
-		}
-
-	}
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
-		&& glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelYRotationAngle -= rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelYRotationAngle -= rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelYRotationAngle -= rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelYRotationAngle -= rotationSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelYRotationAngle -= rotationSpeed * dt;
-		}
-		else {
-			modelYRotationAngle -= rotationSpeed * dt;
-		}
-	}
-
-	// INDIVICDUAL CHARACTER SCALE CONTROLS
-
-	/* Simultaneously pressing U + (1 OR 2 OR 3 OR 4 OR 5) will scale UP the chosen character*/
-
-	if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelScaleFactor += scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelScaleFactor += scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelScaleFactor += scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelScaleFactor += scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelScaleFactor += scaleSpeed * dt;
-		}
-		else {
-			modelScaleFactor += scaleSpeed * dt;
-		}
-
-	}
-
-	/* Simultaneously pressing J + (1 OR 2 OR 3 OR 4 OR 5) will scale DOWN the chosen character*/
-	if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelScaleFactor -= scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelScaleFactor -= scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelScaleFactor -= scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelScaleFactor -= scaleSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelScaleFactor -= scaleSpeed * dt;
-		}
-		else {
-			modelScaleFactor -= scaleSpeed * dt;
-		}
-
-	}
-
-	/* Simultaneously pressing SHIFT + (1 OR 2 OR 3 OR 4 OR 5) will translate the chosen character on Y*/
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move forwards
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else {
-			modelPosition += vec3(0.0f, 1.0f, 0.0f) * moveSpeed * dt;
-		}
-
-	}
-
-	/* Simultaneously pressing S + (1 OR 2 OR 3 OR 4 OR 5 OR 6 ) will translate the chosen character on Y*/
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
-		&& glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move backwards
-	{
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-		else {
-			modelPosition += vec3(0.0f, -1.0f, 0.0f) * moveSpeed * dt;
-		}
-
-	}
-
-
-	if ((glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS))
-	{
-		float directionOfChange = 0.0f;
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-			directionOfChange = -1.0f;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-			directionOfChange = 1.0f;
-		}
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-		else {
-			modelPosition += vec3(directionOfChange, 0.0f, 0.0f) * moveSpeed * dt;
-		}
-
-	}
-
-	/* Simultaneously pressing SPACE + (1 OR 2 OR 3 OR 4 OR 5) will change chars location to a random spot*/
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-	{
-		cameraPosition.y += 5.0f;
-	    float randl9_x = (rand() % (90 - 0 + 1) + 0);
-		float randl9_z = (rand() % (90 - 0 + 1) + 0);
-		mat4 newLocation = translate(mat4(1.0f), vec3(randl9_x - halfGridSize, 2.5f, randl9_z - halfGridSize));
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			l9ModelPosition = vec3(0.0f);
-			L9BaseTranslation = newLocation;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			t9ModelPosition = vec3(0.0f);
-			T9BaseTranslation = newLocation;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			u3ModelPosition = vec3(0.0f);
-			U3BaseTranslation = newLocation;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			i9ModelPosition = vec3(0.0f);
-			I9BaseTranslation = newLocation;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		{
-			c4ModelPosition = vec3(0.0f);
-			C4BaseTranslation = newLocation;
-		}
-	}
+// reference https://www.glfw.org/docs/latest/group__window.html#gae49ee6ebc03fa2da024b89943a331355
+void windowResizeCallback(GLFWwindow* window, int width, int height)
+{
+	windowHeight = height;
+	windowWidth = width;
 }
 #pragma endregion
 
@@ -1165,95 +338,9 @@ void handleWorldOrientationInput(GLFWwindow* window, float dt) {
 unsigned int uboWorldMatrixBlock;
 unsigned int uboDepthVPBlock;
 unsigned int uboLightInfoBlock;
+int texturedCubeVAO;
 
-Model* makeL9Model(int vao) {
-
-	/*  This is the hierarchy for L9, built with Model objects holding other Model objects:
-
-												  modelL9
-
-										/                           \
-
-							modelL                                         model9
-
-						/            \                       /           /           \          \
-
-				 modelLbottomBar modelLverticalBar      model9top  model9right   model9left  model9bottom
-
-		Each model applies its own TRS transformations to its children recursively, achieving the same affect
-		we used to get by multiplying out each matrix many times over, like so:
-				mat4 Lpart = scale(mat4(1.0f), vec3(1.0f, 5.0f, 1.0f));
-				mat4 modelLbottomBar = L9Matrix * LMatrix * Lpart;
-		The recursive calls in draw() now do the above matrix multiplication without us having to specify them for each piece.
-	*/
-
-
-	// Draw L9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
-	mat4 setUpScaling = mat4(1.0f);
-	mat4 setUpRotation = mat4(1.0f);
-	mat4 setUpTranslation = mat4(1.0f);
-
-	// Creating left-part of the letter L
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 1.5f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelLbottomBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
-
-	// Setting up the letter L
-	vector<Model*> LChildren = vector<Model*>();
-	LChildren.push_back(modelLbottomBar);
-	//The pieces of the L are placed such that the entire L is centered at origin on all axes
-	//We can then very simply manipulate this modelL to transform the entire L
-	//for example, to scoot the L left to make room for the number, making the entire L9 centered.
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 0.0f, 0.0f));
-	Model* modelL = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f), cement);
-
-
-	// Creating top-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-	Model* model9top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
-
-	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 1.25f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* model9right = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
-
-	// Creating left-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 0.5f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 2.0f, 1.0f));
-	Model* model9left = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
-
-	// Creating bottom-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 0.0f, 0.0f));
-	Model* model9bottom = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), mat4(1.0f), cement);
-
-	// Setting up the number 9
-	vector<Model*> nineChildren = vector<Model*>();
-	nineChildren.push_back(model9top);
-	nineChildren.push_back(model9right);
-	nineChildren.push_back(model9left);
-	nineChildren.push_back(model9bottom);
-	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 0.0f, 0.0f));
-	Model* model9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f), cement);
-
-
-	// Setting up the entire L9
-	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
-	vector<Model*> L9Children = vector<Model*>();
-	L9Children.push_back(modelL);
-	L9Children.push_back(model9);
-	Model* modelL9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, L9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
-
-	// Setting up the entire model
-	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
-	vector<Model*> entireModelChildren = vector<Model*>();
-	entireModelChildren.push_back(modelL9);
-	Model* entireModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
-
-	return entireModel;
-}
-
-Model* makeL9BottomModel(int vao) {
+Model* makeL9BottomModel() {
 
 	// Draw L9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	glm::mat4 setUpScaling = mat4(1.0f);
@@ -1263,12 +350,12 @@ Model* makeL9BottomModel(int vao) {
 	// Creating bottom-part of the letter L
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -1.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelLbottomBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* modelLbottomBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Creating right-part of the letter L
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.5f, -1.75f, 0.0f));
-	Model* modelLverticalBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* modelLverticalBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Setting up the letter L
 	vector<Model*> LChildren = vector<Model*>();
@@ -1278,18 +365,18 @@ Model* makeL9BottomModel(int vao) {
 	//We can then very simply manipulate this modelL to transform the entire L
 	//for example, to scoot the L left to make room for the number, making the entire L9 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
-	Model* modelL = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelL = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Creating right-part of the number 9
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, -1.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* model9bottom = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model9bottom = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Setting up the number 9
 	vector<Model*> nineChildren = vector<Model*>();
 	nineChildren.push_back(model9bottom);
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.0f, 0.0f));
-	Model* model9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Setting up the entire L9
@@ -1297,66 +384,56 @@ Model* makeL9BottomModel(int vao) {
 	vector<Model*> L9Children = vector<Model*>();
 	L9Children.push_back(modelL);
 	L9Children.push_back(model9);
-	Model* modelL9 = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, L9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelL9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, L9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelL9);
-	Model* entireModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 
 }
 
-Model* makeI9Model(int vao) {
-	// Draw I9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+Model* makeL9Model() {
 	mat4 setUpScaling = mat4(1.0f);
 	mat4 setUpRotation = mat4(1.0f);
 	mat4 setUpTranslation = mat4(1.0f);
 
-	// Creating top-part of the letter I
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 4.5f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
-	Model* modelItopBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
-
-
-	// Creating middlet-part of the letter I
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 2.75f, 0.0f));
+	// Creating left-part of the letter L
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 1.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelImiddleBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelLbottomBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
-	// Setting up the letter I
-	vector<Model*> IChildren = vector<Model*>();
-	IChildren.push_back(modelItopBar);
-	IChildren.push_back(modelImiddleBar);
-	//The pieces of the I are placed such that the entire I is centered at origin on all axes
-	//We can then very simply manipulate this modelI to transform the entire I
-	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
-	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
-	Model* modelI = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	// Setting up the letter L
+	vector<Model*> LChildren = vector<Model*>();
+	LChildren.push_back(modelLbottomBar);
+	//The pieces of the L are placed such that the entire L is centered at origin on all axes
+	//We can then very simply manipulate this modelL to transform the entire L
+	//for example, to scoot the L left to make room for the number, making the entire L9 centered.
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 0.0f, 0.0f));
+	Model* modelL = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, LChildren, setUpTranslation, mat4(1.0f), mat4(1.0f), cement);
 
 
 	// Creating top-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 4.5f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
-	Model* model9top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
-
-	// Creating left-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 3.25f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
-	Model* model9left = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
-
-	// Creating bottom-part of the number 9
-	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 2.0f, 0.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-	Model* model9bottom = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* model9top = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 3.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
-	Model* model9right = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.5f, 1.25f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
+	Model* model9right = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
+	// Creating left-part of the number 9
+	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 0.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 2.0f, 1.0f));
+	Model* model9left = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+
+	// Creating bottom-part of the number 9
+	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 0.0f, 0.0f));
+	Model* model9bottom = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), mat4(1.0f), cement);
 
 	// Setting up the number 9
 	vector<Model*> nineChildren = vector<Model*>();
@@ -1364,27 +441,28 @@ Model* makeI9Model(int vao) {
 	nineChildren.push_back(model9right);
 	nineChildren.push_back(model9left);
 	nineChildren.push_back(model9bottom);
-	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
-	Model* model9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(1.5f, 0.0f, 0.0f));
+	Model* model9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f), cement);
 
 
-	// Setting up the entire I9
+	// Setting up the entire L9
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
-	vector<Model*> I9Children = vector<Model*>();
-	I9Children.push_back(modelI);
-	I9Children.push_back(model9);
-	Model* modelI9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	vector<Model*> L9Children = vector<Model*>();
+	L9Children.push_back(modelL);
+	L9Children.push_back(model9);
+	L9Children.push_back(makeL9BottomModel());
+	Model* modelL9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, L9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
-	entireModelChildren.push_back(modelI9);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	entireModelChildren.push_back(modelL9);
+	Model* entireModel = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
 
-Model* makeI9BottomModel(int vao) {
+Model* makeI9BottomModel() {
 	// Draw I9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	glm::mat4 setUpScaling = mat4(1.0f);
 	glm::mat4 setUpRotation = mat4(1.0f);
@@ -1393,12 +471,12 @@ Model* makeI9BottomModel(int vao) {
 	// Creating middlet-part of the letter I
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 1.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelImiddleBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelImiddleBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating bottom-part of the letter I
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
-	Model* modelIbottomBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelIbottomBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Setting up the letter I
 	vector<Model*> IChildren = vector<Model*>();
@@ -1408,20 +486,20 @@ Model* makeI9BottomModel(int vao) {
 	//We can then very simply manipulate this modelI to transform the entire I
 	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
-	Model* modelI = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelI = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating right-part of the number 9
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* model9right = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* model9right = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 
 	// Setting up the number 9
 	vector<Model*> nineChildren = vector<Model*>();
 	nineChildren.push_back(model9right);
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
-	Model* model9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Setting up the entire I9
@@ -1429,85 +507,94 @@ Model* makeI9BottomModel(int vao) {
 	vector<Model*> I9Children = vector<Model*>();
 	I9Children.push_back(modelI);
 	I9Children.push_back(model9);
-	Model* modelI9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelI9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelI9);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
 
-Model* makeU3Model(int vao) {
-	// Draw U3 using hierarchical modeling, start at the lowest model(s) in the hierarchy
-	glm::mat4 setUpScaling = mat4(1.0f);
-	glm::mat4 setUpRotation = mat4(1.0f);
-	glm::mat4 setUpTranslation = mat4(1.0f);
+Model* makeI9Model() {
+	// Draw I9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	mat4 setUpScaling = mat4(1.0f);
+	mat4 setUpRotation = mat4(1.0f);
+	mat4 setUpTranslation = mat4(1.0f);
 
-	// Creating left-part of the letter U
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.5f, 0.0f));
+	// Creating top-part of the letter I
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 4.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 1.0f));
+	Model* modelItopBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+
+
+	// Creating middlet-part of the letter I
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 2.75f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUleftBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* modelImiddleBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
-	// Creating right-part of the letter U
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.5f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUrightBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	// Setting up the letter I
+	vector<Model*> IChildren = vector<Model*>();
+	IChildren.push_back(modelItopBar);
+	IChildren.push_back(modelImiddleBar);
+	//The pieces of the I are placed such that the entire I is centered at origin on all axes
+	//We can then very simply manipulate this modelI to transform the entire I
+	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
+	Model* modelI = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, IChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
-	// Setting up the letter U
-	vector<Model*> UChildren = vector<Model*>();
-	UChildren.push_back(modelUleftBar);
-	UChildren.push_back(modelUrightBar);
-	//The pieces of the U are placed such that the entire U is centered at origin on all axes
-	//We can then very simply manipulate this modelU to transform the entire U
-	//for example, to scoot the U left to make room for the number, making the entire U3 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
-	Model* modelU = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
-	// Creating base-part of the number 3
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 2.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 3.0f, 1.0f));
-	Model* model3base = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	// Creating top-part of the number 9
+	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 4.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
+	Model* model9top = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
-	// Creating topArm-part of the number 3
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.5f, 3.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.5f, 1.0f, 1.0f));
-	Model* model3topArm = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	// Creating left-part of the number 9
+	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 3.25f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
+	Model* model9left = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
-	// Creating middleArm-part of the number 3
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.75f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.0f, 1.0f));
-	Model* model3middleArm = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	// Creating bottom-part of the number 9
+	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 2.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
+	Model* model9bottom = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
-	// Setting up the number 3
-	vector<Model*> threeChildren = vector<Model*>();
-	threeChildren.push_back(model3base);
-	threeChildren.push_back(model3topArm);
-	threeChildren.push_back(model3middleArm);
-	//threeChildren.push_back(model3bottomArm);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	Model* model3 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, threeChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	// Creating right-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 3.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
+	Model* model9right = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
-	// Setting up the entire U3
+
+	// Setting up the number 9
+	vector<Model*> nineChildren = vector<Model*>();
+	nineChildren.push_back(model9top);
+	nineChildren.push_back(model9right);
+	nineChildren.push_back(model9left);
+	nineChildren.push_back(model9bottom);
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
+	Model* model9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Setting up the entire I9
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
-	vector<Model*> U3Children = vector<Model*>();
-	U3Children.push_back(modelU);
-	U3Children.push_back(model3);
-	Model* modelU3 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, U3Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	vector<Model*> I9Children = vector<Model*>();
+	I9Children.push_back(modelI);
+	I9Children.push_back(model9);
+	I9Children.push_back(makeI9BottomModel());
+	Model* modelI9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, I9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
-	entireModelChildren.push_back(modelU3);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	entireModelChildren.push_back(modelI9);
+	Model* entireModel = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
 
-
-Model* makeU3BottomModel(int vao) {
+Model* makeU3BottomModel() {
 	// Draw U3 using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = mat4(1.0f);
 	mat4 setUpRotation = mat4(1.0f);
@@ -1516,18 +603,18 @@ Model* makeU3BottomModel(int vao) {
 	// Creating left-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUleftBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* modelUleftBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 
 	// Creating bottom-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, -1.25f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
-	Model* modelUbottomBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* modelUbottomBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Creating right-part of the letter U
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelUrightBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* modelUrightBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Setting up the letter U
 	vector<Model*> UChildren = vector<Model*>();
@@ -1538,26 +625,26 @@ Model* makeU3BottomModel(int vao) {
 	//We can then very simply manipulate this modelU to transform the entire U
 	//for example, to scoot the U left to make room for the number, making the entire U3 centered.
 	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 0.0f, 0.0f));
-	Model* modelU = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelU = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating base-part of the number 3
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, -0.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* model3base = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model3base = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 
 	// Creating bottomArm-part of the number 3
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.5f, -1.25f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.5f, 1.0f, 1.0f));
-	Model* model3bottomArm = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+	Model* model3bottomArm = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
 
 	// Setting up the number 3
 	vector<Model*> threeChildren = vector<Model*>();
 	threeChildren.push_back(model3base);
 	threeChildren.push_back(model3bottomArm);
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
-	Model* model3 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, threeChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model3 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, threeChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Setting up the entire U3
@@ -1565,18 +652,135 @@ Model* makeU3BottomModel(int vao) {
 	vector<Model*> U3Children = vector<Model*>();
 	U3Children.push_back(modelU);
 	U3Children.push_back(model3);
-	Model* modelU3 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, U3Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelU3 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, U3Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelU3);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
 
-Model* makeT9Model(int vao) {
+Model* makeU3Model() {
+	// Draw U3 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	glm::mat4 setUpScaling = mat4(1.0f);
+	glm::mat4 setUpRotation = mat4(1.0f);
+	glm::mat4 setUpTranslation = mat4(1.0f);
+
+	// Creating left-part of the letter U
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-3.0f, 2.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
+	Model* modelUleftBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+
+	// Creating right-part of the letter U
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
+	Model* modelUrightBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+
+	// Setting up the letter U
+	vector<Model*> UChildren = vector<Model*>();
+	UChildren.push_back(modelUleftBar);
+	UChildren.push_back(modelUrightBar);
+	//The pieces of the U are placed such that the entire U is centered at origin on all axes
+	//We can then very simply manipulate this modelU to transform the entire U
+	//for example, to scoot the U left to make room for the number, making the entire U3 centered.
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+	Model* modelU = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, UChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+	// Creating base-part of the number 3
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(4.0f, 2.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 3.0f, 1.0f));
+	Model* model3base = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+
+	// Creating topArm-part of the number 3
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.5f, 3.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(2.5f, 1.0f, 1.0f));
+	Model* model3topArm = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+
+	// Creating middleArm-part of the number 3
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.75f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.5f, 1.0f, 1.0f));
+	Model* model3middleArm = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, cement);
+
+	// Setting up the number 3
+	vector<Model*> threeChildren = vector<Model*>();
+	threeChildren.push_back(model3base);
+	threeChildren.push_back(model3topArm);
+	threeChildren.push_back(model3middleArm);
+	//threeChildren.push_back(model3bottomArm);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	Model* model3 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, threeChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+	// Setting up the entire U3
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> U3Children = vector<Model*>();
+	U3Children.push_back(makeU3BottomModel());
+	U3Children.push_back(modelU);
+	U3Children.push_back(model3);
+	Model* modelU3 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, U3Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	// Setting up the entire model
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> entireModelChildren = vector<Model*>();
+	entireModelChildren.push_back(modelU3);
+	Model* entireModel = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	return entireModel;
+}
+
+Model* makeT9BottomModel() {
+	// Draw T9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	glm::mat4 setUpScaling = mat4(1.0f);
+	glm::mat4 setUpRotation = mat4(1.0f);
+	glm::mat4 setUpTranslation = mat4(1.0f);
+
+	// Creating middlet-part of the letter T
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, 0.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+	Model* modelTmiddleBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+
+	// Setting up the letter T
+	vector<Model*> TChildren = vector<Model*>();
+	TChildren.push_back(modelTmiddleBar);
+	//The pieces of the I are placed such that the entire I is centered at origin on all axes
+	//We can then very simply manipulate this modelI to transform the entire I
+	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
+	Model* modelI = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Creating right-part of the number 9
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
+	Model* model9right = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+
+
+	// Setting up the number 9
+	vector<Model*> nineChildren = vector<Model*>();
+	nineChildren.push_back(model9right);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
+	Model* model9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+
+	// Setting up the entire T9
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> T9Children = vector<Model*>();
+	T9Children.push_back(modelI);
+	T9Children.push_back(model9);
+	Model* modelT9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	// Setting up the entire model
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> entireModelChildren = vector<Model*>();
+	entireModelChildren.push_back(modelT9);
+	Model* entireModel = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	return entireModel;
+}
+
+Model* makeT9Model() {
 	// Draw T9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	glm::mat4 setUpScaling = mat4(1.0f);
 	glm::mat4 setUpRotation = mat4(1.0f);
@@ -1585,12 +789,12 @@ Model* makeT9Model(int vao) {
 	// Creating top-part of the letter T
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, 4.25f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 1.0f));
-	Model* modelTtopBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelTtopBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating middle-part of the letter T
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, 2.5f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelTmiddleBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelTmiddleBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Setting up the letter T
 	vector<Model*> TChildren = vector<Model*>();
@@ -1600,27 +804,27 @@ Model* makeT9Model(int vao) {
 	//We can then very simply manipulate this modelI to transform the entire T
 	//for example, to scoot the T left to make room for the number, making the entire I9 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
-	Model* modelT = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelT = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Creating top-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 4.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 1.0f, 1.0f));
-	Model* model9top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* model9top = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating left-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 3.25f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 3.5f, 1.0f));
-	Model* model9left = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* model9left = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating bottom-part of the number 9
 	setUpTranslation = translate(mat4(1.0f), vec3(3.75f, 2.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 1.0f, 1.0f));
-	Model* model9bottom = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* model9bottom = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating right-part of the number 9
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 3.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 1.0f));
-	Model* model9right = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* model9right = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 
 	// Setting up the number 9
@@ -1630,141 +834,27 @@ Model* makeT9Model(int vao) {
 	nineChildren.push_back(model9left);
 	nineChildren.push_back(model9bottom);
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, -2.0f, 0.0f));
-	Model* model9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Setting up the entire T9
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> T9Children = vector<Model*>();
+	T9Children.push_back(makeT9BottomModel());
 	T9Children.push_back(modelT);
 	T9Children.push_back(model9);
-	Model* modelT9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelT9 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelT9);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* entireModel = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
 
-Model* makeT9BottomModel(int vao) {
-	// Draw T9 using hierarchical modeling, start at the lowest model(s) in the hierarchy
-	glm::mat4 setUpScaling = mat4(1.0f);
-	glm::mat4 setUpRotation = mat4(1.0f);
-	glm::mat4 setUpTranslation = mat4(1.0f);
-
-	// Creating middlet-part of the letter T
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.5f, 0.5f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-	Model* modelTmiddleBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
-
-	// Setting up the letter T
-	vector<Model*> TChildren = vector<Model*>();
-	TChildren.push_back(modelTmiddleBar);
-	//The pieces of the I are placed such that the entire I is centered at origin on all axes
-	//We can then very simply manipulate this modelI to transform the entire I
-	//for example, to scoot the I left to make room for the number, making the entire I9 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
-	Model* modelI = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, TChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
-
-
-	// Creating right-part of the number 9
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.5f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* model9right = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
-
-
-	// Setting up the number 9
-	vector<Model*> nineChildren = vector<Model*>();
-	nineChildren.push_back(model9right);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, -2.0f, 0.0f));
-	Model* model9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, nineChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
-
-
-	// Setting up the entire T9
-	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
-	vector<Model*> T9Children = vector<Model*>();
-	T9Children.push_back(modelI);
-	T9Children.push_back(model9);
-	Model* modelT9 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, T9Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
-
-	// Setting up the entire model
-	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
-	vector<Model*> entireModelChildren = vector<Model*>();
-	entireModelChildren.push_back(modelT9);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
-
-	return entireModel;
-}
-
-Model* makeC4Model(int vao) {
-	// Draw C4 using hierarchical modeling, start at the lowest model(s) in the hierarchy
-	mat4 setUpScaling = mat4(1.0f);
-	mat4 setUpRotation = mat4(1.0f);
-	mat4 setUpTranslation = mat4(1.0f);
-
-	// Creating left-part of the letter C
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.5f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelCleftBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
-
-	// Creating top-part of the letter C
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 0.0f));
-	Model* modelCtopBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
-
-	// Setting up the letter C
-	vector<Model*> CChildren = vector<Model*>();
-	CChildren.push_back(modelCleftBar);
-	CChildren.push_back(modelCtopBar);
-	//The pieces of the C are placed such that the entire C is centered at origin on all axes
-	//We can then very simply manipulate this modelC to transform the entire C
-	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-5.0f, -2.0f, 0.0f));
-	Model* modelC = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
-
-	// Creating right-part of the number 4
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, 2.5f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.75f, 1.0f));
-	Model* model4right = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
-
-	// Creating middle-part of the number 4
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-	Model* model4middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
-
-	// Creating left-part of the number 4
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 3.0f, 0.0f));
-	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
-	Model* model4left = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
-
-	// Setting up the number 4
-	vector<Model*> fourChildren = vector<Model*>();
-	fourChildren.push_back(model4left);
-	fourChildren.push_back(model4middle);
-	fourChildren.push_back(model4right);
-	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, -2.0f, 0.0f));
-	Model* model4 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
-
-	// Setting up the entire C4
-	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
-	vector<Model*> C4Children = vector<Model*>();
-	C4Children.push_back(modelC);
-	C4Children.push_back(model4);
-	Model* modelC4 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
-
-	// Setting up the entire model
-	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
-	vector<Model*> entireModelChildren = vector<Model*>();
-	entireModelChildren.push_back(modelC4);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
-
-	return entireModel;
-}
-
-Model* makeC4BottomModel(int vao) {
+Model* makeC4BottomModel() {
 	// Draw C4 using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	glm::mat4 setUpScaling = mat4(1.0f);
 	glm::mat4 setUpRotation = mat4(1.0f);
@@ -1773,12 +863,12 @@ Model* makeC4BottomModel(int vao) {
 	// Creating left-part of the letter C
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* modelCleftBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelCleftBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Creating bottom-part of the letter C
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(3.0f, -0.75f, 0.0f));
-	Model* modelCbottomBar = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* modelCbottomBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 	// Setting up the letter C
 	vector<Model*> CChildren = vector<Model*>();
@@ -1788,20 +878,20 @@ Model* makeC4BottomModel(int vao) {
 	//We can then very simply manipulate this modelC to transform the entire C
 	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-7.0f, -2.0f, 0.0f));
-	Model* modelC = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* modelC = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 
 	// Creating right-part of the number 4
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
 	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
-	Model* model4right = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+	Model* model4right = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
 
 
 	// Setting up the number 4
 	vector<Model*> fourChildren = vector<Model*>();
 	fourChildren.push_back(model4right);
 	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, -2.0f, 0.0f));
-	Model* model4 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+	Model* model4 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire C4
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -1809,13 +899,79 @@ Model* makeC4BottomModel(int vao) {
 	vector<Model*> C4Children = vector<Model*>();
 	C4Children.push_back(modelC);
 	C4Children.push_back(model4);
-	Model* modelC4 = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+	Model* modelC4 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	// Setting up the entire model
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	vector<Model*> entireModelChildren = vector<Model*>();
 	entireModelChildren.push_back(modelC4);
-	Model* entireModel = new Model(vao, vector<vec3>(),  uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f), marble);
+	Model* entireModel = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f), marble);
+
+	return entireModel;
+}
+
+Model* makeC4Model() {
+	// Draw C4 using hierarchical modeling, start at the lowest model(s) in the hierarchy
+	mat4 setUpScaling = mat4(1.0f);
+	mat4 setUpRotation = mat4(1.0f);
+	mat4 setUpTranslation = mat4(1.0f);
+
+	// Creating left-part of the letter C
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.5f, 1.0f));
+	Model* modelCleftBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+
+	// Creating top-part of the letter C
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(1.0f, 4.0f, 0.0f));
+	Model* modelCtopBar = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+
+	// Setting up the letter C
+	vector<Model*> CChildren = vector<Model*>();
+	CChildren.push_back(modelCleftBar);
+	CChildren.push_back(modelCtopBar);
+	//The pieces of the C are placed such that the entire C is centered at origin on all axes
+	//We can then very simply manipulate this modelC to transform the entire C
+	//for example, to scoot the C left to make room for the number, making the entire C4 centered.
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-5.0f, -2.0f, 0.0f));
+	Model* modelC = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, CChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+	// Creating right-part of the number 4
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, 2.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.75f, 1.0f));
+	Model* model4right = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+
+	// Creating middle-part of the number 4
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f));
+	Model* model4middle = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+
+	// Creating left-part of the number 4
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(-1.0f, 3.0f, 0.0f));
+	setUpScaling = scale(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 1.0f));
+	Model* model4left = new Model(texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, marble);
+
+	// Setting up the number 4
+	vector<Model*> fourChildren = vector<Model*>();
+	fourChildren.push_back(model4left);
+	fourChildren.push_back(model4middle);
+	fourChildren.push_back(model4right);
+	setUpTranslation = translate(glm::mat4(1.0f), glm::vec3(2.0f, -2.0f, 0.0f));
+	Model* model4 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, fourChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+	// Setting up the entire C4
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> C4Children = vector<Model*>();
+	C4Children.push_back(makeC4BottomModel());
+	C4Children.push_back(modelC);
+	C4Children.push_back(model4);
+	Model* modelC4 = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, C4Children, mat4(1.0f), mat4(1.0f), mat4(1.0f));
+
+	// Setting up the entire model
+	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
+	vector<Model*> entireModelChildren = vector<Model*>();
+	entireModelChildren.push_back(modelC4);
+	Model* entireModel = new Model(texturedCubeVAO, vector<vec3>(), uboWorldMatrixBlock, entireModelChildren, mat4(1.0f), mat4(1.0f), mat4(1.0f));
 
 	return entireModel;
 }
@@ -1938,7 +1094,7 @@ Skybox* makeSkyBoxModel(int vao) {
 	return new Skybox(vao, sphereVertices, uboWorldMatrixBlock, vector<Model*>(), mat4(1.0f), mat4(1.0f), mat4(1.0f), sky);
 }
 
-Model* makeBuilding1Model(int vao) {
+Model* makeBuilding1Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -1952,49 +1108,99 @@ Model* makeBuilding1Model(int vao) {
 	} while (materialDoor.first == materialBuilding.first);
 
 
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(5.0f, 2.0f, 5.0f));
+	Model* bottom = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+	
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 3.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(5.0f, 7.0f, 5.0f));
-	Model* bottom = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+	Model* windowWall = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 7.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 4.0f));
-	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock,  vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 8.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 3.0f));
-	Model* top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 4.5f, 2.6f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 4.0f, 2.6f));
 	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 5.0f, 0.1f));
-	Model* window = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	Model* window1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 4.0f, -2.6f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 5.0f, 0.1f));
+	Model* window2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 4.0f, 0.0f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 5.0f, 0.1f));
+	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.5f, 4.0f, 0.0f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 5.0f, 0.1f));
+	Model* window4 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, 2.6f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, .1f));
-	Model* door = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
+	Model* door1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, -2.6f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, .1f));
+	Model* door2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
 
 
 	vector<Model*> buildingChildren = vector<Model*>();
+	buildingChildren.push_back(door1);
+	buildingChildren.push_back(door2);
 	buildingChildren.push_back(bottom);
+	
+	vector<Model*> buildingMiddleChildren = vector<Model*>();
+	buildingMiddleChildren.push_back(windowWall);
+	buildingMiddleChildren.push_back(window1);
+	buildingMiddleChildren.push_back(window2);
+	buildingMiddleChildren.push_back(window3);
+	buildingMiddleChildren.push_back(window4);
+
+	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
+
+	float repeatTranslate = 0.5f;
+
+	for (int i = 0; i < numOfFloors; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 6.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, repeatTranslate + 1.5, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 4.0f));
+	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, repeatTranslate + 2.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 3.0f));
+	Model* top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+
+
 	buildingChildren.push_back(middle);
 	buildingChildren.push_back(top);
-	buildingChildren.push_back(window);
-	buildingChildren.push_back(door);
 
-	float xRandScale = getRandomNumber(2, 5);
-	float yRandScale = getRandomNumber(2, 5);
-	float zRandScale = getRandomNumber(2, 5);
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
+	float xScale = 5;
+	float zScale = 5;
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
+	
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate - zScale / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate - zScale / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate + zScale / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
+	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f + xRandScale, 1.0f + yRandScale, 1.0f + zRandScale));
-	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, 0, zRandTranslate));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
+	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
 
 	return buildingModel;
 }
 
-Model* makeBuilding2Model(int vao) {
+Model* makeBuilding2Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -2007,9 +1213,13 @@ Model* makeBuilding2Model(int vao) {
 		materialDoor = getRandomMaterial();
 	} while (materialDoor.first == materialBuilding.first);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 3.5f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 7.0f, 2.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 2.0f, 2.0f));
 	Model* base = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 3.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 5.0f, 2.0f));
+	Model* windowWall = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 4.0f, 1.005f));
 	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
@@ -2018,25 +1228,86 @@ Model* makeBuilding2Model(int vao) {
 	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 4.0f, 1.005f));
 	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
 	Model* window2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 4.0f, -1.005f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
+	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 4.0f, -1.005f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window4 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 4.0f, -0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window5 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 4.0f, 0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window6 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 4.0f, -0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window7 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 4.0f, 0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window8 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+	
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, 1.05f));
 	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.5f, 0.1f));
-	Model* door = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
+	Model* door1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, -1.05f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.5f, 0.1f));
+	Model* door2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
 
 	vector<Model*> buildingChildren = vector<Model*>();
+	buildingChildren.push_back(door1);
+	buildingChildren.push_back(door2);
 	buildingChildren.push_back(base);
-	buildingChildren.push_back(window1);
-	buildingChildren.push_back(window2);
-	buildingChildren.push_back(door);
 
-	float xRandScale = getRandomNumber(2, 5);
-	float yRandScale = getRandomNumber(2, 5);
-	float zRandScale = getRandomNumber(2, 5);
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
+	vector<Model*> buildingMiddleChildren = vector<Model*>();
+	buildingMiddleChildren.push_back(windowWall);
+	buildingMiddleChildren.push_back(window1);
+	buildingMiddleChildren.push_back(window2);
+	buildingMiddleChildren.push_back(window3);
+	buildingMiddleChildren.push_back(window4);
+	buildingMiddleChildren.push_back(window5);
+	buildingMiddleChildren.push_back(window6);
+	buildingMiddleChildren.push_back(window7);
+	buildingMiddleChildren.push_back(window8);
 
-	setUpScaling = scale(mat4(1.0f), vec3(xRandScale, yRandScale, zRandScale));
-	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, 0, zRandTranslate));
+	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
+
+	float repeatTranslate = 0.5f;
+
+	for (int i = 0; i < numOfFloors; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 4.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+	float xScale = 5;
+	float zScale = 5;
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
+
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate - zScale / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate - zScale / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate + zScale / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
+	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
+
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
+	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -2044,7 +1315,7 @@ Model* makeBuilding2Model(int vao) {
 	return buildingModel;
 }
 
-Model* makeBuilding3Model(int vao) {
+Model* makeBuilding3Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -2060,19 +1331,36 @@ Model* makeBuilding3Model(int vao) {
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.0f, 2.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 0.5f));
 	Model* front = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.0f, -2.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 0.5f));
+	Model* back = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 4.0f, 4.0f));
-	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 4.0f));
+	Model* base = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 3.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 4.0f));
+	Model* top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 2.25f, -0.5f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 1.12f, -0.5f));
 	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(3.f, 4.5f, 0.5f));
-	Model* left = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
+	setUpScaling = scale(mat4(1.0f), vec3(3.f, 2.25f, 0.5f));
+	Model* leftBottom = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 3.25f, -0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.f, 2.25f, 0.5f));
+	Model* leftTop = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, 2.35f));
 	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.0f, 0.1f));
-	Model* door = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	Model* door1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, -2.35f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.0f, 0.1f));
+	Model* door2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 3.0f, 2.05f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
@@ -2081,30 +1369,78 @@ Model* makeBuilding3Model(int vao) {
 	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 3.0f, 2.05f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
 	Model* window2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 3.0f, -2.05f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 3.0f, -2.05f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* window4 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(2.05f, 3.0f, -1.05f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* window5 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(2.05f, 3.0f, 1.05f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* window6 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+
 
 	vector<Model*> buildingChildren = vector<Model*>();
 	buildingChildren.push_back(front);
-	buildingChildren.push_back(middle);
-	buildingChildren.push_back(left);
-	buildingChildren.push_back(door);
-	buildingChildren.push_back(window1);
-	buildingChildren.push_back(window2);
+	buildingChildren.push_back(back);
+	buildingChildren.push_back(base);
+	buildingChildren.push_back(door1);
+	buildingChildren.push_back(door2);
+	buildingChildren.push_back(leftBottom);
 
-	float xRandScale = getRandomNumber(2, 5);
-	float yRandScale = getRandomNumber(2, 5);
-	float zRandScale = getRandomNumber(2, 5);
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
+	vector<Model*> buildingMiddleChildren = vector<Model*>();
+	buildingMiddleChildren.push_back(top);
+	buildingMiddleChildren.push_back(leftTop);
+	buildingMiddleChildren.push_back(window1);
+	buildingMiddleChildren.push_back(window2);
+	buildingMiddleChildren.push_back(window3);
+	buildingMiddleChildren.push_back(window4);
+	buildingMiddleChildren.push_back(window5);
+	buildingMiddleChildren.push_back(window6);
 
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f + xRandScale, 1.0f + yRandScale, 1.0f + zRandScale));
-	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, 0, zRandTranslate));
+	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
+
+	float repeatTranslate = 0.0f;
+
+	for (int i = 0; i < numOfFloors; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 2.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+	float xScale = 5;
+	float zScale = 5;
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
+
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate - zScale / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate - zScale / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate + zScale / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
+	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
+
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
+	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
 
 	return buildingModel;
 }
 
-Model* makeBuilding4Model(int vao) {
+Model* makeBuilding4Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -2117,56 +1453,112 @@ Model* makeBuilding4Model(int vao) {
 		materialBuilding2 = getRandomMaterial();
 	} while (materialBuilding2.first == materialBuilding1.first);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(0.3f, 4.25f, -0.5f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 4.0f));
+	Model* base = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 3.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 4.0f));
+	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 1.0f, -0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.f, 2.0f, 0.5f));
+	Model* leftBigBase = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding2.second);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 3.0f, -0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.f, 2.0f, 0.5f));
+	Model* leftBigTop = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding2.second);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.7f, 0.5f, -0.7f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.5f, 1.5f, 0.5f));
+	Model* leftSmallBase = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.7f, 1.75f, -0.7f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.5f, 1.5f, 0.5f));
+	Model* leftSmallTop = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.5f, 2.1f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.5f, 0.1f));
+	Model* window1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.5f, -2.1f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.5f, 0.1f));
+	Model* window2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(2.0f, 2.5f, 0.0f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.5f, 0.1f));
+	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, 2.1f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* door1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, -2.1f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* door2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+
+
+	vector<Model*> buildingChildren = vector<Model*>();
+	buildingChildren.push_back(base);
+	buildingChildren.push_back(leftBigBase);
+	buildingChildren.push_back(leftSmallBase);
+	buildingChildren.push_back(door1);
+	buildingChildren.push_back(door2);
+
+	vector<Model*> buildingMiddleChildren = vector<Model*>();
+	buildingMiddleChildren.push_back(middle);
+	buildingMiddleChildren.push_back(leftBigTop);
+	buildingMiddleChildren.push_back(leftSmallTop);
+	buildingMiddleChildren.push_back(window1);
+	buildingMiddleChildren.push_back(window2);
+	buildingMiddleChildren.push_back(window3);
+
+	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
+
+	float repeatTranslate = 0.0f;
+
+	for (int i = 0; i < numOfFloors; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 2.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+	setUpTranslation = translate(mat4(1.0f), vec3(0.3f, 2.2 + repeatTranslate, -0.5f));
 	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(3.5f, 3.0f, 0.5f));
 	Model* top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding2.second);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 4.0f, 4.0f));
-	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 2.0f, -0.5f));
-	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(3.f, 4.0f, 0.5f));
-	Model* leftBig = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding2.second);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.7f, 1.5f, -0.7f));
-	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(2.5f, 3.0f, 0.5f));
-	Model* leftSmall = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.5f, 2.1f));
-	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.5f, 0.1f));
-	Model* window = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, 2.1f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
-	Model* door = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
-
-	vector<Model*> buildingChildren = vector<Model*>();
 	buildingChildren.push_back(top);
-	buildingChildren.push_back(middle);
-	buildingChildren.push_back(leftBig);
-	buildingChildren.push_back(leftSmall);
-	buildingChildren.push_back(window);
-	buildingChildren.push_back(door);
 
-	float xRandScale = getRandomNumber(2, 5);
-	float yRandScale = getRandomNumber(2, 5);
-	float zRandScale = getRandomNumber(2, 5);
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
+	float xScale = 5;
+	float zScale = 5;
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
 
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f + xRandScale, 1.0f + yRandScale, 1.0f + zRandScale));
-	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, 0, zRandTranslate));
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate - zScale / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate - zScale / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate + zScale / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
+	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
+
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
+	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
 
 	return buildingModel;
 }
 
-Model* makeBuilding5Model(int vao) {
+Model* makeBuilding5Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -2193,37 +1585,97 @@ Model* makeBuilding5Model(int vao) {
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, 0.8f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, 0.1f));
-	Model* door = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	Model* door1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, -0.8f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, 0.1f));
+	Model* door2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 3.75f, 1.05f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
 	Model* window1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(2.0f, 5.75f, 1.55f));
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 3.75f, -1.05f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
 	Model* window2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 3.75f, 0.0f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
+	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(2.0f, 2.75f, 1.55f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
-	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	Model* window4 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(2.0f, 2.75f, -1.55f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
+	Model* window5 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(3.0f, 2.75f, 0.0f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
+	Model* window6 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+
 
 	vector<Model*> buildingChildren = vector<Model*>();
-	buildingChildren.push_back(right);
-	buildingChildren.push_back(left);
 	buildingChildren.push_back(middle);
-	buildingChildren.push_back(door);
-	buildingChildren.push_back(window1);
-	buildingChildren.push_back(window2);
-	buildingChildren.push_back(window3);
+	buildingChildren.push_back(door1);
+	buildingChildren.push_back(door2);
 
-	float xRandScale = getRandomNumber(2, 5);
-	float yRandScale = getRandomNumber(2, 5);
-	float zRandScale = getRandomNumber(2, 5);
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
+	vector<Model*> buildingLeftChildren = vector<Model*>();
+	buildingLeftChildren.push_back(left);
+	buildingLeftChildren.push_back(window1);
+	buildingLeftChildren.push_back(window2);
+	buildingLeftChildren.push_back(window3);
+	
+	vector<Model*> buildingRightChildren = vector<Model*>();
+	buildingRightChildren.push_back(right);
+	buildingRightChildren.push_back(window4);
+	buildingRightChildren.push_back(window5);
+	buildingRightChildren.push_back(window6);
+	
+	Model* buildingLeftModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingLeftChildren, setUpTranslation, mat4(1.0f), setUpScaling);
 
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f + xRandScale, 1.0f + yRandScale, 1.0f + zRandScale));
-	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, 0, zRandTranslate));
+	float diff = getRandomNumber(-(numOfFloors - 2), numOfFloors-2);
+	float repeatTranslate = 0.0f;
+
+	for (int i = 0; i < numOfFloors-diff; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingLeftChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 3.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+	repeatTranslate = 0.0f;
+
+	for (int i = 0; i < numOfFloors+diff; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingRightChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 3.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+
+	float xScale = 5;
+	float zScale = 5;
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
+
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate - zScale / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate - zScale / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate + zScale / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
+	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
+
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
+	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
 
@@ -2232,21 +1684,11 @@ Model* makeBuilding5Model(int vao) {
 
 #pragma endregion
 
-void handleExitInput(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-}
-
-void checkErrors() {
-	int errorValue = glGetError();
-	if (errorValue != 0) {
-		cout << "error of some sort: " << errorValue << endl;
-	}
-}
-
+#pragma usingShaders
 GLuint defaultShaderProgram;
 GLuint phongLightShaderProgram;
 GLuint shadowShaderProgram;
+GLuint uiShaderProgram;
 void useShader(int shaderProgram, mat4 projectionMatrix, mat4 viewMatrix) {
 	glUseProgram(shaderProgram);
 
@@ -2287,55 +1729,43 @@ void useLightingShader() {
 	GLuint camPosition = glGetUniformLocation(phongLightShaderProgram, "cameraPosition");
 	glUniform3f(camPosition, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
-	//Set up fragment shader uniforms
-	GLuint shouldRenderShadowsLocation = glGetUniformLocation(phongLightShaderProgram, "shouldRenderShadows");
-	glUniform1f(shouldRenderShadowsLocation, renderShadows);
-
-	GLuint shouldRenderTexturesLocation = glGetUniformLocation(phongLightShaderProgram, "shouldRenderTextures");
-	glUniform1f(shouldRenderTexturesLocation, renderTextures);
-
 	GLuint isLightOnLocation = glGetUniformLocation(phongLightShaderProgram, "isLight1On");
-	glUniform1f(isLightOnLocation, isLightOn);
+	glUniform1f(isLightOnLocation, isFlashLightOn);
 }
 
-// reference https://www.glfw.org/docs/latest/group__window.html#gae49ee6ebc03fa2da024b89943a331355
-void windowResizeCallback(GLFWwindow* window, int width, int height)
-{
-	windowHeight = height;
-	windowWidth = width;
+void useUIShader() {
+	projectionMatrix = perspective(70.0f, // field of view in degrees
+		(float)windowWidth / windowHeight,  // aspect ratio
+		0.01f, 300.0f);
+	useShader(uiShaderProgram, projectionMatrix, viewMatrix);
+
+	GLuint texture = glGetUniformLocation(phongLightShaderProgram, "someTexture");
+	glUniform1i(texture, 0);
 }
+#pragma endregion
 
 Model* l9Model;
-Model* l9BottomModel;
 Model* i9Model;
-Model* I9BottomModel;
 Model* u3Model;
-Model* U3BottomModel;
 Model* t9Model;
-Model* t9BottomModel;
 Model* c4Model;
-Model* C4BottomModel;
 Model* floorModel;
-mat4 L9Matrix, L9BottomMatrix, I9Matrix, I9BottomMatrix, U3Matrix, U3BottomMatrix, T9Matrix, T9BottomMatrix, C4Matrix, C4BottomMatrix, floorMatrix;
-
+mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix;
 void drawScene(std::list<Model*> buildingModels, std::list<mat4> buildingMatrix, int numOfBuildings) {
-	l9Model->draw(L9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	l9BottomModel->draw(L9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	i9Model->draw(I9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	I9BottomModel->draw(I9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	u3Model->draw(U3Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	U3BottomModel->draw(U3BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	t9Model->draw(T9Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	t9BottomModel->draw(T9BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	c4Model->draw(C4Matrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	C4BottomModel->draw(C4BottomMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
-	floorModel->draw(floorMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	GLuint lightCoefLocation = glGetUniformLocation(phongLightShaderProgram, "lightCoefficients");
+	GLuint lightColorLocation = glGetUniformLocation(phongLightShaderProgram, "lightColor");
+	l9Model->draw(L9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+	i9Model->draw(I9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+	u3Model->draw(U3Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+	t9Model->draw(T9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+	c4Model->draw(C4Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+	floorModel->draw(mat4(1.0f), renderingMode, lightCoefLocation, lightColorLocation);
 
 	std::list<Model*>::iterator itModel = buildingModels.begin();
 	std::list<mat4>::iterator itMatrix = buildingMatrix.begin();
 
 	for (int i = 0; i < numOfBuildings; i++) {
-		(*itModel)->draw(*itMatrix, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		(*itModel)->draw(*itMatrix, renderingMode, lightCoefLocation, lightColorLocation);
 		std::advance(itModel, 1);
 		std::advance(itMatrix, 1);
 	}
@@ -2343,8 +1773,6 @@ void drawScene(std::list<Model*> buildingModels, std::list<mat4> buildingMatrix,
 
 int main(int argc, char* argv[])
 {
-	checkErrors();
-
 #pragma region windowSetUp
 	// Initialize GLFW and OpenGL version
 	glfwInit();
@@ -2399,6 +1827,7 @@ int main(int argc, char* argv[])
 	blueTexture = loadTexture("blue.jpg");
 	purpleTexture = loadTexture("purple.jpg");
 	yellowTexture = loadTexture("yellow.jpg");
+	whiteTexture = loadTexture("white.jpg");
 	cementTexture = loadTexture("cement.jpg");
 	marbleTexture = loadTexture("marble.jpg");
 #else
@@ -2416,6 +1845,7 @@ int main(int argc, char* argv[])
 	blueTexture = loadTexture("../Source/COMP371-Group14-Project/blue.jpg");
 	purpleTexture = loadTexture("../Source/COMP371-Group14-Project/purple.jpg");
 	yellowTexture = loadTexture("../Source/COMP371-Group14-Project/yellow.jpg");
+	whiteTexture = loadTexture("../Source/COMP371-Group14-Project/white.jpg");
 	cementTexture = loadTexture("../Source/COMP371-Group14-Project/cement.jpg");
 	marbleTexture = loadTexture("../Source/COMP371-Group14-Project/marble.jpg");
 #endif
@@ -2504,16 +1934,23 @@ int main(int argc, char* argv[])
 	yellow.lightColor = vec3(1.0f);
 
 	Terrain terrain = Terrain(glm::vec3(32000, 1, 32000), 128);
-    City city = City(25, 25);
+  City city = City(25, 25);
+	white = {};
+	white.texture = whiteTexture;
+	white.lightCoefficients = vec4(1.0f, 0.0f, 0.0f, 0.0f);
+	white.lightColor = vec3(1.0f);
+
 	// Compile and link shaders here ...
 #if defined(PLATFORM_OSX) || __linux__
 	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
 	phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
 	shadowShaderProgram = shader("shadowShader.vs", "shadowShader.fs");
+	uiShaderProgram = shader("uiShader.vs", "uiShader.fs");
 #else
 	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
 	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
 	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
+	uiShaderProgram = shader("../Source/COMP371-Group14-Project/uiShader.vs", "../Source/COMP371-Group14-Project/uiShader.fs");
 #endif
 
 
@@ -2556,46 +1993,27 @@ int main(int argc, char* argv[])
 
 	// Define and upload geometry to the GPU here ...
 	texturedCubeVAO = createTextureCubeVertexArrayObject();
-	gridVAO = createVertexArrayObjectGridLine();
-	gridSquare = createGridSquareVertexArrayObject();
-	xyzVAO = createVertexArrayObjectCoordinateXYZ();
-  #if defined(PLATFORM_OSX) || __linux__
-	sphereVAO = createSphereObjectVAO("sphere.obj");
-  #else
-	sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/sphere.obj");
-  #endif
-
+#if defined(PLATFORM_OSX) || __linux__
+	int sphereVAO = createSphereObjectVAO("sphere.obj");
+#else
+	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/sphere.obj");
+#endif
 
 	//Create hierarchical models
-	l9Model = makeL9Model(texturedCubeVAO);
-	l9BottomModel = makeL9BottomModel(texturedCubeVAO);
-
-	i9Model = makeI9Model(texturedCubeVAO);
-	I9BottomModel = makeI9BottomModel(texturedCubeVAO);
-
-	u3Model = makeU3Model(texturedCubeVAO);
-	U3BottomModel = makeU3BottomModel(texturedCubeVAO);
-
-	t9Model = makeT9Model(texturedCubeVAO);
-	t9BottomModel = makeT9BottomModel(texturedCubeVAO);
-
-	c4Model = makeC4Model(texturedCubeVAO);
-	C4BottomModel = makeC4BottomModel(texturedCubeVAO);
+	l9Model = makeL9Model();
+	i9Model = makeI9Model();
+	u3Model = makeU3Model();
+	t9Model = makeT9Model();
+	c4Model = makeC4Model();
 
 	vector<Model*> collisionModels;
 	collisionModels.push_back(l9Model);
-	collisionModels.push_back(l9BottomModel);
 	collisionModels.push_back(i9Model);
-	collisionModels.push_back(l9BottomModel);
 	collisionModels.push_back(u3Model);
-	collisionModels.push_back(U3BottomModel);
 	collisionModels.push_back(t9Model);
-	collisionModels.push_back(t9BottomModel);
 	collisionModels.push_back(c4Model);
-	collisionModels.push_back(C4BottomModel);
 
-	mat4 floorBaseTranslation = translate(mat4(1.0f), vec3(0.0f));
-	floorModel = makeFloorModel(terrain, city);
+	floorModel = makeFloorModel(terrain);
 
 	Skybox* skyBoxModel = makeSkyBoxModel(sphereVAO);
 
@@ -2611,25 +2029,30 @@ int main(int argc, char* argv[])
 
 		switch (buildingType) {
 		case 1:
-			buildingModel = makeBuilding1Model(texturedCubeVAO);
+			buildingModel = makeBuilding1Model(texturedCubeVAO, terrain, 5, 2);
 			break;
 		case 2:
-			buildingModel = makeBuilding2Model(texturedCubeVAO);
+			buildingModel = makeBuilding2Model(texturedCubeVAO, terrain, 7, 3);
 			break;
 		case 3:
-			buildingModel = makeBuilding3Model(texturedCubeVAO);
+			buildingModel = makeBuilding3Model(texturedCubeVAO, terrain, 2, 8);
 			break;
 		case 4:
-			buildingModel = makeBuilding4Model(texturedCubeVAO);
+			buildingModel = makeBuilding4Model(texturedCubeVAO, terrain, 5, 10);
 			break;
 		case 5:
-			buildingModel = makeBuilding5Model(texturedCubeVAO);
+			buildingModel = makeBuilding5Model(texturedCubeVAO, terrain, 5, 6);
 			break;
 		}
 		buildingBaseTranslations.push_back(buildingBaseTranslation);
 		buildingModels.push_back(buildingModel);
 		collisionModels.push_back(buildingModel);
 	}
+
+	createPointedCornerVertexArrayObject();
+	Model* flashlightUIModel = makeFlashlightUIModel(white, texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock);
+	Model* controlsUIModel = makeMovementUIModel();
+	Model* controlLabelUIModel = makeControlsUIModel();
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -2639,7 +2062,6 @@ int main(int argc, char* argv[])
 
 	// Enable Backface culling and depth test
 	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 
 	glPointSize(3.0f);
@@ -2647,11 +2069,11 @@ int main(int argc, char* argv[])
 	//Create light sources
 	createLightSources();
 
-	setRandomizedPositionScale(l9ModelPosition, l9ModelScaleFactor, terrain);
-	setRandomizedPositionScale(c4ModelPosition, c4ModelScaleFactor, terrain);
-	setRandomizedPositionScale(u3ModelPosition, u3ModelScaleFactor, terrain);
-	setRandomizedPositionScale(t9ModelPosition, t9ModelScaleFactor, terrain);
-	setRandomizedPositionScale(i9ModelPosition, i9ModelScaleFactor, terrain);
+	setRandomizedPositionScale(L9Matrix, terrain);
+	setRandomizedPositionScale(C4Matrix, terrain);
+	setRandomizedPositionScale(U3Matrix, terrain);
+	setRandomizedPositionScale(T9Matrix, terrain);
+	setRandomizedPositionScale(I9Matrix, terrain);
 
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
@@ -2660,61 +2082,6 @@ int main(int argc, char* argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
-#pragma region buildTransformMatrices
-		// Model Matrices - they control the transformations of the letters model
-		modelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * modelScaleFactor);
-		modelRotationMatrix = rotate(mat4(1.0f), radians(modelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(modelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		modelTranslationMatrix = translate(mat4(1.0f), modelPosition);
-		modelShearingMatrix = {
-			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, modelShearFactor, 0.0f,
-			0.0f, 0.0f,  1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f
-		};
-
-		sharedModelMatrix = modelTranslationMatrix * modelScalingMatrix * modelRotationMatrix;
-
-		// Building L9 scalable/translatable/rotateable matrix for individual letter
-		l9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * l9ModelScaleFactor);
-		l9ModelRotationMatrix = rotate(mat4(1.0f), radians(l9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(l9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		l9ModelTranslationMatrix = translate(mat4(1.0f), l9ModelPosition);
-		l9ModelMatrix = l9ModelTranslationMatrix * l9ModelScalingMatrix * l9ModelRotationMatrix;
-
-		// Building I9 scalable/translatable/rotateable matrix for individual letter
-		i9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * i9ModelScaleFactor);
-		i9ModelRotationMatrix = rotate(mat4(1.0f), radians(i9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(i9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		i9ModelTranslationMatrix = translate(mat4(1.0f), i9ModelPosition);
-		i9ModelMatrix = i9ModelTranslationMatrix * i9ModelScalingMatrix * i9ModelRotationMatrix;
-
-		// Building U3 scalable/translatable/rotateable matrix for individual letter
-		u3ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * u3ModelScaleFactor);
-		u3ModelRotationMatrix = rotate(mat4(1.0f), radians(u3ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(u3ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		u3ModelTranslationMatrix = translate(mat4(1.0f), u3ModelPosition);
-		u3ModelMatrix = u3ModelTranslationMatrix * u3ModelScalingMatrix * u3ModelRotationMatrix;
-
-		// Building T9 scalable/translatable/rotateable matrix for individual letter
-		t9ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * t9ModelScaleFactor);
-		t9ModelRotationMatrix = rotate(mat4(1.0f), radians(t9ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(t9ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		t9ModelTranslationMatrix = translate(mat4(1.0f), t9ModelPosition);
-		t9ModelMatrix = t9ModelTranslationMatrix * t9ModelScalingMatrix * t9ModelRotationMatrix;
-
-		// Building C4 scalable/translatable/rotateable matrix for individual letter
-		c4ModelScalingMatrix = scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * c4ModelScaleFactor);
-		c4ModelRotationMatrix = rotate(mat4(1.0f), radians(c4ModelYRotationAngle), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(c4ModelXRotationAngle), vec3(1.0f, 0.0f, 0.0f));
-		c4ModelTranslationMatrix = translate(mat4(1.0f), c4ModelPosition);
-		c4ModelMatrix = c4ModelTranslationMatrix * c4ModelScalingMatrix * c4ModelRotationMatrix;
-
-		L9Matrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix;
-		L9BottomMatrix = worldOrientationModelMatrix * L9BaseTranslation * sharedModelMatrix * l9ModelMatrix * modelShearingMatrix;
-		I9Matrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix;
-		I9BottomMatrix = worldOrientationModelMatrix * I9BaseTranslation * sharedModelMatrix * i9ModelMatrix * modelShearingMatrix;
-		U3Matrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix;
-		U3BottomMatrix = worldOrientationModelMatrix * U3BaseTranslation * sharedModelMatrix * u3ModelMatrix * modelShearingMatrix;
-		T9Matrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix;
-		T9BottomMatrix = worldOrientationModelMatrix * T9BaseTranslation * sharedModelMatrix * t9ModelMatrix * modelShearingMatrix;
-		C4Matrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix;
-		C4BottomMatrix = worldOrientationModelMatrix * C4BaseTranslation * sharedModelMatrix * c4ModelMatrix * modelShearingMatrix;
-		floorMatrix = worldOrientationModelMatrix * floorBaseTranslation * translate(mat4(1.0f), vec3(0.0f));
 		mat4 skyboxMatrix = translate(mat4(1.0f), vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z));
 
 		std::list<mat4> buildingMatrix;
@@ -2722,16 +2089,15 @@ int main(int argc, char* argv[])
 
 		for (int i = 0; i < numOfBuildings; i++) {
 
-			buildingMatrix.push_back(worldOrientationModelMatrix * (*it) * translate(mat4(1.0f), vec3(0.0f)));
+			buildingMatrix.push_back((*it) * translate(mat4(1.0f), vec3(0.0f)));
 			std::advance(it, 1);
 		}
-#pragma endregion
 
 #pragma region shadowPass1
 		//use the shadow shader, draw all objects for all lights
 		glUseProgram(shadowShaderProgram);
 		while (makeShadowMapForNextLight()) {
-			//Draw scene for the shadow map
+			//Draw scene for the shadow maps
 			drawScene(buildingModels, buildingMatrix, numOfBuildings);
 		}
 #pragma endRegion
@@ -2750,12 +2116,26 @@ int main(int argc, char* argv[])
 		drawScene(buildingModels, buildingMatrix, numOfBuildings);
 #pragma endregion
 
-		useStandardShader();
-
-		//Draw spheres at light sources (easier to visualize)
-		glBindVertexArray(sphereVAO);
-		GLuint worldMatrixLocation = glGetUniformLocation(defaultShaderProgram, "worldMatrix");
-		drawLightSources(worldMatrixLocation, sphereVertices.size());
+#pragma region renderUI
+		useUIShader();
+		vec3 UIPos = cameraPosition + 100.0f * cameraLookAt;
+		glDisable(GL_DEPTH_TEST);
+		mat4 drawUIAT = inverse(lookAt(UIPos, cameraPosition, cameraUp))
+			* translate(mat4(1.0f), vec3(30.0f, -40.0f, 0.0f))
+			* rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
+		flashlightUIModel->draw(drawUIAT, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		
+		drawUIAT = inverse(lookAt(UIPos, cameraPosition, cameraUp))
+			* translate(mat4(1.0f), vec3(30.0f, -35.0f, 0.0f))
+			* rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
+		controlsUIModel->draw(drawUIAT, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	
+		drawUIAT = inverse(lookAt(UIPos, cameraPosition, cameraUp))
+			* translate(mat4(1.0f), vec3(30.0f, -28.0f, 0.0f))
+			* rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
+		controlLabelUIModel->draw(drawUIAT, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		glEnable(GL_DEPTH_TEST);
+#pragma endregion
 
 		// End Frame, include swap interval to prevent blurriness
 		glfwSwapBuffers(window);
@@ -2763,15 +2143,11 @@ int main(int argc, char* argv[])
 		glfwPollEvents();
 
 		// Handle inputs
-		handleCameraFlagInputs(window);
 		handleRenderingModeInput(window);
-		handleWorldOrientationInput(window, dt);
 		handleExitInput(window);
 		handleCameraPositionInputs(window);
 
-
-		float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
-
+#pragma region mouseCameraMovement
 		// Retrieving mouse coordinates
 		double mousePosX, mousePosY;
 		glfwGetCursorPos(window, &mousePosX, &mousePosY);
@@ -2802,8 +2178,6 @@ int main(int argc, char* argv[])
 
 		normalize(cameraSideVector);
 
-#pragma region mouseCameraMovement
-
 		int slowingFactor = 3;
 
 		cameraHorizontalAngle += (cameraAngularSpeed * -1 * dt * dx) / slowingFactor;
@@ -2814,7 +2188,6 @@ int main(int argc, char* argv[])
 			+ vec3(cameraLookAt.x * currentCamFacingMovement, 0.0f, cameraLookAt.z * currentCamFacingMovement)
 			+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
 		viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-		viewMatrix = scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
 
 		if (doRaycastCollision(viewMatrix, collisionModels))
 		{
@@ -2822,7 +2195,6 @@ int main(int argc, char* argv[])
 				+ vec3(cameraLookAt.x * -currentCamFacingMovement, 0.0f, cameraLookAt.z * -currentCamFacingMovement)
 				+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
 			viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
-			viewMatrix = scale(viewMatrix, vec3(magnificationFactor, magnificationFactor, magnificationFactor));
 		}
 
 		currentCamStrafingMovement = 0;
@@ -2831,45 +2203,6 @@ int main(int argc, char* argv[])
 		updateFlashlight(flashlightPosition, flashlightPosition + cameraLookAt + vec3(0.0f, 0.2f, 0.0f));
 
 #pragma endregion
-
-		if (shearWalking)
-		{
-			float shearRotationAngle = (int)modelYRotationAngle % 360;
-
-			if (shearDirection > 0)
-			{
-				modelPosition += getShearMovement(shearRotationAngle) * moveSpeed * dt;
-			}
-			else if (shearDirection < 0)
-			{
-				modelPosition -= getShearMovement(shearRotationAngle) * moveSpeed * dt;
-			}
-
-			if (shearForward)
-			{
-				if (modelShearFactor < -0.5)
-				{
-					shearForward = false;
-					modelShearFactor += 0.1;
-				}
-				else
-				{
-					modelShearFactor -= 0.1;
-				}
-			}
-			else
-			{
-				if (modelShearFactor > 0.5)
-				{
-					shearForward = true;
-					modelShearFactor -= 0.1;
-				}
-				else {
-					modelShearFactor += 0.1;
-				}
-
-			}
-		}
 	}
 
 	// Shutdown GLFW
@@ -2878,48 +2211,23 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-vec3 getShearMovement(float shearRotationAngle) {
-	if (shearRotationAngle == 0) {
-		return(vec3(0.0f, 0.0f, 1.0f));
-	}
-	else if (shearRotationAngle == -180 || shearRotationAngle == 180) {
-		return(vec3(0.0f, 0.0f, -1.0f));
-	}
-	else if (shearRotationAngle == -270 || shearRotationAngle == 90) {
-		return(vec3(1.0f, 0.0f, 0.0f));
-	}
-	else if (shearRotationAngle == -90 || shearRotationAngle == 270) {
-		return(vec3(-1.0f, 0.0f, 0.0f));
-	}
-	//first quadrant to left
-	else if (shearRotationAngle < 0 && shearRotationAngle > -90 || shearRotationAngle > 270 && shearRotationAngle < 360) {
-		return(vec3(-1.0 * abs(sin(shearRotationAngle)), 0.0f, 1.0 * abs(cos(shearRotationAngle))));
-	}
-	//second quadrant
-	else if (shearRotationAngle <= -90 && shearRotationAngle > -180 || shearRotationAngle > 180 && shearRotationAngle < 270) {
-		return(vec3(-1.0 * abs(sin(shearRotationAngle)), 0.0f, -1.0 * abs(cos(shearRotationAngle))));
-	}
-	//third quadrant
-	else if (shearRotationAngle < -180 && shearRotationAngle > -270 || shearRotationAngle > 90 && shearRotationAngle < 180) {
-		return(vec3(1.0 * abs(cos(shearRotationAngle)), 0.0f, -1.0 * abs(sin(shearRotationAngle))));
-	}
-	//fourth quadrant
-	else if (shearRotationAngle <= -270 && shearRotationAngle > -360 || shearRotationAngle > 0 && shearRotationAngle <= 90) {
-		return(vec3(1.0 * abs(sin(shearRotationAngle)), 0.0f, 1.0 * abs(cos(shearRotationAngle))));
-	}
-}
+void setRandomizedPositionScale(mat4& modelMatrix, Terrain terrain) {
 
-void setRandomizedPositionScale(vec3& position, float& scaleFactor, Terrain terrain) {
+	float scaleFactor = getRandomNumber(0.5, 1.5);
 
-	scaleFactor = getRandomNumber(1, 3);
-
-	float xRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
-	float zRandTranslate = getRandomNumber(-halfGridSize, halfGridSize);
+	//TODO use Antoine's system to place the letters/numbers
+	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);
+	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
 	float bottomLeft = terrain.getHeightAt(xRandTranslate - scaleFactor / 2, zRandTranslate - scaleFactor / 2);
 	float bottomRight = terrain.getHeightAt(xRandTranslate + scaleFactor / 2, zRandTranslate - scaleFactor / 2);
 	float topLeft = terrain.getHeightAt(xRandTranslate - scaleFactor / 2, zRandTranslate + scaleFactor / 2);
 	float topRight = terrain.getHeightAt(xRandTranslate + scaleFactor / 2, zRandTranslate + scaleFactor / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	position = vec3(xRandTranslate, minSide, zRandTranslate);
+	vec3 position = vec3(xRandTranslate, minSide + 2.5f, zRandTranslate);
+
+	// Building L9 scalable/translatable/rotateable matrix for individual letter
+	mat4 modelScalingMatrix = scale(mat4(1.0f), vec3(scaleFactor));
+	mat4 modelTranslationMatrix = translate(mat4(1.0f), position);
+	modelMatrix = modelTranslationMatrix * modelScalingMatrix;
 }

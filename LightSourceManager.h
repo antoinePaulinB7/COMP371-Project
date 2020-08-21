@@ -8,16 +8,27 @@
 
 using namespace glm;
 
-const int totalNumLights = 2;
+const int totalNumLights = 7;
 int currentLightIndex = 0;
 
 GLuint uboDepthVPBlockCopy;
 
 LightSource* lights[totalNumLights];
-vec3 lightPositions[totalNumLights] = { vec3(0.0f, 5.0f, -30.0f),
-										vec3(-45, 30.0f, -45) };
-vec3 lightLookAtPositions[totalNumLights] = { vec3(0.0f, 0.0f, 0.0f),
-										vec3(-45, 0.0f, -45) };
+vec3 lightPositions[totalNumLights] = { vec3(0.0f, 5.0f, 30.0f),	//1
+										vec3(-45, 30.0f, -45),		//2
+										vec3(0.0f, 30.0f, 5.0f),	//3
+										vec3(50.0f, 30.0f, 15.0f),	//4
+										vec3(45.0f, 30.0f, -20.0f),	//5
+										vec3(-15.0f, 30.0f, 15.0f),
+										vec3(-20.0f, 30.0f, 20.0f) };
+
+vec3 lightLookAtPositions[totalNumLights] = { vec3(0.0f, 0.0f, 0.0f),	//1
+										vec3(-45, 0.0f, -45),		//2
+										vec3(0.0f, 0.0f, 5.0f),		//3
+										vec3(50.0f, 0.0f, 15.0f),	//4
+										vec3(45.0f, 0.0f, -20.0f),	//5
+										vec3(-15.0f, 0.0f, 15.0f),	//6
+										vec3(-20.0f, 0.0f, 20.0f) };	//7
 
 void setUBODepthVPBlockInLightSourceManager(GLuint value) {
 	uboDepthVPBlockCopy = value;

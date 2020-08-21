@@ -30,6 +30,26 @@
 		mat4 depthVP2;	
 		vec3 lightPosition2;	
 		vec3 lightPointingDirection2;
+
+		mat4 depthVP3;	
+		vec3 lightPosition3;	
+		vec3 lightPointingDirection3;
+
+		mat4 depthVP4;	
+		vec3 lightPosition4;	
+		vec3 lightPointingDirection4;
+
+		mat4 depthVP5;	
+		vec3 lightPosition5;	
+		vec3 lightPointingDirection5;
+
+		mat4 depthVP6;	
+		vec3 lightPosition6;	
+		vec3 lightPointingDirection6;
+
+		mat4 depthVP7;	
+		vec3 lightPosition7;	
+		vec3 lightPointingDirection7;
 	};
 
 
@@ -52,6 +72,41 @@
 		vec4 shadowCoordinate;
 		float distanceToLightSource;
 	} light2;
+
+	out LIGHT_3 {
+		vec3 lightVectorL;
+		vec3 lightPointingDir;
+		vec4 shadowCoordinate;
+		float distanceToLightSource;
+	} light3;
+
+	out LIGHT_4 {
+		vec3 lightVectorL;
+		vec3 lightPointingDir;
+		vec4 shadowCoordinate;
+		float distanceToLightSource;
+	} light4;
+
+	out LIGHT_5 {
+		vec3 lightVectorL;
+		vec3 lightPointingDir;
+		vec4 shadowCoordinate;
+		float distanceToLightSource;
+	} light5;
+
+	out LIGHT_6 {
+		vec3 lightVectorL;
+		vec3 lightPointingDir;
+		vec4 shadowCoordinate;
+		float distanceToLightSource;
+	} light6;
+
+	out LIGHT_7 {
+		vec3 lightVectorL;
+		vec3 lightPointingDir;
+		vec4 shadowCoordinate;
+		float distanceToLightSource;
+	} light7;
 
     void main()
     {
@@ -80,4 +135,34 @@
 		light2.distanceToLightSource = length(vectorToLightSource2);
 		light2.shadowCoordinate = depthVP2 * worldMatrix * vec4(aPos, 1.0f);
 		light2.lightPointingDir = lightPointingDirection2;
+
+		light3.lightVectorL = lightPosition3;
+		vec3 vectorToLightSource3 = lightPosition3 - fragPosition;
+		light3.distanceToLightSource = length(vectorToLightSource3);
+		light3.shadowCoordinate = depthVP3 * worldMatrix * vec4(aPos, 1.0f);
+		light3.lightPointingDir = lightPointingDirection3;
+
+		light4.lightVectorL = lightPosition4;
+		vec3 vectorToLightSource4 = lightPosition4 - fragPosition;
+		light4.distanceToLightSource = length(vectorToLightSource4);
+		light4.shadowCoordinate = depthVP4 * worldMatrix * vec4(aPos, 1.0f);
+		light4.lightPointingDir = lightPointingDirection4;
+
+		light5.lightVectorL = lightPosition5;
+		vec3 vectorToLightSource5 = lightPosition5 - fragPosition;
+		light5.distanceToLightSource = length(vectorToLightSource5);
+		light5.shadowCoordinate = depthVP5 * worldMatrix * vec4(aPos, 1.0f);
+		light5.lightPointingDir = lightPointingDirection5;
+
+		light6.lightVectorL = lightPosition6;
+		vec3 vectorToLightSource6 = lightPosition6 - fragPosition;
+		light6.distanceToLightSource = length(vectorToLightSource6);
+		light6.shadowCoordinate = depthVP6 * worldMatrix * vec4(aPos, 1.0f);
+		light6.lightPointingDir = lightPointingDirection6;
+
+		light7.lightVectorL = lightPosition7;
+		vec3 vectorToLightSource7 = lightPosition7 - fragPosition;
+		light7.distanceToLightSource = length(vectorToLightSource7);
+		light7.shadowCoordinate = depthVP7 * worldMatrix * vec4(aPos, 1.0f);
+		light7.lightPointingDir = lightPointingDirection7;
     }
