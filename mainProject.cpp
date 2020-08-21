@@ -1680,6 +1680,8 @@ int main(int argc, char* argv[])
 
 	createPointedCornerVertexArrayObject();
 	Model* flashlightUIModel = makeFlashlightUIModel(white, texturedCubeVAO, cubeVertexPositions, uboWorldMatrixBlock);
+	Model* controlsUIModel = makeMovementUIModel();
+	Model* controlLabelUIModel = makeControlsUIModel();
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -1746,11 +1748,21 @@ int main(int argc, char* argv[])
 #pragma region renderUI
 		useUIShader();
 		vec3 UIPos = cameraPosition + 100.0f * cameraLookAt;
+		glDisable(GL_DEPTH_TEST);
 		mat4 drawUIAT = inverse(lookAt(UIPos, cameraPosition, cameraUp))
 			* translate(mat4(1.0f), vec3(30.0f, -40.0f, 0.0f))
 			* rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
-		glDisable(GL_DEPTH_TEST);
 		flashlightUIModel->draw(drawUIAT, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+		
+		drawUIAT = inverse(lookAt(UIPos, cameraPosition, cameraUp))
+			* translate(mat4(1.0f), vec3(30.0f, -35.0f, 0.0f))
+			* rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
+		controlsUIModel->draw(drawUIAT, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
+	
+		drawUIAT = inverse(lookAt(UIPos, cameraPosition, cameraUp))
+			* translate(mat4(1.0f), vec3(30.0f, -28.0f, 0.0f))
+			* rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
+		controlLabelUIModel->draw(drawUIAT, renderingMode, glGetUniformLocation(phongLightShaderProgram, "lightCoefficients"), glGetUniformLocation(phongLightShaderProgram, "lightColor"));
 		glEnable(GL_DEPTH_TEST);
 #pragma endregion
 

@@ -438,4 +438,135 @@ Model* makeFlashlightUIModel(Material mat, int unitCube, vector<vec3> cubeVertex
 	return entireModel;
 }
 
+Model* makeMovementUIModel() {
+	mat4 setUpScaling = mat4(1.0f);
+	mat4 setUpRotation = mat4(1.0f);
+	mat4 setUpTranslation = mat4(1.0f);
+
+	// WASD - Move
+	// 
+	float spacing = 3.0f;
+	int index = -10;
+	vector<Model*> entireModelChildren = vector<Model*>();
+
+	//W
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool wValues[17] = { false, true, false, true, true, true, true, false, false, false, false, false, true, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(wValues, setUpTranslation));
+
+	//A
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool aValues[17] = { true, true, true, true, true, false, true, false, false, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(aValues, setUpTranslation));
+
+	//S
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool sValues[17] = { true, true, true, false, false, true, true, false, false, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(sValues, setUpTranslation));
+
+	//D (same as O)
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool oValues[17] = { true, true, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(oValues, setUpTranslation));
+
+	//space
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+
+	//dash -
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool dashValues[17] = { false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(dashValues, setUpTranslation));
+
+	//space
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+
+	//M
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool mValues[17] = { false, true, false, true, true, false, true, false, false, true, true, true, true, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(mValues, setUpTranslation));
+	
+	//O
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	entireModelChildren.push_back(makeCharacter(oValues, setUpTranslation));
+
+	//V
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool vValues[17] = { false, true, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(vValues, setUpTranslation));
+
+	//E
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool eValues[17] = { true, true, true, false, true, true, false, false, false, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(eValues, setUpTranslation));
+
+	mat4 translation = translate(mat4(1.0f), vec3(0.5f, 0.5f, 0.0f));
+	Model* entireModel = new Model(0, vector<vec3>(), uboWorldMatrix, entireModelChildren, translation, mat4(1.0f), mat4(1.0f));
+
+	return entireModel;
+}
+
+Model* makeControlsUIModel() {
+	mat4 setUpScaling = mat4(1.0f);
+	mat4 setUpRotation = mat4(1.0f);
+	mat4 setUpTranslation = mat4(1.0f);
+
+	// Controls =
+	// 
+	float spacing = 3.0f;
+	int index = -10;
+	vector<Model*> entireModelChildren = vector<Model*>();
+
+	//C
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool cValues[17] = { true, true, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(cValues, setUpTranslation));
+
+	//O
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool oValues[17] = { true, true, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(oValues, setUpTranslation));
+
+	//N
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool nValues[17] = { false, true, false, true, true, false, true, true, true, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(nValues, setUpTranslation));
+
+	//T
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool tValues[17] = { false, false, false, false, false, false, false, false, false, true, true, true, true, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(tValues, setUpTranslation));
+
+	//R
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool rValues[17] = { true, true, true, true, true, false, false, false, false, false, false, false, false, true, false,  false,  false};
+	entireModelChildren.push_back(makeCharacter(rValues, setUpTranslation));
+
+	//O2
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	entireModelChildren.push_back(makeCharacter(oValues, setUpTranslation));
+
+	//L
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool lValues[17] = { false, true, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(lValues, setUpTranslation));
+
+	//S
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool sValues[17] = { true, true, true, false, false, true, true, false, false, false, false, false, false, false, false, false, false };
+	entireModelChildren.push_back(makeCharacter(sValues, setUpTranslation));
+	   
+	//space
+	//setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+
+	//equals =
+	setUpTranslation = translate(mat4(1.0f), vec3(index++ * spacing, 0.0f, 0.0f));
+	bool dashValues[17] = { false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true };
+	entireModelChildren.push_back(makeCharacter(dashValues, setUpTranslation));
+
+	
+	mat4 translation = translate(mat4(1.0f), vec3(0.5f, 0.5f, 0.0f));
+	Model* entireModel = new Model(0, vector<vec3>(), uboWorldMatrix, entireModelChildren, translation, mat4(1.0f), mat4(1.0f));
+
+	return entireModel;
+}
 
