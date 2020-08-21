@@ -258,7 +258,7 @@ float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
 
-float viewDistance = 32000.0f;
+float viewDistance = 1024.0f;
 
 // Camera parameters for view transform
 vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
@@ -1196,7 +1196,7 @@ Model* makeFloorModel(Terrain terrain, City city, glm::vec3 worldPos) {
 //
 //    }
 
-//    setUpScaling = scale(glm::mat4(1), glm::vec3(200, 100, 200));
+    setUpScaling = scale(glm::mat4(1), glm::vec3(200, 100, 200));
 
     Model* floorModel = new Model(terrain.getVAO(), terrain.getVertices(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, blue);
 
@@ -1213,7 +1213,7 @@ Model* makeBuilding1Model(int vao, Terrain terrain, glm::vec3 scaleXYZ, float nu
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
 	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
 
-	srand(scaleXYZ.y * numOfFloors);
+//	srand(scaleXYZ.y * numOfFloors);
 
 	pair<int, Material> materialBuilding = getRandomMaterial();
 	pair<int, Material> materialDoor;
@@ -1310,7 +1310,7 @@ Model* makeBuilding2Model(int vao, Terrain terrain, glm::vec3 scaleXYZ, float nu
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
 	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
 
-    srand(scaleXYZ.y * numOfFloors);
+//    srand(scaleXYZ.y * numOfFloors);
 
 	pair<int, Material> materialBuilding = getRandomMaterial();
 	pair<int, Material> materialDoor;
@@ -1415,7 +1415,7 @@ Model* makeBuilding3Model(int vao, Terrain terrain, glm::vec3 scaleXYZ, float nu
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
 	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
 
-    srand(scaleXYZ.y * numOfFloors);
+//    srand(scaleXYZ.y * numOfFloors);
 
 	pair<int, Material> materialBuilding1 = getRandomMaterial();
 	pair<int, Material> materialBuilding2;
@@ -1531,7 +1531,7 @@ Model* makeBuilding4Model(int vao, Terrain terrain, glm::vec3 scaleXYZ, float nu
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
 	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
 
-    srand(scaleXYZ.y*numOfFloors);
+//    srand(scaleXYZ.y * numOfFloors);
 
 	pair<int, Material> materialBuilding1 = getRandomMaterial();
 	pair<int, Material> materialBuilding2;
@@ -1640,7 +1640,7 @@ Model* makeBuilding5Model(int vao, Terrain terrain, glm::vec3 scaleXYZ, float nu
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
 	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
 
-    srand(scaleXYZ.y*numOfFloors);
+//    srand(scaleXYZ.y * numOfFloors);
 
 	pair<int, Material> materialBuilding1 = getRandomMaterial();
 	pair<int, Material> materialBuilding2;
@@ -1827,7 +1827,11 @@ void drawScene() {
     c4Model->draw(C4Matrix, renderingMode, lightCoefLocation, lightColorLocation);
 
     for(int i = 0; i < floorModels.size(); i++) {
-        floorModels[i]->draw(mat4(1.0f), renderingMode, lightCoefLocation, lightColorLocation);
+        Model* fm = floorModels[i];
+
+        if(glm::distance(glm::vec3(cameraPosition.x,0,cameraPosition.z), glm::vec3(worldMap[i].second->offset.x,0,worldMap[i].second->offset.z) * glm::vec3(200,1,200)) <= (viewDistance * 3)) {
+            floorModels[i]->draw(mat4(1.0f), renderingMode, lightCoefLocation, lightColorLocation);
+        }
     }
 }
 
@@ -2075,50 +2079,21 @@ int main(int argc, char* argv[])
 
     floorModels = std::vector<Model*>();
 
-
     City* city = new City(15, 15, glm::vec3(0));
     Terrain* terrain = new Terrain(glm::vec3(15, 1, 15), glm::vec3(0),16);
-    worldMap.push_back(std::make_pair(terrain, city));
 
-    floorModel = makeFloorModel(*terrain, *city, glm::vec3(0));
+    for (int i = 0; i < 15; i++) {
+        for (int j = 0; j < 15; j++) {
+            City* city = new City(15, 15, glm::vec3(i * 15, 0, j * 15));
+            Terrain* terrain = new Terrain(glm::vec3(15, 1, 15), glm::vec3(i * 15, 0, j * 15),16);
 
-    floorModels.push_back(floorModel);
+            worldMap.push_back(std::make_pair(terrain, city));
 
-    city = new City(15, 15, glm::vec3(15, 0, 0));
-    terrain = new Terrain(glm::vec3(15, 1, 15), glm::vec3(15, 0, 0),16);
+            floorModel = makeFloorModel(*terrain, *city, glm::vec3(i * 200, 0, j * 200));
 
-    floorModel = makeFloorModel(*terrain, *city, glm::vec3(1, 0, 0));
-
-    floorModels.push_back(floorModel);
-
-    city = new City(15, 15, glm::vec3(15, 0, -15));
-    terrain = new Terrain(glm::vec3(15, 1, 15), glm::vec3(15, 0, -15),16);
-
-    floorModel = makeFloorModel(*terrain, *city, glm::vec3(1, 0, -1));
-
-    floorModels.push_back(floorModel);
-
-    city = new City(15, 15, glm::vec3(15, 0, 15));
-    terrain = new Terrain(glm::vec3(15, 1, 15), glm::vec3(15, 0, 15),16);
-
-    floorModel = makeFloorModel(*terrain, *city, glm::vec3(1, 0, 1));
-
-    floorModels.push_back(floorModel);
-
-    city = new City(15, 15, glm::vec3(30, 0, 0));
-    terrain = new Terrain(glm::vec3(15, 1, 15), glm::vec3(30, 0, 0),16);
-
-    floorModel = makeFloorModel(*terrain, *city, glm::vec3(2, 0, 0));
-
-    floorModels.push_back(floorModel);
-
-    city = new City(15, 15, glm::vec3(15*5, 0, 15*5));
-    terrain = new Terrain(glm::vec3(15, 1, 15), glm::vec3(15*5, 0, 15*5),16);
-
-    floorModel = makeFloorModel(*terrain, *city, glm::vec3(5, 0, 5));
-
-    floorModels.push_back(floorModel);
-
+            floorModels.push_back(floorModel);
+        }
+    }
 
 	Skybox* skyBoxModel = makeSkyBoxModel(sphereVAO);
 
@@ -2159,11 +2134,11 @@ int main(int argc, char* argv[])
 
 #pragma region shadowPass1
 		//use the shadow shader, draw all objects for all lights
-//		glUseProgram(shadowShaderProgram);
-//		while (makeShadowMapForNextLight()) {
-//			//Draw scene for the shadow maps
-//			drawScene();
-//		}
+		glUseProgram(shadowShaderProgram);
+		while (makeShadowMapForNextLight()) {
+			//Draw scene for the shadow maps
+			drawScene();
+		}
 #pragma endRegion
 
 #pragma region shadowPass2
