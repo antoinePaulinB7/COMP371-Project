@@ -19,7 +19,7 @@ Briana Toia - 40097889
 
   Antoine - Role 2:
 • Procedurally generated terrain using Perlin Noise.
-• Handle coherent world generation with roads and input from others.
+• Handle coherent world generation with roads and models created by others.
 
   Nicole - Role 3:
 • First person camera/controls
