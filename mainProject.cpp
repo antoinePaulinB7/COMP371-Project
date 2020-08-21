@@ -990,7 +990,7 @@ Skybox* makeSkyBoxModel(int vao) {
 	return new Skybox(vao, sphereVertices, uboWorldMatrixBlock, vector<Model*>(), mat4(1.0f), mat4(1.0f), mat4(1.0f), sky);
 }
 
-Model* makeBuilding1Model(int vao, Terrain terrain) {
+Model* makeBuilding1Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -1004,47 +1004,91 @@ Model* makeBuilding1Model(int vao, Terrain terrain) {
 	} while (materialDoor.first == materialBuilding.first);
 
 
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(5.0f, 2.0f, 5.0f));
+	Model* bottom = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+	
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 3.5f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(5.0f, 7.0f, 5.0f));
-	Model* bottom = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+	Model* windowWall = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 7.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 4.0f));
-	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 8.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 3.0f));
-	Model* top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 4.5f, 2.6f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 4.0f, 2.6f));
 	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 5.0f, 0.1f));
-	Model* window = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	Model* window1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 4.0f, -2.6f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 5.0f, 0.1f));
+	Model* window2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(2.5f, 4.0f, 0.0f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 5.0f, 0.1f));
+	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.5f, 4.0f, 0.0f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 5.0f, 0.1f));
+	Model* window4 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, 2.6f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, .1f));
-	Model* door = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
+	Model* door1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, -2.6f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, .1f));
+	Model* door2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
 
 
 	vector<Model*> buildingChildren = vector<Model*>();
+	buildingChildren.push_back(door1);
+	buildingChildren.push_back(door2);
 	buildingChildren.push_back(bottom);
+	
+	vector<Model*> buildingMiddleChildren = vector<Model*>();
+	buildingMiddleChildren.push_back(windowWall);
+	buildingMiddleChildren.push_back(window1);
+	buildingMiddleChildren.push_back(window2);
+	buildingMiddleChildren.push_back(window3);
+	buildingMiddleChildren.push_back(window4);
+
+	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
+
+	float repeatTranslate = 0.5f;
+
+	for (int i = 0; i < numOfFloors; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 6.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, repeatTranslate + 1.5, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 1.0f, 4.0f));
+	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, repeatTranslate + 2.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.0f, 3.0f));
+	Model* top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+
+
 	buildingChildren.push_back(middle);
 	buildingChildren.push_back(top);
-	buildingChildren.push_back(window);
-	buildingChildren.push_back(door);
 
-	float xRandScale = getRandomNumber(3, 6);
-	float yRandScale = getRandomNumber(3, 6);
-	float zRandScale = getRandomNumber(3, 6);
+	float xScale = 5;
+	float zScale = 5;
 	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
 	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
-
-	float bottomLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate - zRandScale / 2);
-	float bottomRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate - zRandScale / 2);
-	float topLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate + zRandScale / 2);
-	float topRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate + zRandScale / 2);
+	
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate - zScale / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate - zScale / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate + zScale / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(xRandScale, yRandScale, zRandScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -1052,7 +1096,7 @@ Model* makeBuilding1Model(int vao, Terrain terrain) {
 	return buildingModel;
 }
 
-Model* makeBuilding2Model(int vao, Terrain terrain) {
+Model* makeBuilding2Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -1065,9 +1109,13 @@ Model* makeBuilding2Model(int vao, Terrain terrain) {
 		materialDoor = getRandomMaterial();
 	} while (materialDoor.first == materialBuilding.first);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 3.5f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 7.0f, 2.0f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 2.0f, 2.0f));
 	Model* base = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 3.5f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.0f, 5.0f, 2.0f));
+	Model* windowWall = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 4.0f, 1.005f));
 	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
@@ -1076,30 +1124,85 @@ Model* makeBuilding2Model(int vao, Terrain terrain) {
 	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 4.0f, 1.005f));
 	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
 	Model* window2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-0.5f, 4.0f, -1.005f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
 
+	setUpTranslation = translate(mat4(1.0f), vec3(0.5f, 4.0f, -1.005f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window4 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 4.0f, -0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window5 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 4.0f, 0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window6 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 4.0f, -0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window7 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 4.0f, 0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.7f, 2.5f, 0.1f));
+	Model* window8 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+	
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, 1.05f));
 	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.5f, 0.1f));
-	Model* door = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
+	Model* door1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, -1.05f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.5f, 0.1f));
+	Model* door2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialDoor.second);
 
 	vector<Model*> buildingChildren = vector<Model*>();
+	buildingChildren.push_back(door1);
+	buildingChildren.push_back(door2);
 	buildingChildren.push_back(base);
-	buildingChildren.push_back(window1);
-	buildingChildren.push_back(window2);
-	buildingChildren.push_back(door);
 
-	float xRandScale = getRandomNumber(3, 6);
-	float yRandScale = getRandomNumber(3, 6);
-	float zRandScale = getRandomNumber(3, 6);
+	vector<Model*> buildingMiddleChildren = vector<Model*>();
+	buildingMiddleChildren.push_back(windowWall);
+	buildingMiddleChildren.push_back(window1);
+	buildingMiddleChildren.push_back(window2);
+	buildingMiddleChildren.push_back(window3);
+	buildingMiddleChildren.push_back(window4);
+	buildingMiddleChildren.push_back(window5);
+	buildingMiddleChildren.push_back(window6);
+	buildingMiddleChildren.push_back(window7);
+	buildingMiddleChildren.push_back(window8);
+
+	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
+
+	float repeatTranslate = 0.5f;
+
+	for (int i = 0; i < numOfFloors; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 4.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+	float xScale = 5;
+	float zScale = 5;
 	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
 	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
 
-	float bottomLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate - zRandScale / 2);
-	float bottomRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate - zRandScale / 2);
-	float topLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate + zRandScale / 2);
-	float topRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate + zRandScale / 2);
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate - zScale / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate - zScale / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate + zScale / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(xRandScale, yRandScale, zRandScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	// This will be the root, and will be provided with the current world and sharedModel matrices in draw() from main()
@@ -1108,7 +1211,7 @@ Model* makeBuilding2Model(int vao, Terrain terrain) {
 	return buildingModel;
 }
 
-Model* makeBuilding3Model(int vao, Terrain terrain) {
+Model* makeBuilding3Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -1124,19 +1227,36 @@ Model* makeBuilding3Model(int vao, Terrain terrain) {
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.0f, 2.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 0.5f));
 	Model* front = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.0f, -2.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 0.5f));
+	Model* back = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 4.0f, 4.0f));
-	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 4.0f));
+	Model* base = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 3.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 4.0f));
+	Model* top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 2.25f, -0.5f));
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 1.12f, -0.5f));
 	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(3.f, 4.5f, 0.5f));
-	Model* left = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
+	setUpScaling = scale(mat4(1.0f), vec3(3.f, 2.25f, 0.5f));
+	Model* leftBottom = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 3.25f, -0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.f, 2.25f, 0.5f));
+	Model* leftTop = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, 2.35f));
 	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.0f, 0.1f));
-	Model* door = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	Model* door1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, -2.35f));
+	setUpScaling = scale(mat4(1.0f), vec3(0.5f, 1.0f, 0.1f));
+	Model* door2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 3.0f, 2.05f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
@@ -1145,28 +1265,70 @@ Model* makeBuilding3Model(int vao, Terrain terrain) {
 	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 3.0f, 2.05f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
 	Model* window2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-1.0f, 3.0f, -2.05f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(1.0f, 3.0f, -2.05f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* window4 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(2.05f, 3.0f, -1.05f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* window5 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(2.05f, 3.0f, 1.05f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* window6 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+
 
 	vector<Model*> buildingChildren = vector<Model*>();
 	buildingChildren.push_back(front);
-	buildingChildren.push_back(middle);
-	buildingChildren.push_back(left);
-	buildingChildren.push_back(door);
-	buildingChildren.push_back(window1);
-	buildingChildren.push_back(window2);
+	buildingChildren.push_back(back);
+	buildingChildren.push_back(base);
+	buildingChildren.push_back(door1);
+	buildingChildren.push_back(door2);
+	buildingChildren.push_back(leftBottom);
 
-	float xRandScale = getRandomNumber(3, 6);
-	float yRandScale = getRandomNumber(3, 6);
-	float zRandScale = getRandomNumber(3, 6);
+	vector<Model*> buildingMiddleChildren = vector<Model*>();
+	buildingMiddleChildren.push_back(top);
+	buildingMiddleChildren.push_back(leftTop);
+	buildingMiddleChildren.push_back(window1);
+	buildingMiddleChildren.push_back(window2);
+	buildingMiddleChildren.push_back(window3);
+	buildingMiddleChildren.push_back(window4);
+	buildingMiddleChildren.push_back(window5);
+	buildingMiddleChildren.push_back(window6);
+
+	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
+
+	float repeatTranslate = 0.0f;
+
+	for (int i = 0; i < numOfFloors; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 2.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+	float xScale = 5;
+	float zScale = 5;
 	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
 	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
 
-	float bottomLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate - zRandScale / 2);
-	float bottomRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate - zRandScale / 2);
-	float topLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate + zRandScale / 2);
-	float topRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate + zRandScale / 2);
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate - zScale / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate - zScale / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate + zScale / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(xRandScale, yRandScale, zRandScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -1174,7 +1336,7 @@ Model* makeBuilding3Model(int vao, Terrain terrain) {
 	return buildingModel;
 }
 
-Model* makeBuilding4Model(int vao, Terrain terrain) {
+Model* makeBuilding4Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -1187,54 +1349,104 @@ Model* makeBuilding4Model(int vao, Terrain terrain) {
 		materialBuilding2 = getRandomMaterial();
 	} while (materialBuilding2.first == materialBuilding1.first);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(0.3f, 4.25f, -0.5f));
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 4.0f));
+	Model* base = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 3.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 2.0f, 4.0f));
+	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 1.0f, -0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.f, 2.0f, 0.5f));
+	Model* leftBigBase = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding2.second);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 3.0f, -0.5f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.f, 2.0f, 0.5f));
+	Model* leftBigTop = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding2.second);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.7f, 0.5f, -0.7f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.5f, 1.5f, 0.5f));
+	Model* leftSmallBase = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.7f, 1.75f, -0.7f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(2.5f, 1.5f, 0.5f));
+	Model* leftSmallTop = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.5f, 2.1f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.5f, 0.1f));
+	Model* window1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.5f, -2.1f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.5f, 0.1f));
+	Model* window2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(2.0f, 2.5f, 0.0f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.5f, 0.1f));
+	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, 2.1f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* door1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, -2.1f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
+	Model* door2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+
+
+	vector<Model*> buildingChildren = vector<Model*>();
+	buildingChildren.push_back(base);
+	buildingChildren.push_back(leftBigBase);
+	buildingChildren.push_back(leftSmallBase);
+	buildingChildren.push_back(door1);
+	buildingChildren.push_back(door2);
+
+	vector<Model*> buildingMiddleChildren = vector<Model*>();
+	buildingMiddleChildren.push_back(middle);
+	buildingMiddleChildren.push_back(leftBigTop);
+	buildingMiddleChildren.push_back(leftSmallTop);
+	buildingMiddleChildren.push_back(window1);
+	buildingMiddleChildren.push_back(window2);
+	buildingMiddleChildren.push_back(window3);
+
+	Model* buildingMiddleModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), setUpScaling);
+
+	float repeatTranslate = 0.0f;
+
+	for (int i = 0; i < numOfFloors; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingMiddleChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 2.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+	setUpTranslation = translate(mat4(1.0f), vec3(0.3f, 2.2 + repeatTranslate, -0.5f));
 	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
 	setUpScaling = scale(mat4(1.0f), vec3(3.5f, 3.0f, 0.5f));
 	Model* top = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding2.second);
 
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(4.0f, 4.0f, 4.0f));
-	Model* middle = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding1.second);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.2f, 2.0f, -0.5f));
-	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(3.f, 4.0f, 0.5f));
-	Model* leftBig = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding2.second);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(-2.7f, 1.5f, -0.7f));
-	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
-	setUpScaling = scale(mat4(1.0f), vec3(2.5f, 3.0f, 0.5f));
-	Model* leftSmall = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, materialBuilding1.second);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 2.5f, 2.1f));
-	setUpScaling = scale(mat4(1.0f), vec3(3.0f, 1.5f, 0.1f));
-	Model* window = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.5f, 2.1f));
-	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f));
-	Model* door = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
-
-	vector<Model*> buildingChildren = vector<Model*>();
 	buildingChildren.push_back(top);
-	buildingChildren.push_back(middle);
-	buildingChildren.push_back(leftBig);
-	buildingChildren.push_back(leftSmall);
-	buildingChildren.push_back(window);
-	buildingChildren.push_back(door);
 
-	float xRandScale = getRandomNumber(3, 6);
-	float yRandScale = getRandomNumber(3, 6);
-	float zRandScale = getRandomNumber(3, 6);
+	float xScale = 5;
+	float zScale = 5;
 	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
 	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
 
-	float bottomLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate - zRandScale / 2);
-	float bottomRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate - zRandScale / 2);
-	float topLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate + zRandScale / 2);
-	float topRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate + zRandScale / 2);
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate - zScale / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate - zScale / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate + zScale / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(xRandScale, yRandScale, zRandScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -1242,7 +1454,7 @@ Model* makeBuilding4Model(int vao, Terrain terrain) {
 	return buildingModel;
 }
 
-Model* makeBuilding5Model(int vao, Terrain terrain) {
+Model* makeBuilding5Model(int vao, Terrain terrain, float yScale, float numOfFloors) {
 	// Draw building using hierarchical modeling, start at the lowest model(s) in the hierarchy
 	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
 	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
@@ -1269,42 +1481,96 @@ Model* makeBuilding5Model(int vao, Terrain terrain) {
 
 	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, 0.8f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, 0.1f));
-	Model* door = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	Model* door1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(0.0f, 0.75f, -0.8f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.0f, 1.5f, 0.1f));
+	Model* door2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, materialBuilding2.second);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 3.75f, 1.05f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
 	Model* window1 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
-
-	setUpTranslation = translate(mat4(1.0f), vec3(2.0f, 5.75f, 1.55f));
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-2.0f, 3.75f, -1.05f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
 	Model* window2 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(-3.0f, 3.75f, 0.0f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
+	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
 
 	setUpTranslation = translate(mat4(1.0f), vec3(2.0f, 2.75f, 1.55f));
 	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
-	Model* window3 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	Model* window4 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(2.0f, 2.75f, -1.55f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
+	Model* window5 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, mat4(1.0f), setUpScaling, windowFrame);
+	
+	setUpTranslation = translate(mat4(1.0f), vec3(3.0f, 2.75f, 0.0f));
+	setUpRotation = rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	setUpScaling = scale(mat4(1.0f), vec3(1.5f, 2.0f, 0.1f));
+	Model* window6 = new Model(vao, cubeVertexPositions, uboWorldMatrixBlock, vector<Model*>(), setUpTranslation, setUpRotation, setUpScaling, windowFrame);
+
 
 	vector<Model*> buildingChildren = vector<Model*>();
-	buildingChildren.push_back(right);
-	buildingChildren.push_back(left);
 	buildingChildren.push_back(middle);
-	buildingChildren.push_back(door);
-	buildingChildren.push_back(window1);
-	buildingChildren.push_back(window2);
-	buildingChildren.push_back(window3);
+	buildingChildren.push_back(door1);
+	buildingChildren.push_back(door2);
 
-	float xRandScale = getRandomNumber(3, 6);
-	float yRandScale = getRandomNumber(3, 6);
-	float zRandScale = getRandomNumber(3, 6);
+	vector<Model*> buildingLeftChildren = vector<Model*>();
+	buildingLeftChildren.push_back(left);
+	buildingLeftChildren.push_back(window1);
+	buildingLeftChildren.push_back(window2);
+	buildingLeftChildren.push_back(window3);
+	
+	vector<Model*> buildingRightChildren = vector<Model*>();
+	buildingRightChildren.push_back(right);
+	buildingRightChildren.push_back(window4);
+	buildingRightChildren.push_back(window5);
+	buildingRightChildren.push_back(window6);
+	
+	Model* buildingLeftModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingLeftChildren, setUpTranslation, mat4(1.0f), setUpScaling);
+
+	float diff = getRandomNumber(-(numOfFloors - 2), numOfFloors-2);
+	float repeatTranslate = 0.0f;
+
+	for (int i = 0; i < numOfFloors-diff; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingLeftChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 3.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+	repeatTranslate = 0.0f;
+
+	for (int i = 0; i < numOfFloors+diff; i++)
+	{
+		setUpTranslation = translate(mat4(1.0f), vec3(0, repeatTranslate, 0));
+		Model* buildingRepeatModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingRightChildren, setUpTranslation, mat4(1.0f), mat4(1.0f));
+
+		repeatTranslate += 3.0f;
+
+		buildingChildren.push_back(buildingRepeatModel);
+	}
+
+
+	float xScale = 5;
+	float zScale = 5;
 	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);	//TODO use Antoine's system for placement
 	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
 
-	float bottomLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate - zRandScale / 2);
-	float bottomRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate - zRandScale / 2);
-	float topLeft = terrain.getHeightAt(xRandTranslate - xRandScale / 2, zRandTranslate + zRandScale / 2);
-	float topRight = terrain.getHeightAt(xRandTranslate + xRandScale / 2, zRandTranslate + zRandScale / 2);
+	float bottomLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate - zScale / 2);
+	float bottomRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate - zScale / 2);
+	float topLeft = terrain.getHeightAt(xRandTranslate - xScale / 2, zRandTranslate + zScale / 2);
+	float topRight = terrain.getHeightAt(xRandTranslate + xScale / 2, zRandTranslate + zScale / 2);
 	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	setUpScaling = scale(mat4(1.0f), vec3(xRandScale, yRandScale, zRandScale));
+	setUpScaling = scale(mat4(1.0f), vec3(xScale, yScale, zScale));
 	setUpTranslation = translate(mat4(1.0f), vec3(xRandTranslate, minSide, zRandTranslate));
 
 	Model* buildingModel = new Model(vao, vector<vec3>(), uboWorldMatrixBlock, buildingChildren, setUpTranslation, mat4(1.0f), setUpScaling);
@@ -1658,19 +1924,19 @@ int main(int argc, char* argv[])
 
 		switch (buildingType) {
 		case 1:
-			buildingModel = makeBuilding1Model(texturedCubeVAO, terrain);
+			buildingModel = makeBuilding1Model(texturedCubeVAO, terrain, 5, 2);
 			break;
 		case 2:
-			buildingModel = makeBuilding2Model(texturedCubeVAO, terrain);
+			buildingModel = makeBuilding2Model(texturedCubeVAO, terrain, 7, 3);
 			break;
 		case 3:
-			buildingModel = makeBuilding3Model(texturedCubeVAO, terrain);
+			buildingModel = makeBuilding3Model(texturedCubeVAO, terrain, 2, 8);
 			break;
 		case 4:
-			buildingModel = makeBuilding4Model(texturedCubeVAO, terrain);
+			buildingModel = makeBuilding4Model(texturedCubeVAO, terrain, 5, 10);
 			break;
 		case 5:
-			buildingModel = makeBuilding5Model(texturedCubeVAO, terrain);
+			buildingModel = makeBuilding5Model(texturedCubeVAO, terrain, 5, 6);
 			break;
 		}
 		buildingBaseTranslations.push_back(buildingBaseTranslation);
