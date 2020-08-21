@@ -239,6 +239,57 @@ GLuint createSphereObjectVAO(string path) {
 
 	return VAO;
 }
+
+GLuint createObjectVAO(string path) {
+	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec3> colors;
+	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> UVs;
+
+	//read the vertex data from the model's OBJ file
+	loadOBJ(path.c_str(), vertices, colors, normals, UVs);
+
+	GLuint VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO); //Becomes active VAO
+							// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
+
+							//Vertex VBO setup
+	GLuint vertices_VBO;
+	glGenBuffers(1, &vertices_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	//Colors VBO setup
+	GLuint colors_VBO;
+	glGenBuffers(1, &colors_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, colors_VBO);
+	glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec3), &colors.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+
+	//Normals VBO setup
+	GLuint normals_VBO;
+	glGenBuffers(1, &normals_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, normals_VBO);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+
+	//UVs VBO setup
+	GLuint uvs_VBO;
+	glGenBuffers(1, &uvs_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, uvs_VBO);
+	glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(glm::vec2), &UVs.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(3);
+
+	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs, as we are using multiple VAOs)
+
+	return VAO;
+}
 #pragma endregion
 
 #pragma region cameraInput
@@ -1861,8 +1912,16 @@ int main(int argc, char* argv[])
 	texturedCubeVAO = createTextureCubeVertexArrayObject();
 #if defined(PLATFORM_OSX) || __linux__
 	int sphereVAO = createSphereObjectVAO("sphere.obj");
+	int carVAO = createObjectVAO("car.obj");
+	int lampVAO = createObjectVAO("lamp-post.obj");
+	int garbageVAO = createObjectVAO("garbage.obj");
+	int hydrantVAO = createObjectVAO("fire-hydrant.obj");
 #else
 	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/Objects/sphere.obj");
+	int carVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/car.obj");
+	int lampVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/lamp-post.obj");
+	int garbageVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/garbage.obj");
+	int hydrantVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/fire-hydrant.obj");
 #endif
 
 	//Create hierarchical models
