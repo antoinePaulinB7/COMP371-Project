@@ -1,6 +1,5 @@
 # Blender v2.81 (sub 16) OBJ File: 'cubic-car.blend'
 # www.blender.org
-mtllib cubic-car.mtl
 o Car_Cube.002
 v 1.000000 0.400000 2.000000
 v 1.000000 2.600000 2.000000
@@ -2274,7 +2273,6 @@ vn 0.9980 -0.0392 0.0504
 vn 0.9997 0.0124 -0.0208
 vn 0.9999 0.0000 -0.0153
 vn 0.9998 0.0067 -0.0161
-usemtl None
 s off
 f 178/1/1 9/2/1 182/3/1
 f 152/4/2 10/5/2 214/6/2

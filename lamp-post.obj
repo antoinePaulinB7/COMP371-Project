@@ -1,6 +1,5 @@
 # Blender v2.81 (sub 16) OBJ File: 'lamp-post.blend'
 # www.blender.org
-mtllib lamp-post.mtl
 o lamp_Cube
 v 0.140000 0.100000 -0.140000
 v 0.140000 0.000000 -0.140000
@@ -457,7 +456,6 @@ vn 0.6249 -0.0001 -0.7807
 vn -0.7805 -0.0001 0.6251
 vn 0.7751 0.0007 0.6318
 vn -0.6285 -0.0010 -0.7778
-usemtl Material
 s off
 f 18/1/1 53/2/1 49/3/1
 f 8/4/1 169/5/1 55/6/1

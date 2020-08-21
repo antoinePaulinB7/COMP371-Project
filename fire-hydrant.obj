@@ -1,6 +1,5 @@
 # Blender v2.81 (sub 16) OBJ File: 'fire-hydrant.blend'
 # www.blender.org
-mtllib fire-hydrant.mtl
 o fire-hydrant_Cube.001
 v 0.350000 0.000000 0.350000
 v 0.350000 1.400000 0.350000
@@ -909,7 +908,6 @@ vn 0.0000 -0.9998 0.0219
 vn -1.0000 0.0000 0.0000
 vn 0.0219 -0.9998 0.0000
 vn -0.9337 0.3580 0.0000
-usemtl None
 s off
 f 37/1/1 72/2/1 76/3/1
 f 106/4/2 73/5/2 148/6/2
