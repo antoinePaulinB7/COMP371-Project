@@ -1914,9 +1914,9 @@ Model* lampModel;
 Model* floorModel;
 mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix, carMatrix, garbageMatrix, hydrantMatrix, lampMatrix;
 void drawScene() {
-	GLuint lightCoefLocation = glGetUniformLocation(phongLightShaderProgram, "lightCoefficients");
-	GLuint lightColorLocation = glGetUniformLocation(phongLightShaderProgram, "lightColor");
-	l9Model->draw(L9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+    GLuint lightCoefLocation = glGetUniformLocation(phongLightShaderProgram, "lightCoefficients");
+    GLuint lightColorLocation = glGetUniformLocation(phongLightShaderProgram, "lightColor");
+    l9Model->draw(L9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
     i9Model->draw(I9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
     u3Model->draw(U3Matrix, renderingMode, lightCoefLocation, lightColorLocation);
     t9Model->draw(T9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
@@ -1926,16 +1926,17 @@ void drawScene() {
     hydrantModel->draw(hydrantMatrix, renderingMode, lightCoefLocation, lightColorLocation);
     lampModel->draw(lampMatrix, renderingMode, lightCoefLocation, lightColorLocation);
 
-    for(int i = 0; i < floorModels.size(); i++) {
-        Model* fm = floorModels[i];
+    for (int i = 0; i < floorModels.size(); i++) {
+        Model *fm = floorModels[i];
 
-        if(glm::distance(
-                glm::vec3(cameraPosition.x,0,cameraPosition.z),
-                glm::vec3(worldMap[i].second->offset.x,0,worldMap[i].second->offset.z) * glm::vec3(400,1,400)
-                ) <= viewDistance + std::sqrt(200*200 + 200*200)) {
+        if (glm::distance(
+                glm::vec3(cameraPosition.x, 0, cameraPosition.z),
+                glm::vec3(worldMap[i].second->offset.x, 0, worldMap[i].second->offset.z) * glm::vec3(400, 1, 400)
+        ) <= viewDistance + std::sqrt(200 * 200 + 200 * 200)) {
             floorModels[i]->draw(mat4(1.0f), renderingMode, lightCoefLocation, lightColorLocation);
         }
     }
+}
 
 int main(int argc, char* argv[])
 {
@@ -2135,11 +2136,11 @@ int main(int argc, char* argv[])
 	// Define and upload geometry to the GPU here ...
 	texturedCubeVAO = createTextureCubeVertexArrayObject();
 #if defined(PLATFORM_OSX) || __linux__
-	int sphereVAO = createSphereObjectVAO("sphere.obj");
-	int carVAO = createObjectVAO("car.obj");
-	int lampVAO = createObjectVAO("lamp-post.obj");
-	int garbageVAO = createObjectVAO("garbage.obj");
-	int hydrantVAO = createObjectVAO("fire-hydrant.obj");
+	int sphereVAO = createSphereObjectVAO("Objects/sphere.obj");
+	int carVAO = createObjectVAO("Objects/car.obj", carVertices);
+	int lampVAO = createObjectVAO("Objects/lamp-post.obj", lampVertices);
+	int garbageVAO = createObjectVAO("Objects/garbage.obj", garbageVertices);
+	int hydrantVAO = createObjectVAO("Objects/fire-hydrant.obj", hydrantVertices);
 #else
 	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/Objects/sphere.obj");
 	int carVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/car.obj", carVertices);
@@ -2215,15 +2216,15 @@ int main(int argc, char* argv[])
 	//Create light sources
 	createLightSources();
 
-	setRandomizedPositionScale(L9Matrix, terrain);
-	setRandomizedPositionScale(C4Matrix, terrain);
-	setRandomizedPositionScale(U3Matrix, terrain);
-	setRandomizedPositionScale(T9Matrix, terrain);
-	setRandomizedPositionScale(I9Matrix, terrain);
-	setRandomizedPositionScale(carMatrix, terrain);
-	setRandomizedPositionScale(garbageMatrix, terrain);
-	setRandomizedPositionScale(hydrantMatrix, terrain);
-	setRandomizedPositionScale(lampMatrix, terrain);
+	setRandomizedPositionScale(L9Matrix, *terrain);
+	setRandomizedPositionScale(C4Matrix, *terrain);
+	setRandomizedPositionScale(U3Matrix, *terrain);
+	setRandomizedPositionScale(T9Matrix, *terrain);
+	setRandomizedPositionScale(I9Matrix, *terrain);
+	setRandomizedPositionScale(carMatrix, *terrain);
+	setRandomizedPositionScale(garbageMatrix, *terrain);
+	setRandomizedPositionScale(hydrantMatrix, *terrain);
+	setRandomizedPositionScale(lampMatrix, *terrain);
 
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
