@@ -258,7 +258,7 @@ float cameraHorizontalAngle = 90.0f;
 float cameraVerticalAngle = -25.0f;
 const float cameraAngularSpeed = 60.0f;
 
-float viewDistance = 1024.0f;
+float viewDistance = 2048.0f;
 
 // Camera parameters for view transform
 vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
@@ -1829,7 +1829,10 @@ void drawScene() {
     for(int i = 0; i < floorModels.size(); i++) {
         Model* fm = floorModels[i];
 
-        if(glm::distance(glm::vec3(cameraPosition.x,0,cameraPosition.z), glm::vec3(worldMap[i].second->offset.x,0,worldMap[i].second->offset.z) * glm::vec3(200,1,200)) <= (viewDistance * 3)) {
+        if(glm::distance(
+                glm::vec3(cameraPosition.x,0,cameraPosition.z),
+                glm::vec3(worldMap[i].second->offset.x,0,worldMap[i].second->offset.z) * glm::vec3(400,1,400)
+                ) <= viewDistance + std::sqrt(200*200 + 200*200)) {
             floorModels[i]->draw(mat4(1.0f), renderingMode, lightCoefLocation, lightColorLocation);
         }
     }
@@ -2079,12 +2082,12 @@ int main(int argc, char* argv[])
 
     floorModels = std::vector<Model*>();
 
-	int citySize = 5;
+	int citySize = 15;
     City* city = new City(citySize, citySize, glm::vec3(0));
     Terrain* terrain = new Terrain(glm::vec3(citySize, 1, citySize), glm::vec3(0), citySize + 1);
 
-    for (int i = 0; i < citySize; i++) {
-        for (int j = 0; j < citySize; j++) {
+    for (int i = 0; i < 1; i++) {
+        for (int j = 0; j < 1; j++) {
             City* city = new City(citySize, citySize, glm::vec3(i * citySize, 0, j * citySize));
             Terrain* terrain = new Terrain(glm::vec3(citySize, 1, citySize), glm::vec3(i * citySize, 0, j * citySize), citySize + 1);
 
@@ -2231,7 +2234,7 @@ int main(int argc, char* argv[])
 
 
 		if (doRaycastCollision(viewMatrix, collisionModels) && currentCamFacingMovement > 0.0f) //The player is trying to move forward into an object, allow only strafing or backwards movement
-		{ 
+		{
 			cameraPosition = vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z)
 				+ vec3(cameraSideVector.x * currentCamStrafingMovement, 0.0f, cameraSideVector.z * currentCamStrafingMovement);
 			viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
