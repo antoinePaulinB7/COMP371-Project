@@ -2432,6 +2432,8 @@ int main(int argc, char* argv[])
 		lastMousePosX = mousePosX;
 		lastMousePosY = mousePosY;
 
+		int slowingFactor = 20;
+
 		cameraHorizontalAngle += (cameraAngularSpeed * -1 * dt * dx) / slowingFactor;
 		cameraVerticalAngle += (cameraAngularSpeed * -1 * dt * dy) / slowingFactor;
 
@@ -2452,8 +2454,6 @@ int main(int argc, char* argv[])
 		vec3 cameraSideVector = cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
 
 		normalize(cameraSideVector);
-
-		int slowingFactor = 20;
 
 		if (doRaycastCollision(viewMatrix, collisionModels) && currentCamFacingMovement > 0.0f) //The player is trying to move forward into an object, allow only strafing or backwards movement
 		{
