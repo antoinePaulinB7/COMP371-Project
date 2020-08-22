@@ -42,6 +42,12 @@ std::vector<std::pair<Terrain*, City*>> worldMap;
 std::vector<Model*> floorModels;
 Material wood, cement, marble, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, gray, white;
 
+int sphereVAO;
+int carVAO;
+int lampVAO;
+int garbageVAO;
+int hydrantVAO;
+
 void setRandomizedPositionScale(mat4& modelMatrix, Terrain terrain);
 Model* makeBuilding1Model(int vao, Terrain terrain, glm::vec3 scaleXYZ, float numOfFloors);
 Model* makeBuilding2Model(int vao, Terrain terrain, glm::vec3 scaleXYZ, float numOfFloors);
@@ -57,6 +63,14 @@ float getRandomNumber(int lowerBound, int upperBound) {
 
 	return result;
 }
+
+Model* makeCarModel(int vao);
+
+Model* makeLampModel(int vao);
+
+Model* makeHydrantModel(int vao);
+
+Model* makeGarbageModel(int vao);
 
 std::pair<int, Material> getRandomMaterial()
 {
@@ -1072,14 +1086,7 @@ Model* makeFloorModel(Terrain terrain, City city, glm::vec3 worldPos) {
                                 texturedCubeVAO,
                                 terrain,
                                 glm::vec3(0.2),
-//
-//                                float xScale = 5;
-//                float zScale = 5;
-//                                5 + terrain.getHeightAt(
-//                                        building->pos.x + 1,
-//                                        building->pos.y + 1
-//                                ),
-                                1//terrain.getHeightAt(35.0f * building->pos.x, 35.0f * building->pos.y) + 5
+                                1
                         )
                 );
                 break;
@@ -1089,14 +1096,7 @@ Model* makeFloorModel(Terrain terrain, City city, glm::vec3 worldPos) {
                                 texturedCubeVAO,
                                 terrain,
                                 glm::vec3(0.2),
-//                                5 + terrain.getHeightAt(
-//                                        building->pos.x + 1,
-//                                        building->pos.y + 1
-//                                ),
-//
-//                                float xScale = 12;
-//                float zScale = 12;
-                                1//terrain.getHeightAt(35.0f * building->pos.x, 35.0f * building->pos.y) + 5
+                                1
                         )
                 );
                 break;
@@ -1106,14 +1106,7 @@ Model* makeFloorModel(Terrain terrain, City city, glm::vec3 worldPos) {
                                 texturedCubeVAO,
                                 terrain,
                                 glm::vec3(0.2),
-//
-//                                float xScale = 5;
-//                float zScale = 5;
-//                                5 + terrain.getHeightAt(
-//                                        building->pos.x + 1,
-//                                        building->pos.y + 1
-//                                ),
-                                1//terrain.getHeightAt(35.0f * building->pos.x, 35.0f * building->pos.y) + 5
+                                1
                         )
                 );
                 break;
@@ -1123,14 +1116,7 @@ Model* makeFloorModel(Terrain terrain, City city, glm::vec3 worldPos) {
                                 texturedCubeVAO,
                                 terrain,
                                 glm::vec3(0.2),
-//                                5 + terrain.getHeightAt(
-//                                        building->pos.x + 1,
-//                                        building->pos.y + 1
-//                                ),
-//
-//                                float xScale = 5;
-//                float zScale = 5;
-                                1//terrain.getHeightAt(35.0f * building->pos.x, 35.0f * building->pos.y) + 5
+                                1
                         )
                 );
                 break;
@@ -1139,14 +1125,8 @@ Model* makeFloorModel(Terrain terrain, City city, glm::vec3 worldPos) {
                         makeBuilding5Model(
                                 texturedCubeVAO,
                                 terrain,
-//                                float xScale = 5;
-//                                float zScale = 10;
                                 glm::vec3(0.2),
-//                                5 + terrain.getHeightAt(
-//                                        building->pos.x + 1,
-//                                        building->pos.y + 1
-//                                ),
-                                1//terrain.getHeightAt(35.0f * building->pos.x, 35.0f * building->pos.y) + 5
+                                1
                         )
                 );
                 break;
@@ -1178,77 +1158,6 @@ Model* makeFloorModel(Terrain terrain, City city, glm::vec3 worldPos) {
                 )
         );
     }
-
-//    for (int m = 0; m < city.mainStreets.size() - 1; m++) {
-//        MainStreet* ms = city.mainStreets[m];
-//
-//        children.push_back(
-//                new Model(
-//                        texturedCubeVAO,
-//                        cubeVertexPositions,
-//                        uboWorldMatrixBlock,
-//                        vector<Model*>(),
-//                        translate(
-//                                mat4(1.0f),
-//                                glm::vec3(
-//                                        ms->start.x,
-//                                        terrain.getHeightAt(
-//                                                (ms->end.x - ms->start.x + 1),
-//                                                (ms->end.y - ms->start.y + 1)
-//                                        ),
-//                                        (ms->end.y - ms->start.y - 1) / 2.0f
-//                                ) * glm::vec3(1, 1, 1) - glm::vec3(city.gridWidth / 2, 0, city.gridHeight / 2)
-//                        ),
-//                        mat4(1.0f),
-//                        scale(
-//                                mat4(1.0f),
-//                                glm::vec3(
-//                                        (ms->end.x - ms->start.x) + 1,
-//                                        1,
-//                                        (ms->end.y - ms->start.y)
-//                                ) * glm::vec3(1, 1, 1)
-//                        ),
-//                        yellow
-//                )
-//        );
-//
-//    }
-//
-//    for (int s = 0; s < city.smallStreets.size(); s++) {
-//        SmallStreet* ms = city.smallStreets[s];
-//
-//        children.push_back(
-//                new Model(
-//                        texturedCubeVAO,
-//                        cubeVertexPositions,
-//                        uboWorldMatrixBlock,
-//                        vector<Model*>(),
-//                        translate(
-//                                mat4(1.0f),
-//                                glm::vec3(
-//                                        ms->start.x + (ms->end.x - ms->start.x) / 2.0f,
-//                                        terrain.getHeightAt(
-//                                                (ms->end.x - ms->start.x + 1),
-//                                                (ms->end.y - ms->start.y + 1)
-//                                        ),
-//                                        ms->start.y
-//
-//                                ) * glm::vec3(1, 1, 1) - glm::vec3(city.gridWidth / 2, 0, city.gridHeight / 2)
-//                        ),
-//                        mat4(1.0f),
-//                        scale(
-//                                mat4(1.0f),
-//                                glm::vec3(
-//                                        ms->end.x - ms->start.x + 1,
-//                                        1,
-//                                        1
-//                                ) * glm::vec3(1, 1, 1)
-//                        ),
-//                        yellow
-//                )
-//        );
-//
-//    }
 
     glm::vec2* secret = city.secrets[0];
     std::vector<Model*> placeholder = std::vector<Model*>();
@@ -1380,14 +1289,99 @@ Model* makeFloorModel(Terrain terrain, City city, glm::vec3 worldPos) {
             )
     );
 
-//    i9Model = makeI9Model();
-//    u3Model = makeU3Model();
-//    t9Model = makeT9Model();
-//    c4Model = makeC4Model();
+    placeholder = std::vector<Model*>();
+    placeholder.push_back(makeLampModel(lampVAO));
+
+    std::vector<MainStreet*> ms = city.mainStreets;
+
+    for(int s = 0; s < ms.size(); s++) {
+        MainStreet m = *ms[s];
+
+        int start_x = m.start.x;
+
+        for(int j = m.start.y; j <= m.end.y - 5; j+=5) {
+            int start_y = j;
+            placeholder = std::vector<Model*>();
+            placeholder.push_back(makeLampModel(lampVAO));
+            children.push_back(
+                    new Model(
+                            0,
+                            vector<glm::vec3>(),
+                            uboWorldMatrixBlock,
+                            placeholder,
+                            translate(
+                                    mat4(1.0f),
+                                    glm::vec3(
+                                            start_x + 0.3,
+                                            terrain.getHeightAt(
+                                                    (start_x + 0.3) - city.gridWidth / 2,
+                                                    start_y - city.gridHeight / 2
+                                            ),
+                                            start_y
+                                    ) * glm::vec3(1, 1, 1) - glm::vec3(city.gridWidth / 2, 0, city.gridHeight / 2)
+                            ),
+                            mat4(1.0f),
+                            scale(mat4(1),vec3(2.0f/200.0f, 5.0f/100.0f, 2/200.0f)),
+                            beige
+                    )
+            );
+
+            children.push_back(
+                    new Model(
+                            0,
+                            vector<glm::vec3>(),
+                            uboWorldMatrixBlock,
+                            placeholder,
+                            translate(
+                                    mat4(1.0f),
+                                    glm::vec3(
+                                            start_x - 0.3,
+                                            terrain.getHeightAt(
+                                                    (start_x - 0.3) - city.gridWidth / 2,
+                                                    start_y - city.gridHeight / 2
+                                            ),
+                                            start_y
+                                    ) * glm::vec3(1, 1, 1) - glm::vec3(city.gridWidth / 2, 0, city.gridHeight / 2)
+                            ),
+                            mat4(1.0f),
+                            scale(mat4(1),vec3(2.0f/200.0f, 5.0f/100.0f, 2/200.0f)),
+                            beige
+                    )
+            );
+
+            placeholder = std::vector<Model*>();
+            placeholder.push_back(makeCarModel(carVAO));
+
+            children.push_back(
+                    new Model(
+                            0,
+                            vector<glm::vec3>(),
+                            uboWorldMatrixBlock,
+                            placeholder,
+                            translate(
+                                    mat4(1.0f),
+                                    glm::vec3(
+                                            start_x,
+                                            terrain.getHeightAt(
+                                                    (start_x) - city.gridWidth / 2,
+                                                    (start_y + 3) - city.gridHeight / 2
+                                            ),
+                                            start_y + 3
+                                    ) * glm::vec3(1, 1, 1) - glm::vec3(city.gridWidth / 2, 0, city.gridHeight / 2)
+                            ),
+                            mat4(1.0f),
+                            scale(mat4(1),vec3(0.5f/200.0f, 0.5f/100.0f, 0.5f/200.0f)),
+                            beige
+                    )
+            );
+        }
+    }
+
 //    carModel = makeCarModel(carVAO);
 //    garbageModel = makeGarbageModel(garbageVAO);
 //    hydrantModel = makeHydrantModel(hydrantVAO);
 //    lampModel = makeLampModel(lampVAO);
+
 
     setUpScaling = scale(glm::mat4(1), glm::vec3(200, 100, 200));
 
@@ -2149,7 +2143,7 @@ int main(int argc, char* argv[])
 	marbleTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/marble.jpg");
 #endif
 
-	float globalAmbientIntensity = 0.15f;
+	float globalAmbientIntensity = 0.25f;
 
 	wood = {};
 	wood.texture = woodTexture;
@@ -2275,17 +2269,17 @@ int main(int argc, char* argv[])
 	// Define and upload geometry to the GPU here ...
 	texturedCubeVAO = createTextureCubeVertexArrayObject();
 #if defined(PLATFORM_OSX) || __linux__
-	int sphereVAO = createSphereObjectVAO("Objects/sphere.obj");
-	int carVAO = createObjectVAO("Objects/car.obj", carVertices);
-	int lampVAO = createObjectVAO("Objects/lamp-post.obj", lampVertices);
-	int garbageVAO = createObjectVAO("Objects/garbage.obj", garbageVertices);
-	int hydrantVAO = createObjectVAO("Objects/fire-hydrant.obj", hydrantVertices);
+	sphereVAO = createSphereObjectVAO("Objects/sphere.obj");
+	carVAO = createObjectVAO("Objects/car.obj", carVertices);
+	lampVAO = createObjectVAO("Objects/lamp-post.obj", lampVertices);
+	garbageVAO = createObjectVAO("Objects/garbage.obj", garbageVertices);
+	hydrantVAO = createObjectVAO("Objects/fire-hydrant.obj", hydrantVertices);
 #else
-	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/Objects/sphere.obj");
-	int carVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/car.obj", carVertices);
-	int lampVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/lamp-post.obj", lampVertices);
-	int garbageVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/garbage.obj", garbageVertices);
-	int hydrantVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/fire-hydrant.obj", hydrantVertices);
+	sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/Objects/sphere.obj");
+	carVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/car.obj", carVertices);
+	lampVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/lamp-post.obj", lampVertices);
+	garbageVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/garbage.obj", garbageVertices);
+	hydrantVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/fire-hydrant.obj", hydrantVertices);
 #endif
 
 	vector<Model*> collisionModels;
