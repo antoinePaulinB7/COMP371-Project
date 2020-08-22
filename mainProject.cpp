@@ -331,7 +331,7 @@ float viewDistance = 2048.0f;
 // Camera parameters for view transform
 vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
 vec3 cameraUp(0.0f, 1.0f, 0.0f);
-vec3 cameraPosition(0.0f, 40.0f, 30.0f);
+vec3 cameraPosition(0.0f, 70.0f, 90.0f);
 float currentCamStrafingMovement = 0, currentCamFacingMovement = 0.0f;
 
 // Set projection matrix for shader, this won't change
@@ -2450,7 +2450,7 @@ int main(int argc, char* argv[])
 
 		normalize(cameraSideVector);
 
-		int slowingFactor = 3;
+		int slowingFactor = 20;
 
 		cameraHorizontalAngle += (cameraAngularSpeed * -1 * dt * dx) / slowingFactor;
 		cameraVerticalAngle += (cameraAngularSpeed * -1 * dt * dy) / slowingFactor;

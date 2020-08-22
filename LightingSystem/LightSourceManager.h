@@ -14,11 +14,11 @@ int currentLightIndex = 0;
 GLuint uboDepthVPBlockCopy;
 
 LightSource* lights[totalNumLights];
-vec3 lightPositions[totalNumLights] = { vec3(0.0f, 5.0f, 30.0f)};	//1
-//										vec3(-45, 30.0f, -45)};
+vec3 lightPositions[totalNumLights] = { vec3(0.0f, 5.0f, 30.0f),	//1
+									vec3(-45, 100.0f, -20)};
 
-vec3 lightLookAtPositions[totalNumLights] = { vec3(0.0f, 0.0f, 0.0f)};	//1
-//										vec3(-45, 0.0f, -45)};
+vec3 lightLookAtPositions[totalNumLights] = { vec3(0.0f, 0.0f, 0.0f),	//1
+										vec3(-100, 0.0f, -20)};
 
 void setUBODepthVPBlockInLightSourceManager(GLuint value) {
 	uboDepthVPBlockCopy = value;
