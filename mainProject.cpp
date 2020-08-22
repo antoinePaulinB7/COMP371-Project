@@ -2429,6 +2429,9 @@ int main(int argc, char* argv[])
 		lastMousePosX = mousePosX;
 		lastMousePosY = mousePosY;
 
+		cameraHorizontalAngle += (cameraAngularSpeed * -1 * dt * dx) / slowingFactor;
+		cameraVerticalAngle += (cameraAngularSpeed * -1 * dt * dy) / slowingFactor;
+
 		cameraVerticalAngle = glm::max(-85.0f, glm::min(85.0f, cameraVerticalAngle));
 		if (cameraHorizontalAngle > 360)
 		{
@@ -2448,10 +2451,6 @@ int main(int argc, char* argv[])
 		normalize(cameraSideVector);
 
 		int slowingFactor = 20;
-
-		cameraHorizontalAngle += (cameraAngularSpeed * -1 * dt * dx) / slowingFactor;
-		cameraVerticalAngle += (cameraAngularSpeed * -1 * dt * dy) / slowingFactor;
-
 
 		if (doRaycastCollision(viewMatrix, collisionModels) && currentCamFacingMovement > 0.0f) //The player is trying to move forward into an object, allow only strafing or backwards movement
 		{
