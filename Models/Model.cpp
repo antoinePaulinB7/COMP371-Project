@@ -145,13 +145,12 @@ float Model::IntersectsRay(glm::vec3 source, glm::vec3 direction)
 			}
 		}
 	}
-	else {
-		for (vector<Model*>::iterator it = children.begin(); it != children.end(); ++it)
-		{
-			float temp = (*it)->IntersectsRay(source, direction);
-			if (temp >= 0.0f && temp > intersection) {
-				intersection = temp;
-			}
+
+	for (vector<Model*>::iterator it = children.begin(); it != children.end(); ++it)
+	{
+		float temp = (*it)->IntersectsRay(source, direction);
+		if (temp >= 0.0f && temp > intersection) {
+			intersection = temp;
 		}
 	}
 	return intersection;

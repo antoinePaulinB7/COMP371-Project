@@ -8,27 +8,17 @@
 
 using namespace glm;
 
-const int totalNumLights = 7;
+const int totalNumLights = 2;
 int currentLightIndex = 0;
 
 GLuint uboDepthVPBlockCopy;
 
 LightSource* lights[totalNumLights];
-vec3 lightPositions[totalNumLights] = { vec3(0.0f, 5.0f, 30.0f),	//1
-										vec3(-45, 30.0f, -45),		//2
-										vec3(0.0f, 30.0f, 5.0f),	//3
-										vec3(50.0f, 30.0f, 15.0f),	//4
-										vec3(45.0f, 30.0f, -20.0f),	//5
-										vec3(-15.0f, 30.0f, 15.0f),
-										vec3(-20.0f, 30.0f, 20.0f) };
+vec3 lightPositions[totalNumLights] = { vec3(0.0f, 5.0f, 30.0f)};	//1
+//										vec3(-45, 30.0f, -45)};
 
-vec3 lightLookAtPositions[totalNumLights] = { vec3(0.0f, 0.0f, 0.0f),	//1
-										vec3(-45, 0.0f, -45),		//2
-										vec3(0.0f, 0.0f, 5.0f),		//3
-										vec3(50.0f, 0.0f, 15.0f),	//4
-										vec3(45.0f, 0.0f, -20.0f),	//5
-										vec3(-15.0f, 0.0f, 15.0f),	//6
-										vec3(-20.0f, 0.0f, 20.0f) };	//7
+vec3 lightLookAtPositions[totalNumLights] = { vec3(0.0f, 0.0f, 0.0f)};	//1
+//										vec3(-45, 0.0f, -45)};
 
 void setUBODepthVPBlockInLightSourceManager(GLuint value) {
 	uboDepthVPBlockCopy = value;
@@ -37,7 +27,7 @@ void setUBODepthVPBlockInLightSourceManager(GLuint value) {
 void createLightSources()
 {
 	const float bigShadowMapSize = 2048, smallShadowMapSize = 1024;
-	mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 100.0f);
+	mat4 lightProjectionMatrix = perspective(180.0f, 1.0f, 0.01f, 2048.0f);
 	currentLightIndex = 0;
 	while (currentLightIndex < totalNumLights) {
 		lights[currentLightIndex] = new LightSource(lightPositions[currentLightIndex], lightLookAtPositions[currentLightIndex],

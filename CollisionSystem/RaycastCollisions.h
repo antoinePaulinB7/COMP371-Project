@@ -33,8 +33,8 @@ bool doRaycastCollision(mat4 cameraViewMatrix, std::vector<Model*> modelsWithCol
 
 	if (intersectingModel != nullptr)
 	{
-		glm::vec3 intersectingPoint = rayOrigin + closestIntersection * rayDirection;
-		if (closestIntersection < 3.0f) {
+		if (closestIntersection < 100.0f) {
+			cout << closestIntersection << endl;
 			return true;
 		}
 	}

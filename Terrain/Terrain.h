@@ -17,22 +17,20 @@
 
 class Terrain {
     PerlinNoise pn;
-    glm::vec3 mapSize;
-    int resolution;
-    GLuint terrainVAO;
-	std::vector<glm::vec3> vertexPositions;
 
 public:
-    // constructor generates the shader on the fly
-    // ------------------------------------------------------------------------
     Terrain();
-    Terrain(glm::vec3 size, int resolution);
+    Terrain(glm::vec3 size, glm::vec3 offset, int resolution);
 
     float getHeightAt(float x, float z);
     glm::vec3 getNormalAt(float x, float z);
     GLuint getVAO();
 	std::vector<glm::vec3> getVertices();
 private:
+    glm::vec3 mapSize, offset;
+    int resolution;
+    GLuint terrainVAO;
+    std::vector<glm::vec3> vertexPositions;
     std::vector<float> heightMap;
     std::vector<float> generateHeightMap();
     float getNoiseAt(float x, float y, float z = 0.1f);

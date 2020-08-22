@@ -6,24 +6,25 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
 
-Terrain::Terrain() : Terrain(glm::vec3(10), 16){}
-Terrain::Terrain(glm::vec3 size, int res) {
+Terrain::Terrain() : Terrain(glm::vec3(10), glm::vec3(0), 16){}
+Terrain::Terrain(glm::vec3 size, glm::vec3 offset, int res) {
     pn = PerlinNoise();
-    mapSize = size;
-    resolution = res;
-    heightMap = generateHeightMap();
+    this->mapSize = size;
+    this->offset = offset;
+    this->resolution = res;
+    this->heightMap = generateHeightMap();
 
     std::vector<glm::vec3> vertices = std::vector<glm::vec3>();
     std::vector<glm::vec3> colors = std::vector<glm::vec3>();
     std::vector<glm::vec3> normals = std::vector<glm::vec3>();
     std::vector<glm::vec2> UVs = std::vector<glm::vec2>();
 
-    glm::vec3 scale = mapSize / glm::vec3(resolution - 1, 1.0f, resolution - 1);
+    glm::vec3 scale = this->mapSize / glm::vec3(this->resolution - 1, 1.0f, this->resolution - 1);
 
-    float centerOffset = (float)(resolution - 1) / 2.0f;
+    float centerOffset = (float)(this->resolution - 1) / 2.0f;
 
-    for (float i = 0; i < resolution - 1; i += 1.0f) {
-        for (float j = 0; j < resolution - 1; j += 1.0f) {
+    for (float i = 0; i < this->resolution - 1; i += 1.0f) {
+        for (float j = 0; j < this->resolution - 1; j += 1.0f) {
             vertices.push_back(glm::vec3(i - centerOffset, getNoiseAt(i, j), j - centerOffset) * (scale));
             vertices.push_back(glm::vec3(i - centerOffset, getNoiseAt(i, j+1.0f), j+1.0f - centerOffset) * (scale));
             vertices.push_back(glm::vec3(i+1.0f - centerOffset, getNoiseAt(i+1.0f, j), j - centerOffset) * (scale));
@@ -34,8 +35,8 @@ Terrain::Terrain(glm::vec3 size, int res) {
         }
     }
 
-    for (float i = 0; i < resolution - 1; i += 1.0f) {
-        for (float j = 0; j < resolution - 1; j += 1.0f) {
+    for (float i = 0; i < this->resolution - 1; i += 1.0f) {
+        for (float j = 0; j < this->resolution - 1; j += 1.0f) {
             colors.push_back(glm::vec3(1));
             colors.push_back(glm::vec3(1));
             colors.push_back(glm::vec3(1));
@@ -46,8 +47,8 @@ Terrain::Terrain(glm::vec3 size, int res) {
         }
     }
 
-    for (float i = 0; i < resolution - 1; i += 1.0f) {
-        for (float j = 0; j < resolution - 1; j += 1.0f) {
+    for (float i = 0; i < this->resolution - 1; i += 1.0f) {
+        for (float j = 0; j < this->resolution - 1; j += 1.0f) {
             normals.push_back(getNormalAt(i, j));
             normals.push_back(getNormalAt(i, j+1));
             normals.push_back(getNormalAt(i+1, j));
@@ -58,15 +59,15 @@ Terrain::Terrain(glm::vec3 size, int res) {
         }
     }
 
-    for (float i = 0; i < resolution - 1; i += 1.0f) {
-        for (float j = 0; j < resolution - 1; j += 1.0f) {
-            UVs.push_back(glm::vec2(i / resolution, j / resolution));
-            UVs.push_back(glm::vec2(i / resolution, (j+1) / resolution));
-            UVs.push_back(glm::vec2((i+1) / resolution, j / resolution));
+    for (float i = 0; i < this->resolution - 1; i += 1.0f) {
+        for (float j = 0; j < this->resolution - 1; j += 1.0f) {
+            UVs.push_back(glm::vec2(i / this->resolution, j / this->resolution));
+            UVs.push_back(glm::vec2(i / this->resolution, (j+1) / this->resolution));
+            UVs.push_back(glm::vec2((i+1) / this->resolution, j / this->resolution));
 
-            UVs.push_back(glm::vec2((i+1) / resolution, j / resolution));
-            UVs.push_back(glm::vec2(i / resolution, (j+1) / resolution));
-            UVs.push_back(glm::vec2((i+1) / resolution, (j+1) / resolution));
+            UVs.push_back(glm::vec2((i+1) / this->resolution, j / this->resolution));
+            UVs.push_back(glm::vec2(i / this->resolution, (j+1) / this->resolution));
+            UVs.push_back(glm::vec2((i+1) / this->resolution, (j+1) / this->resolution));
         }
     }
 
@@ -74,7 +75,7 @@ Terrain::Terrain(glm::vec3 size, int res) {
     glBindVertexArray(terrainVAO); //Becomes active VAO
     // Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
 
-    std::cout << terrainVAO << std::endl;
+    //std::cout << terrainVAO << std::endl;
 
     //Vertex VBO setup
     GLuint vertices_VBO;
@@ -127,11 +128,11 @@ std::vector<glm::vec3> Terrain::getVertices() {
 }
 
 float Terrain::getNoiseAt(float x, float y, float z) {
-    float dx = ((float)x - ((float)(resolution-1) / (float)2)) / (float)(resolution-1);
-    float dy = ((float)y - ((float)(resolution-1) / (float)2)) / (float)(resolution-1);
+    float dx = ((float)x + this->offset.x - ((float)(this->resolution-1) / (float)2)) / (float)(this->resolution-1);
+    float dy = ((float)y + this->offset.z - ((float)(this->resolution-1) / (float)2)) / (float)(this->resolution-1);
 
-    float noise = 8.0f * pn.noise(dx, dy, 0.1) // Low detail
-                  + 8 * pn.noise(dx, dy, 0.2) * pn.noise(dx * 4.0f, dy * 4.0f, 0.1)
+    float noise = 2.0f * pn.noise(dx, dy, 0.1) // Low detail
+                  + 2 * pn.noise(dx, dy, 0.2) * pn.noise(dx * 4.0f, dy * 4.0f, 0.1)
                   + (1.0f / 16.0f) * pn.noise(dx * 16.0f, dy * 16.0f, z);
 
     return noise;
@@ -140,9 +141,9 @@ float Terrain::getNoiseAt(float x, float y, float z) {
 std::vector<float> Terrain::generateHeightMap() {
     std::vector<float> map = std::vector<float>();
 
-    for (unsigned int i = 0; i < resolution; i++) {
-        for (unsigned int j = 0; j < resolution; j++) {
-            map.push_back(getNoiseAt((float)i, (float)j) * mapSize.y);
+    for (unsigned int i = 0; i < this->resolution; i++) {
+        for (unsigned int j = 0; j < this->resolution; j++) {
+            map.push_back(getNoiseAt((float)i, (float)j) * this->mapSize.y);
         }
     }
 
@@ -152,24 +153,24 @@ std::vector<float> Terrain::generateHeightMap() {
 
 
 float Terrain::getHeightAt(float x, float z) {
-    float centerOffset = (float)(resolution - 1) / 2.0f;
+    float centerOffset = (float)(this->resolution - 1) / 2.0f;
 
-    glm::vec3 scale = mapSize / glm::vec3(resolution - 1, 1.0f, resolution - 1);
+    glm::vec3 scale = this->mapSize / glm::vec3(this->resolution - 1, 1.0f, this->resolution - 1);
 
-    return getNoiseAt(x / scale.x + centerOffset, z / scale.z + centerOffset) * mapSize.y;
+    return getNoiseAt(x / scale.x + centerOffset, z / scale.z + centerOffset) * this->mapSize.y;
 }
 
 glm::vec3 Terrain::getNormalAt(float x, float z) {
-    if (x < 0 || x >= resolution || z < 0 || z >= resolution) {
+    if (x < 0 || x >= this->resolution || z < 0 || z >= this->resolution) {
         return glm::vec3(0);
     } else {
-        float offX = (mapSize.x / mapSize.z) / (resolution - 1);
-        float offZ = (mapSize.z / mapSize.x) / (resolution - 1);
+        float offX = (this->mapSize.x / this->mapSize.z) / (this->resolution - 1);
+        float offZ = (this->mapSize.z / this->mapSize.x) / (this->resolution - 1);
 
-        float hL = getNoiseAt(x - offX, z) * mapSize.y;
-        float hR = getNoiseAt(x + offX, z) * mapSize.y;
-        float hD = getNoiseAt(x, z - offZ) * mapSize.y;
-        float hU = getNoiseAt(x, z + offZ) * mapSize.y;
+        float hL = getNoiseAt(x - offX, z) * this->mapSize.y;
+        float hR = getNoiseAt(x + offX, z) * this->mapSize.y;
+        float hD = getNoiseAt(x, z - offZ) * this->mapSize.y;
+        float hU = getNoiseAt(x, z + offZ) * this->mapSize.y;
 
         glm::vec3 normal = glm::vec3(hL-hR, 2.0, hD-hU);
         normal = glm::normalize(normal);
