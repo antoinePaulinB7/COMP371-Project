@@ -33,9 +33,9 @@ using namespace std;
 int windowWidth = 1024, windowHeight = 764;
 
 GLuint woodTexture, skyTexture, windowTexture, brownTexture, beigeTexture, blackTexture, redTexture, blueTexture, 
-purpleTexture, yellowTexture, whiteTexture, cementTexture, marbleTexture;
+purpleTexture, yellowTexture, grayTexture, whiteTexture, cementTexture, marbleTexture;
 
-Material wood, cement, marble, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, white;
+Material wood, cement, marble, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, gray, white;
 
 void setRandomizedPositionScale(mat4& modelMatrix, Terrain terrain);
 
@@ -236,6 +236,60 @@ GLuint createSphereObjectVAO(string path) {
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs, as we are using multiple VAOs)
 
 	sphereVertices = vertices;
+
+	return VAO;
+}
+
+vector<vec3> carVertices, lampVertices, garbageVertices, hydrantVertices;
+GLuint createObjectVAO(string path, vector<vec3>& numOfVertices) {
+	vector<vec3> vertices;
+	vector<vec3> colors;
+	vector<vec3> normals;
+	vector<vec2> UVs;
+
+	//read the vertex data from the model's OBJ file
+	loadOBJ(path.c_str(), vertices, colors, normals, UVs);
+
+	GLuint VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO); //Becomes active VAO
+							// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
+
+							//Vertex VBO setup
+	GLuint vertices_VBO;
+	glGenBuffers(1, &vertices_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	//Colors VBO setup
+	GLuint colors_VBO;
+	glGenBuffers(1, &colors_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, colors_VBO);
+	glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec3), &colors.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+
+	//Normals VBO setup
+	GLuint normals_VBO;
+	glGenBuffers(1, &normals_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, normals_VBO);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+
+	//UVs VBO setup
+	GLuint uvs_VBO;
+	glGenBuffers(1, &uvs_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, uvs_VBO);
+	glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(glm::vec2), &UVs.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(3);
+
+	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs, as we are using multiple VAOs)
+
+	numOfVertices = vertices;
 
 	return VAO;
 }
@@ -1578,6 +1632,42 @@ Model* makeBuilding5Model(int vao, Terrain terrain, float yScale, float numOfFlo
 	return buildingModel;
 }
 
+Model* makeCarModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(50.0f, 50.0f, 50.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	pair<int, Material> carMaterial = getRandomMaterial();
+	return new Model(vao, carVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, carMaterial.second);
+}
+
+Model* makeLampModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	return new Model(vao, lampVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, gray);
+}
+
+Model* makeHydrantModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	return new Model(vao, hydrantVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, red);
+}
+
+Model* makeGarbageModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	return new Model(vao, garbageVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, gray);
+}
 #pragma endregion
 
 #pragma usingShaders
@@ -1646,7 +1736,11 @@ Model* u3Model;
 Model* t9Model;
 Model* c4Model;
 Model* floorModel;
-mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix;
+Model* carModel;
+Model* garbageModel;
+Model* hydrantModel;
+Model* lampModel;
+mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix, carMatrix, garbageMatrix, hydrantMatrix, lampMatrix;
 void drawScene(std::list<Model*> buildingModels, std::list<mat4> buildingMatrix, int numOfBuildings) {
 	GLuint lightCoefLocation = glGetUniformLocation(phongLightShaderProgram, "lightCoefficients");
 	GLuint lightColorLocation = glGetUniformLocation(phongLightShaderProgram, "lightColor");
@@ -1656,6 +1750,10 @@ void drawScene(std::list<Model*> buildingModels, std::list<mat4> buildingMatrix,
 	t9Model->draw(T9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
 	c4Model->draw(C4Matrix, renderingMode, lightCoefLocation, lightColorLocation);
 	floorModel->draw(mat4(1.0f), renderingMode, lightCoefLocation, lightColorLocation);
+	carModel->draw(carMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+	garbageModel->draw(garbageMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+	hydrantModel->draw(hydrantMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+	lampModel->draw(lampMatrix, renderingMode, lightCoefLocation, lightColorLocation);
 
 	std::list<Model*>::iterator itModel = buildingModels.begin();
 	std::list<mat4>::iterator itMatrix = buildingMatrix.begin();
@@ -1718,6 +1816,7 @@ int main(int argc, char* argv[])
 	blueTexture = loadTexture("blue.jpg");
 	purpleTexture = loadTexture("purple.jpg");
 	yellowTexture = loadTexture("yellow.jpg");
+	grayTexture = loadTexture("gray.jpg");
 	whiteTexture = loadTexture("white.jpg");
 	cementTexture = loadTexture("cement.jpg");
 	marbleTexture = loadTexture("marble.jpg");
@@ -1732,6 +1831,7 @@ int main(int argc, char* argv[])
 	blueTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/blue.jpg");
 	purpleTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/purple.jpg");
 	yellowTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/yellow.jpg");
+	grayTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/gray.jpg");
 	whiteTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/white.jpg");
 	cementTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/cement.jpg");
 	marbleTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/marble.jpg");
@@ -1799,6 +1899,11 @@ int main(int argc, char* argv[])
 	yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
 	yellow.lightColor = vec3(1.0f);
 
+	gray = {};
+	gray.texture = grayTexture;
+	gray.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+	gray.lightColor = vec3(1.0f);
+
 	white = {};
 	white.texture = whiteTexture;
 	white.lightCoefficients = vec4(1.0f, 0.0f, 0.0f, 0.0f);
@@ -1861,8 +1966,16 @@ int main(int argc, char* argv[])
 	texturedCubeVAO = createTextureCubeVertexArrayObject();
 #if defined(PLATFORM_OSX) || __linux__
 	int sphereVAO = createSphereObjectVAO("sphere.obj");
+	int carVAO = createObjectVAO("car.obj");
+	int lampVAO = createObjectVAO("lamp-post.obj");
+	int garbageVAO = createObjectVAO("garbage.obj");
+	int hydrantVAO = createObjectVAO("fire-hydrant.obj");
 #else
 	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/Objects/sphere.obj");
+	int carVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/car.obj", carVertices);
+	int lampVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/lamp-post.obj", lampVertices);
+	int garbageVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/garbage.obj", garbageVertices);
+	int hydrantVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/fire-hydrant.obj", hydrantVertices);
 #endif
 
 	//Create hierarchical models
@@ -1871,6 +1984,10 @@ int main(int argc, char* argv[])
 	u3Model = makeU3Model();
 	t9Model = makeT9Model();
 	c4Model = makeC4Model();
+	carModel = makeCarModel(carVAO);
+	garbageModel = makeGarbageModel(garbageVAO);
+	hydrantModel = makeHydrantModel(hydrantVAO);
+	lampModel = makeLampModel(lampVAO);
 
 	vector<Model*> collisionModels;
 	collisionModels.push_back(l9Model);
@@ -1878,6 +1995,11 @@ int main(int argc, char* argv[])
 	collisionModels.push_back(u3Model);
 	collisionModels.push_back(t9Model);
 	collisionModels.push_back(c4Model);
+	
+	collisionModels.push_back(carModel);
+	collisionModels.push_back(lampModel);
+	collisionModels.push_back(hydrantModel);
+	collisionModels.push_back(garbageModel);
 
 	floorModel = makeFloorModel(terrain);
 
@@ -1940,6 +2062,10 @@ int main(int argc, char* argv[])
 	setRandomizedPositionScale(U3Matrix, terrain);
 	setRandomizedPositionScale(T9Matrix, terrain);
 	setRandomizedPositionScale(I9Matrix, terrain);
+	setRandomizedPositionScale(carMatrix, terrain);
+	setRandomizedPositionScale(garbageMatrix, terrain);
+	setRandomizedPositionScale(hydrantMatrix, terrain);
+	setRandomizedPositionScale(lampMatrix, terrain);
 
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
