@@ -10,21 +10,21 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
 #include "shaders.h"
-#include "Model.h"
-#include "Skybox.h"
-#include "LightSource.h"
-#include "LightSourceManager.h"
-#include "RaycastCollisions.h"
-#include "TimexLetterModeler.h"
-#include "texture.h"
-#include "Terrain.h"
-#include "City.h"
+#include "Models/Model.h"
+#include "Models/Skybox.h"
+#include "LightingSystem/LightSource.h"
+#include "LightingSystem/LightSourceManager.h"
+#include "CollisionSystem/RaycastCollisions.h"
+#include "UISystem/TimexLetterModeler.h"
+#include "Textures/texture.h"
+#include "Terrain/Terrain.h"
+#include "Terrain/City.h"
 #include <time.h>
 #include <algorithm>
 #include <list>
 #include <vector>
 #include <random>
-#include "OBJloader.h"  //For loading .obj files using a polygon list format
+#include "Objects/OBJloader.h"  //For loading .obj files using a polygon list format
 
 
 //define namespaces for glm and c++ std
@@ -33,14 +33,14 @@ using namespace std;
 
 int windowWidth = 1024, windowHeight = 764;
 
-GLuint brickTexture, woodTexture, metalTexture, boxTexture, floorTilesTexture, skyTexture, windowTexture, brownTexture, beigeTexture,
-blackTexture, redTexture, blueTexture, purpleTexture, yellowTexture, whiteTexture, cementTexture, marbleTexture;
+GLuint woodTexture, skyTexture, windowTexture, brownTexture, beigeTexture, blackTexture, redTexture, blueTexture, 
+purpleTexture, yellowTexture, grayTexture, whiteTexture, cementTexture, marbleTexture;
 
-Material brick, wood, metal, cement, marble, box, floorTiles, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, white;
 float dt;
 
 std::vector<std::pair<Terrain*, City*>> worldMap;
 std::vector<Model*> floorModels;
+Material wood, cement, marble, sky, windowFrame, brown, beige, black, red, blue, purple, yellow, gray, white;
 
 void setRandomizedPositionScale(mat4& modelMatrix, Terrain terrain);
 Model* makeBuilding1Model(int vao, Terrain terrain, glm::vec3 scaleXYZ, float numOfFloors);
@@ -247,6 +247,60 @@ GLuint createSphereObjectVAO(string path) {
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs, as we are using multiple VAOs)
 
 	sphereVertices = vertices;
+
+	return VAO;
+}
+
+vector<vec3> carVertices, lampVertices, garbageVertices, hydrantVertices;
+GLuint createObjectVAO(string path, vector<vec3>& numOfVertices) {
+	vector<vec3> vertices;
+	vector<vec3> colors;
+	vector<vec3> normals;
+	vector<vec2> UVs;
+
+	//read the vertex data from the model's OBJ file
+	loadOBJ(path.c_str(), vertices, colors, normals, UVs);
+
+	GLuint VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO); //Becomes active VAO
+							// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
+
+							//Vertex VBO setup
+	GLuint vertices_VBO;
+	glGenBuffers(1, &vertices_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	//Colors VBO setup
+	GLuint colors_VBO;
+	glGenBuffers(1, &colors_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, colors_VBO);
+	glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec3), &colors.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+
+	//Normals VBO setup
+	GLuint normals_VBO;
+	glGenBuffers(1, &normals_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, normals_VBO);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+
+	//UVs VBO setup
+	GLuint uvs_VBO;
+	glGenBuffers(1, &uvs_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, uvs_VBO);
+	glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(glm::vec2), &UVs.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(3);
+
+	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs, as we are using multiple VAOs)
+
+	numOfVertices = vertices;
 
 	return VAO;
 }
@@ -1748,6 +1802,42 @@ Model* makeBuilding5Model(int vao, Terrain terrain, glm::vec3 scaleXYZ, float nu
     return buildingModel;
 }
 
+Model* makeCarModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(50.0f, 50.0f, 50.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	pair<int, Material> carMaterial = getRandomMaterial();
+	return new Model(vao, carVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, carMaterial.second);
+}
+
+Model* makeLampModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	return new Model(vao, lampVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, gray);
+}
+
+Model* makeHydrantModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	return new Model(vao, hydrantVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, red);
+}
+
+Model* makeGarbageModel(int vao) {
+	mat4 setUpScaling = scale(mat4(1.0f), vec3(1.0f));
+	mat4 setUpRotation = rotate(mat4(1.0f), 0.0f, vec3(1.0f));
+	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
+
+	vector<Model*> children = vector<Model*>();
+	return new Model(vao, garbageVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, gray);
+}
 #pragma endregion
 
 #pragma usingShaders
@@ -1815,8 +1905,14 @@ Model* i9Model;
 Model* u3Model;
 Model* t9Model;
 Model* c4Model;
+
+Model* carModel;
+Model* garbageModel;
+Model* hydrantModel;
+Model* lampModel;
+
 Model* floorModel;
-mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix;
+mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix, carMatrix, garbageMatrix, hydrantMatrix, lampMatrix;
 void drawScene() {
 	GLuint lightCoefLocation = glGetUniformLocation(phongLightShaderProgram, "lightCoefficients");
 	GLuint lightColorLocation = glGetUniformLocation(phongLightShaderProgram, "lightColor");
@@ -1825,6 +1921,10 @@ void drawScene() {
     u3Model->draw(U3Matrix, renderingMode, lightCoefLocation, lightColorLocation);
     t9Model->draw(T9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
     c4Model->draw(C4Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+    carModel->draw(carMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+    garbageModel->draw(garbageMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+    hydrantModel->draw(hydrantMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+    lampModel->draw(lampMatrix, renderingMode, lightCoefLocation, lightColorLocation);
 
     for(int i = 0; i < floorModels.size(); i++) {
         Model* fm = floorModels[i];
@@ -1836,7 +1936,6 @@ void drawScene() {
             floorModels[i]->draw(mat4(1.0f), renderingMode, lightCoefLocation, lightColorLocation);
         }
     }
-}
 
 int main(int argc, char* argv[])
 {
@@ -1880,59 +1979,42 @@ int main(int argc, char* argv[])
 
 	// Load Textures
 #if defined(PLATFORM_OSX) || __linux__
-	brickTexture = loadTexture("brick.jpg");
-	woodTexture = loadTexture("wood.jpg");
-	metalTexture = loadTexture("metal2.jpg");
-	boxTexture = loadTexture("box.jpg");
-	floorTilesTexture = loadTexture("floortiles.jpg");
-	skyTexture = loadTexture("sky.jpg");
-	windowTexture = loadTexture("window.png");
-	brownTexture = loadTexture("brown.jpg");
-	beigeTexture = loadTexture("beige.jpg");
-	blackTexture = loadTexture("black.jpg");
-	redTexture = loadTexture("red.png");
-	blueTexture = loadTexture("blue.jpg");
-	purpleTexture = loadTexture("purple.jpg");
-	yellowTexture = loadTexture("yellow.jpg");
-	whiteTexture = loadTexture("white.jpg");
-	cementTexture = loadTexture("cement.jpg");
-	marbleTexture = loadTexture("marble.jpg");
+	woodTexture = loadTexture("Textures/wood.jpg");
+	skyTexture = loadTexture("Textures/sky.jpg");
+	windowTexture = loadTexture("Textures/window.png");
+	brownTexture = loadTexture("Textures/brown.jpg");
+	beigeTexture = loadTexture("Textures/beige.jpg");
+	blackTexture = loadTexture("Textures/black.jpg");
+	redTexture = loadTexture("Textures/red.png");
+	blueTexture = loadTexture("Textures/blue.jpg");
+	purpleTexture = loadTexture("Textures/purple.jpg");
+	yellowTexture = loadTexture("Textures/yellow.jpg");
+	whiteTexture = loadTexture("Textures/white.jpg");
+	cementTexture = loadTexture("Textures/cement.jpg");
+	marbleTexture = loadTexture("Textures/marble.jpg");
 #else
-	brickTexture = loadTexture("../Source/COMP371-Group14-Project/brick.jpg");
-	woodTexture = loadTexture("../Source/COMP371-Group14-Project/wood.jpg");
-	metalTexture = loadTexture("../Source/COMP371-Group14-Project/metal2.jpg");
-	boxTexture = loadTexture("../Source/COMP371-Group14-Project/box.jpg");
-	floorTilesTexture = loadTexture("../Source/COMP371-Group14-Project/floortiles.jpg");
-	skyTexture = loadTexture("../Source/COMP371-Group14-Project/sky.jpg");
-	windowTexture = loadTexture("../Source/COMP371-Group14-Project/window.png");
-	brownTexture = loadTexture("../Source/COMP371-Group14-Project/brown.jpg");
-	beigeTexture = loadTexture("../Source/COMP371-Group14-Project/beige.jpg");
-	blackTexture = loadTexture("../Source/COMP371-Group14-Project/black.jpg");
-	redTexture = loadTexture("../Source/COMP371-Group14-Project/red.png");
-	blueTexture = loadTexture("../Source/COMP371-Group14-Project/blue.jpg");
-	purpleTexture = loadTexture("../Source/COMP371-Group14-Project/purple.jpg");
-	yellowTexture = loadTexture("../Source/COMP371-Group14-Project/yellow.jpg");
-	whiteTexture = loadTexture("../Source/COMP371-Group14-Project/white.jpg");
-	cementTexture = loadTexture("../Source/COMP371-Group14-Project/cement.jpg");
-	marbleTexture = loadTexture("../Source/COMP371-Group14-Project/marble.jpg");
+	woodTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/wood.jpg");
+	skyTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/sky.jpg");
+	windowTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/window.png");
+	brownTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/brown.jpg");
+	beigeTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/beige.jpg");
+	blackTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/black.jpg");
+	redTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/red.png");
+	blueTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/blue.jpg");
+	purpleTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/purple.jpg");
+	yellowTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/yellow.jpg");
+	grayTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/gray.jpg");
+	whiteTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/white.jpg");
+	cementTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/cement.jpg");
+	marbleTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/marble.jpg");
 #endif
 
 	float globalAmbientIntensity = 0.15f;
-
-	brick = {};
-	brick.texture = brickTexture;
-	brick.lightCoefficients = vec4(globalAmbientIntensity, 0.4f, 0.4f, 0);
-	brick.lightColor = vec3(0.9f);
 
 	wood = {};
 	wood.texture = woodTexture;
 	wood.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.9f, 52);
 	wood.lightColor = vec3(252.0f / 255.0f, 244.0f / 255.0f, 202.0f / 255.0f);
-
-	metal = {};
-	metal.texture = metalTexture;
-	metal.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
-	metal.lightColor = vec3(1.0f, 1.0f, 0.0f);
 
 	cement = {};
 	cement.texture = cementTexture;
@@ -1943,17 +2025,6 @@ int main(int argc, char* argv[])
 	marble.texture = marbleTexture;
 	marble.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.9f, 52);
 	marble.lightColor = vec3(252.0f / 255.0f, 244.0f / 255.0f, 202.0f / 255.0f);
-
-
-	box = {};
-	box.texture = boxTexture;
-	box.lightCoefficients = vec4(globalAmbientIntensity, 0.4f, 0.4f, 0);
-	box.lightColor = vec3(0.9f);
-
-	floorTiles = {};
-	floorTiles.texture = floorTilesTexture;
-	floorTiles.lightCoefficients = vec4(globalAmbientIntensity, 0.6f, 0.9f, 256);
-	floorTiles.lightColor = vec3(1.0f, 1.0f, 1.0f);
 
 	sky = {};
 	sky.texture = skyTexture;
@@ -2000,6 +2071,11 @@ int main(int argc, char* argv[])
 	yellow.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
 	yellow.lightColor = vec3(1.0f);
 
+	gray = {};
+	gray.texture = grayTexture;
+	gray.lightCoefficients = vec4(globalAmbientIntensity, 0.8f, 0.5f, 256);
+	gray.lightColor = vec3(1.0f);
+
 	white = {};
 	white.texture = whiteTexture;
 	white.lightCoefficients = vec4(1.0f, 0.0f, 0.0f, 0.0f);
@@ -2007,15 +2083,15 @@ int main(int argc, char* argv[])
 
 	// Compile and link shaders here ...
 #if defined(PLATFORM_OSX) || __linux__
-	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
-	phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
-	shadowShaderProgram = shader("shadowShader.vs", "shadowShader.fs");
-	uiShaderProgram = shader("uiShader.vs", "uiShader.fs");
+	defaultShaderProgram = shader("Models/modelShader.vs", "Models/modelShader.fs");
+	phongLightShaderProgram = shader("LightingSystem/lightShader.vs", "LightingSystem/lightShader.fs");
+	shadowShaderProgram = shader("LightingSystem/shadowShader.vs", "LightingSystem/shadowShader.fs");
+	uiShaderProgram = shader("UISystem/uiShader.vs", "UISystem/uiShader.fs");
 #else
-	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/modelShader.vs", "../Source/COMP371-Group14-Project/modelShader.fs");
-	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/lightShader.vs", "../Source/COMP371-Group14-Project/lightShader.fs");
-	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/shadowShader.vs", "../Source/COMP371-Group14-Project/shadowShader.fs");
-	uiShaderProgram = shader("../Source/COMP371-Group14-Project/uiShader.vs", "../Source/COMP371-Group14-Project/uiShader.fs");
+	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/Models/modelShader.vs", "../Source/COMP371-Group14-Project/Models/modelShader.fs");
+	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/LightingSystem/lightShader.vs", "../Source/COMP371-Group14-Project/LightingSystem/lightShader.fs");
+	shadowShaderProgram = shader("../Source/COMP371-Group14-Project/LightingSystem/shadowShader.vs", "../Source/COMP371-Group14-Project/LightingSystem/shadowShader.fs");
+	uiShaderProgram = shader("../Source/COMP371-Group14-Project/UISystem/uiShader.vs", "../Source/COMP371-Group14-Project/UISystem/uiShader.fs");
 #endif
 
 
@@ -2060,8 +2136,16 @@ int main(int argc, char* argv[])
 	texturedCubeVAO = createTextureCubeVertexArrayObject();
 #if defined(PLATFORM_OSX) || __linux__
 	int sphereVAO = createSphereObjectVAO("sphere.obj");
+	int carVAO = createObjectVAO("car.obj");
+	int lampVAO = createObjectVAO("lamp-post.obj");
+	int garbageVAO = createObjectVAO("garbage.obj");
+	int hydrantVAO = createObjectVAO("fire-hydrant.obj");
 #else
-	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/sphere.obj");
+	int sphereVAO = createSphereObjectVAO("../Source/COMP371-Group14-Project/Objects/sphere.obj");
+	int carVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/car.obj", carVertices);
+	int lampVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/lamp-post.obj", lampVertices);
+	int garbageVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/garbage.obj", garbageVertices);
+	int hydrantVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/fire-hydrant.obj", hydrantVertices);
 #endif
 
 	//Create hierarchical models
@@ -2070,6 +2154,10 @@ int main(int argc, char* argv[])
 	u3Model = makeU3Model();
 	t9Model = makeT9Model();
 	c4Model = makeC4Model();
+	carModel = makeCarModel(carVAO);
+	garbageModel = makeGarbageModel(garbageVAO);
+	hydrantModel = makeHydrantModel(hydrantVAO);
+	lampModel = makeLampModel(lampVAO);
 
 	vector<Model*> collisionModels;
 	collisionModels.push_back(l9Model);
@@ -2077,6 +2165,11 @@ int main(int argc, char* argv[])
 	collisionModels.push_back(u3Model);
 	collisionModels.push_back(t9Model);
 	collisionModels.push_back(c4Model);
+	
+	collisionModels.push_back(carModel);
+	collisionModels.push_back(lampModel);
+	collisionModels.push_back(hydrantModel);
+	collisionModels.push_back(garbageModel);
 
     worldMap = std::vector<std::pair<Terrain*, City*>>();
 
@@ -2122,11 +2215,15 @@ int main(int argc, char* argv[])
 	//Create light sources
 	createLightSources();
 
-	setRandomizedPositionScale(L9Matrix, *terrain);
-	setRandomizedPositionScale(C4Matrix, *terrain);
-	setRandomizedPositionScale(U3Matrix, *terrain);
-	setRandomizedPositionScale(T9Matrix, *terrain);
-	setRandomizedPositionScale(I9Matrix, *terrain);
+	setRandomizedPositionScale(L9Matrix, terrain);
+	setRandomizedPositionScale(C4Matrix, terrain);
+	setRandomizedPositionScale(U3Matrix, terrain);
+	setRandomizedPositionScale(T9Matrix, terrain);
+	setRandomizedPositionScale(I9Matrix, terrain);
+	setRandomizedPositionScale(carMatrix, terrain);
+	setRandomizedPositionScale(garbageMatrix, terrain);
+	setRandomizedPositionScale(hydrantMatrix, terrain);
+	setRandomizedPositionScale(lampMatrix, terrain);
 
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
