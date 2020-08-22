@@ -1299,6 +1299,9 @@ Model* makeFloorModel(Terrain terrain, City city, glm::vec3 worldPos) {
 
         int start_x = m.start.x;
 
+        if (start_x >= city.gridWidth)
+            continue;
+
         for(int j = m.start.y; j <= m.end.y - 5; j+=5) {
             int start_y = j;
             placeholder = std::vector<Model*>();
