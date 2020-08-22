@@ -34,7 +34,6 @@ bool doRaycastCollision(mat4 cameraViewMatrix, std::vector<Model*> modelsWithCol
 	if (intersectingModel != nullptr)
 	{
 		if (closestIntersection < 100.0f) {
-			cout << closestIntersection << endl;
 			return true;
 		}
 	}

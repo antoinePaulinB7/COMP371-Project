@@ -35,12 +35,14 @@ City::City(int w, int h, glm::vec3 offset) {
 
     generateSecrets(5);
 
+	/*
     for(int i = 0; i < this->gridWidth; i++) {
         for(int j = 0; j < this->gridHeight; j++) {
             std::cout << this->grid[(j * this->gridWidth) + i];
         }
         std::cout << std::endl;
     }
+	*/
 }
 
 std::vector<char> City::generateGrid() {

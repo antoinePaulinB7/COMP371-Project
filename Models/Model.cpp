@@ -74,7 +74,10 @@ Material getDefaultMaterial() {
 float Model::IntersectsRay(glm::vec3 source, glm::vec3 direction)
 {
 	float intersection = std::numeric_limits<float>::infinity() * -1.0f;
-	if (numberOfVertices > 0) {
+
+	vec3 modelPos = currentTRS[3];
+
+	if (numberOfVertices > 0 && length(modelPos - source) < 100.0f) {
 		for (int i = 0; i != numberOfVertices; i += 3)
 		{
 			//Three corners of a triangle
