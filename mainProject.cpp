@@ -241,7 +241,7 @@ GLuint createSphereObjectVAO(string path) {
 }
 
 vector<vec3> carVertices, lampVertices, garbageVertices, hydrantVertices;
-GLuint createObjectVAO(string path, vector<vec3> numOfVertices) {
+GLuint createObjectVAO(string path, vector<vec3>& numOfVertices) {
 	vector<vec3> vertices;
 	vector<vec3> colors;
 	vector<vec3> normals;
@@ -1639,7 +1639,7 @@ Model* makeCarModel(int vao) {
 
 	vector<Model*> children = vector<Model*>();
 	pair<int, Material> carMaterial = getRandomMaterial();
-	return new Model(vao, vector<vec3>(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, carMaterial.second);
+	return new Model(vao, carVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, carMaterial.second);
 }
 
 Model* makeLampModel(int vao) {
@@ -1648,7 +1648,7 @@ Model* makeLampModel(int vao) {
 	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
 
 	vector<Model*> children = vector<Model*>();
-	return new Model(vao, vector<vec3>(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, gray);
+	return new Model(vao, lampVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, gray);
 }
 
 Model* makeHydrantModel(int vao) {
@@ -1657,7 +1657,7 @@ Model* makeHydrantModel(int vao) {
 	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
 
 	vector<Model*> children = vector<Model*>();
-	return new Model(vao, vector<vec3>(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, red);
+	return new Model(vao, hydrantVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, red);
 }
 
 Model* makeGarbageModel(int vao) {
@@ -1666,7 +1666,7 @@ Model* makeGarbageModel(int vao) {
 	mat4 setUpTranslation = translate(mat4(1.0f), vec3(0.0f));
 
 	vector<Model*> children = vector<Model*>();
-	return new Model(vao, vector<vec3>(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, gray);
+	return new Model(vao, garbageVertices, uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, gray);
 }
 #pragma endregion
 
@@ -1737,7 +1737,10 @@ Model* t9Model;
 Model* c4Model;
 Model* floorModel;
 Model* carModel;
-mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix, carMatrix;
+Model* garbageModel;
+Model* hydrantModel;
+Model* lampModel;
+mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix, carMatrix, garbageMatrix, hydrantMatrix, lampMatrix;
 void drawScene(std::list<Model*> buildingModels, std::list<mat4> buildingMatrix, int numOfBuildings) {
 	GLuint lightCoefLocation = glGetUniformLocation(phongLightShaderProgram, "lightCoefficients");
 	GLuint lightColorLocation = glGetUniformLocation(phongLightShaderProgram, "lightColor");
@@ -1748,6 +1751,9 @@ void drawScene(std::list<Model*> buildingModels, std::list<mat4> buildingMatrix,
 	c4Model->draw(C4Matrix, renderingMode, lightCoefLocation, lightColorLocation);
 	floorModel->draw(mat4(1.0f), renderingMode, lightCoefLocation, lightColorLocation);
 	carModel->draw(carMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+	garbageModel->draw(garbageMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+	hydrantModel->draw(hydrantMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+	lampModel->draw(lampMatrix, renderingMode, lightCoefLocation, lightColorLocation);
 
 	std::list<Model*>::iterator itModel = buildingModels.begin();
 	std::list<mat4>::iterator itMatrix = buildingMatrix.begin();
@@ -1979,6 +1985,9 @@ int main(int argc, char* argv[])
 	t9Model = makeT9Model();
 	c4Model = makeC4Model();
 	carModel = makeCarModel(carVAO);
+	garbageModel = makeGarbageModel(garbageVAO);
+	hydrantModel = makeHydrantModel(hydrantVAO);
+	lampModel = makeLampModel(lampVAO);
 
 	vector<Model*> collisionModels;
 	collisionModels.push_back(l9Model);
@@ -1986,8 +1995,11 @@ int main(int argc, char* argv[])
 	collisionModels.push_back(u3Model);
 	collisionModels.push_back(t9Model);
 	collisionModels.push_back(c4Model);
-
+	
 	collisionModels.push_back(carModel);
+	collisionModels.push_back(lampModel);
+	collisionModels.push_back(hydrantModel);
+	collisionModels.push_back(garbageModel);
 
 	floorModel = makeFloorModel(terrain);
 
@@ -2051,6 +2063,9 @@ int main(int argc, char* argv[])
 	setRandomizedPositionScale(T9Matrix, terrain);
 	setRandomizedPositionScale(I9Matrix, terrain);
 	setRandomizedPositionScale(carMatrix, terrain);
+	setRandomizedPositionScale(garbageMatrix, terrain);
+	setRandomizedPositionScale(hydrantMatrix, terrain);
+	setRandomizedPositionScale(lampMatrix, terrain);
 
 	// Entering Main Loop
 	while (!glfwWindowShouldClose(window))
