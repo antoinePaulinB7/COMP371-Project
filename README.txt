@@ -83,5 +83,9 @@ http://www.gamonline.com/catalog/gamcookie/. [Accessed: 21-Aug-2020].
 [17] “3460 Calacatta Marble - 180fx® Laminate,” Formica Corporation. [Online]. Available: 
 https://www.formica.com/en-ca/products/180fx/03460. [Accessed: 21-Aug-2020].
 
-[18] Z. Lapointe, "Lab 08 - Collisions and Ray Casting," presented to COMP 371, Concordia University, 
+[18] N. Olsson, E. Frank, “Procedural city generation using Perlin noise”, Faculty of Computing Blekinge Institute of Technology SE371 79 Karlskrona, Sweden, 2020. [Accessed 18-Aug-2020].
+https://www.diva-portal.org/smash/get/diva2:1119094/FULLTEXT02#:~:text=Greuter%20et%20al%5B32%5D%20created,from%20all%20the%20other%20buildings.
+
+
+[19] Z. Lapointe, "Lab 08 - Collisions and Ray Casting," presented to COMP 371, Concordia University, 
 Montreal, Quebec, Canada, 2020. [PowerPointslides].
