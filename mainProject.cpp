@@ -1708,19 +1708,19 @@ int main(int argc, char* argv[])
 
 	// Load Textures
 #if defined(PLATFORM_OSX) || __linux__
-	woodTexture = loadTexture("wood.jpg");
-	skyTexture = loadTexture("sky.jpg");
-	windowTexture = loadTexture("window.png");
-	brownTexture = loadTexture("brown.jpg");
-	beigeTexture = loadTexture("beige.jpg");
-	blackTexture = loadTexture("black.jpg");
-	redTexture = loadTexture("red.png");
-	blueTexture = loadTexture("blue.jpg");
-	purpleTexture = loadTexture("purple.jpg");
-	yellowTexture = loadTexture("yellow.jpg");
-	whiteTexture = loadTexture("white.jpg");
-	cementTexture = loadTexture("cement.jpg");
-	marbleTexture = loadTexture("marble.jpg");
+	woodTexture = loadTexture("Textures/wood.jpg");
+	skyTexture = loadTexture("Textures/sky.jpg");
+	windowTexture = loadTexture("Textures/window.png");
+	brownTexture = loadTexture("Textures/brown.jpg");
+	beigeTexture = loadTexture("Textures/beige.jpg");
+	blackTexture = loadTexture("Textures/black.jpg");
+	redTexture = loadTexture("Textures/red.png");
+	blueTexture = loadTexture("Textures/blue.jpg");
+	purpleTexture = loadTexture("Textures/purple.jpg");
+	yellowTexture = loadTexture("Textures/yellow.jpg");
+	whiteTexture = loadTexture("Textures/white.jpg");
+	cementTexture = loadTexture("Textures/cement.jpg");
+	marbleTexture = loadTexture("Textures/marble.jpg");
 #else
 	woodTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/wood.jpg");
 	skyTexture = loadTexture("../Source/COMP371-Group14-Project/Textures/sky.jpg");
@@ -1808,10 +1808,10 @@ int main(int argc, char* argv[])
 
 	// Compile and link shaders here ...
 #if defined(PLATFORM_OSX) || __linux__
-	defaultShaderProgram = shader("modelShader.vs", "modelShader.fs");
-	phongLightShaderProgram = shader("lightShader.vs", "lightShader.fs");
-	shadowShaderProgram = shader("shadowShader.vs", "shadowShader.fs");
-	uiShaderProgram = shader("uiShader.vs", "uiShader.fs");
+	defaultShaderProgram = shader("Models/modelShader.vs", "Models/modelShader.fs");
+	phongLightShaderProgram = shader("LightingSystem/lightShader.vs", "LightingSystem/lightShader.fs");
+	shadowShaderProgram = shader("LightingSystem/shadowShader.vs", "LightingSystem/shadowShader.fs");
+	uiShaderProgram = shader("UISystem/uiShader.vs", "UISystem/uiShader.fs");
 #else
 	defaultShaderProgram = shader("../Source/COMP371-Group14-Project/Models/modelShader.vs", "../Source/COMP371-Group14-Project/Models/modelShader.fs");
 	phongLightShaderProgram = shader("../Source/COMP371-Group14-Project/LightingSystem/lightShader.vs", "../Source/COMP371-Group14-Project/LightingSystem/lightShader.fs");
