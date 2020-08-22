@@ -67,6 +67,7 @@ class City {
     char DISTRICT_2 = '2';
     char DISTRICT_3 = '3';
     char BUILDING = 'b';
+    char SECRET = 'X';
 
     PerlinNoise pn;
 
@@ -79,6 +80,7 @@ public:
     std::vector<Block*> cityBlocks;
     std::vector<District*> cityDistricts;
     std::vector<Building*> buildings;
+    std::vector<glm::vec2*> secrets;
 
     std::vector<char> grid;
     int gridWidth;
@@ -97,6 +99,7 @@ private:
     void generateSmallStreets();
     void generateStreetBlocks();
     void generateBuildings();
+    void generateSecrets(int numberOfSecrets);
 
     void traceLine(int line, float start, float end, bool vertical, char c);
     District* getDistrict(char type);

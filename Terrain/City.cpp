@@ -19,6 +19,7 @@ City::City(int w, int h, glm::vec3 offset) {
     this->cityBlocks = std::vector<Block*>();
     this->cityDistricts = std::vector<District*>();
     this->buildings = std::vector<Building*>();
+    this->secrets = std::vector<glm::vec2*>();
 
     grid = generateGrid();
 
@@ -32,14 +33,14 @@ City::City(int w, int h, glm::vec3 offset) {
 
     generateBuildings();
 
-	/*
+    generateSecrets(5);
+
     for(int i = 0; i < this->gridWidth; i++) {
         for(int j = 0; j < this->gridHeight; j++) {
             std::cout << this->grid[(j * this->gridWidth) + i];
         }
         std::cout << std::endl;
     }
-	*/
 }
 
 std::vector<char> City::generateGrid() {
@@ -271,6 +272,27 @@ void City::generateBuildings() {
             }
         }
     }
+}
+
+void City::generateSecrets(int numberOfSecrets) {
+    std::vector<glm::vec2*> emptyCells = std::vector<glm::vec2*>();
+
+    for(int i = 0; i < this->gridWidth; i++) {
+        for (int j = 0; j < this->gridHeight; j++) {
+            if( this->grid[(j * this->gridWidth) + i] == ' ') {
+                emptyCells.push_back(new glm::vec2(i,j));
+            }
+        }
+    }
+
+    std::random_shuffle(emptyCells.begin(), emptyCells.end());
+
+    for (int s = 0; s < numberOfSecrets; s++) {
+        glm::vec2 *secret = emptyCells[s];
+        secrets.push_back(secret);
+        this->grid[(secret->y * this->gridWidth) + secret->x] = SECRET;
+    }
+
 }
 
 void City::traceLine(int line, float start, float end, bool vertical, char c) {

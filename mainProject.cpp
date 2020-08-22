@@ -1250,6 +1250,145 @@ Model* makeFloorModel(Terrain terrain, City city, glm::vec3 worldPos) {
 //
 //    }
 
+    glm::vec2* secret = city.secrets[0];
+    std::vector<Model*> placeholder = std::vector<Model*>();
+    placeholder.push_back(makeL9Model());
+    children.push_back(
+            new Model(
+                    0,
+                    vector<glm::vec3>(),
+                    uboWorldMatrixBlock,
+                    placeholder,
+                    translate(
+                            mat4(1.0f),
+                            glm::vec3(
+                                    secret->x,
+                                    terrain.getHeightAt(
+                                            secret->x - city.gridWidth / 2,
+                                            secret->y - city.gridHeight / 2
+                                    ) + 1,
+                                    secret->y
+                            ) * glm::vec3(1, 1, 1) - glm::vec3(city.gridWidth / 2, 0, city.gridHeight / 2)
+                    ),
+                    mat4(1.0f),
+                    scale(mat4(1),vec3(1.0f/200.0f, 1.0f/100.0f, 1/200.0f)),
+                    beige
+            )
+    );
+
+    secret = city.secrets[1];
+    placeholder = std::vector<Model*>();
+    placeholder.push_back(makeI9Model());
+    children.push_back(
+            new Model(
+                    0,
+                    vector<glm::vec3>(),
+                    uboWorldMatrixBlock,
+                    placeholder,
+                    translate(
+                            mat4(1.0f),
+                            glm::vec3(
+                                    secret->x,
+                                    terrain.getHeightAt(
+                                            secret->x - city.gridWidth / 2,
+                                            secret->y - city.gridHeight / 2
+                                    ) + 1,
+                                    secret->y
+                            ) * glm::vec3(1, 1, 1) - glm::vec3(city.gridWidth / 2, 0, city.gridHeight / 2)
+                    ),
+                    mat4(1.0f),
+                    scale(mat4(1),vec3(1.0f/200.0f, 1.0f/100.0f, 1/200.0f)),
+                    beige
+            )
+    );
+
+    secret = city.secrets[2];
+    placeholder = std::vector<Model*>();
+    placeholder.push_back(makeU3Model());
+    children.push_back(
+            new Model(
+                    0,
+                    vector<glm::vec3>(),
+                    uboWorldMatrixBlock,
+                    placeholder,
+                    translate(
+                            mat4(1.0f),
+                            glm::vec3(
+                                    secret->x,
+                                    terrain.getHeightAt(
+                                            secret->x - city.gridWidth / 2,
+                                            secret->y - city.gridHeight / 2
+                                    ) + 1,
+                                    secret->y
+                            ) * glm::vec3(1, 1, 1) - glm::vec3(city.gridWidth / 2, 0, city.gridHeight / 2)
+                    ),
+                    mat4(1.0f),
+                    scale(mat4(1),vec3(1.0f/200.0f, 1.0f/100.0f, 1/200.0f)),
+                    beige
+            )
+    );
+
+    secret = city.secrets[3];
+    placeholder = std::vector<Model*>();
+    placeholder.push_back(makeT9Model());
+    children.push_back(
+            new Model(
+                    0,
+                    vector<glm::vec3>(),
+                    uboWorldMatrixBlock,
+                    placeholder,
+                    translate(
+                            mat4(1.0f),
+                            glm::vec3(
+                                    secret->x,
+                                    terrain.getHeightAt(
+                                            secret->x - city.gridWidth / 2,
+                                            secret->y - city.gridHeight / 2
+                                    ) + 1,
+                                    secret->y
+                            ) * glm::vec3(1, 1, 1) - glm::vec3(city.gridWidth / 2, 0, city.gridHeight / 2)
+                    ),
+                    mat4(1.0f),
+                    scale(mat4(1),vec3(1.0f/200.0f, 1.0f/100.0f, 1/200.0f)),
+                    beige
+            )
+    );
+
+    secret = city.secrets[4];
+    placeholder = std::vector<Model*>();
+    placeholder.push_back(makeC4Model());
+    children.push_back(
+            new Model(
+                    0,
+                    vector<glm::vec3>(),
+                    uboWorldMatrixBlock,
+                    placeholder,
+                    translate(
+                            mat4(1.0f),
+                            glm::vec3(
+                                    secret->x,
+                                    terrain.getHeightAt(
+                                            secret->x - city.gridWidth / 2,
+                                            secret->y - city.gridHeight / 2
+                                    ) + 1,
+                                    secret->y
+                            ) * glm::vec3(1, 1, 1) - glm::vec3(city.gridWidth / 2, 0, city.gridHeight / 2)
+                    ),
+                    mat4(1.0f),
+                    scale(mat4(1),vec3(1.0f/200.0f, 1.0f/100.0f, 1/200.0f)),
+                    beige
+            )
+    );
+
+//    i9Model = makeI9Model();
+//    u3Model = makeU3Model();
+//    t9Model = makeT9Model();
+//    c4Model = makeC4Model();
+//    carModel = makeCarModel(carVAO);
+//    garbageModel = makeGarbageModel(garbageVAO);
+//    hydrantModel = makeHydrantModel(hydrantVAO);
+//    lampModel = makeLampModel(lampVAO);
+
     setUpScaling = scale(glm::mat4(1), glm::vec3(200, 100, 200));
 
     Model* floorModel = new Model(terrain.getVAO(), terrain.getVertices(), uboWorldMatrixBlock, children, setUpTranslation, setUpRotation, setUpScaling, blue);
@@ -1916,15 +2055,15 @@ mat4 L9Matrix, I9Matrix, U3Matrix, T9Matrix, C4Matrix, carMatrix, garbageMatrix,
 void drawScene() {
     GLuint lightCoefLocation = glGetUniformLocation(phongLightShaderProgram, "lightCoefficients");
     GLuint lightColorLocation = glGetUniformLocation(phongLightShaderProgram, "lightColor");
-    l9Model->draw(L9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
-    i9Model->draw(I9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
-    u3Model->draw(U3Matrix, renderingMode, lightCoefLocation, lightColorLocation);
-    t9Model->draw(T9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
-    c4Model->draw(C4Matrix, renderingMode, lightCoefLocation, lightColorLocation);
-    carModel->draw(carMatrix, renderingMode, lightCoefLocation, lightColorLocation);
-    garbageModel->draw(garbageMatrix, renderingMode, lightCoefLocation, lightColorLocation);
-    hydrantModel->draw(hydrantMatrix, renderingMode, lightCoefLocation, lightColorLocation);
-    lampModel->draw(lampMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+//    l9Model->draw(L9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+//    i9Model->draw(I9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+//    u3Model->draw(U3Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+//    t9Model->draw(T9Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+//    c4Model->draw(C4Matrix, renderingMode, lightCoefLocation, lightColorLocation);
+//    carModel->draw(carMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+//    garbageModel->draw(garbageMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+//    hydrantModel->draw(hydrantMatrix, renderingMode, lightCoefLocation, lightColorLocation);
+//    lampModel->draw(lampMatrix, renderingMode, lightCoefLocation, lightColorLocation);
 
     for (int i = 0; i < floorModels.size(); i++) {
         Model *fm = floorModels[i];
@@ -2149,28 +2288,17 @@ int main(int argc, char* argv[])
 	int hydrantVAO = createObjectVAO("../Source/COMP371-Group14-Project/Objects/fire-hydrant.obj", hydrantVertices);
 #endif
 
-	//Create hierarchical models
-	l9Model = makeL9Model();
-	i9Model = makeI9Model();
-	u3Model = makeU3Model();
-	t9Model = makeT9Model();
-	c4Model = makeC4Model();
-	carModel = makeCarModel(carVAO);
-	garbageModel = makeGarbageModel(garbageVAO);
-	hydrantModel = makeHydrantModel(hydrantVAO);
-	lampModel = makeLampModel(lampVAO);
-
 	vector<Model*> collisionModels;
-	collisionModels.push_back(l9Model);
-	collisionModels.push_back(i9Model);
-	collisionModels.push_back(u3Model);
-	collisionModels.push_back(t9Model);
-	collisionModels.push_back(c4Model);
+//	collisionModels.push_back(l9Model);
+//	collisionModels.push_back(i9Model);
+//	collisionModels.push_back(u3Model);
+//	collisionModels.push_back(t9Model);
+//	collisionModels.push_back(c4Model);
 	
-	collisionModels.push_back(carModel);
-	collisionModels.push_back(lampModel);
-	collisionModels.push_back(hydrantModel);
-	collisionModels.push_back(garbageModel);
+//	collisionModels.push_back(carModel);
+//	collisionModels.push_back(lampModel);
+//	collisionModels.push_back(hydrantModel);
+//	collisionModels.push_back(garbageModel);
 
     worldMap = std::vector<std::pair<Terrain*, City*>>();
 
@@ -2365,13 +2493,9 @@ void setRandomizedPositionScale(mat4& modelMatrix, Terrain terrain) {
 	//TODO use Antoine's system to place the letters/numbers
 	float xRandTranslate = getRandomNumber(-100.0f, 100.0f);
 	float zRandTranslate = getRandomNumber(-100.0f, 100.0f);
-	float bottomLeft = terrain.getHeightAt(xRandTranslate - scaleFactor / 2, zRandTranslate - scaleFactor / 2);
-	float bottomRight = terrain.getHeightAt(xRandTranslate + scaleFactor / 2, zRandTranslate - scaleFactor / 2);
-	float topLeft = terrain.getHeightAt(xRandTranslate - scaleFactor / 2, zRandTranslate + scaleFactor / 2);
-	float topRight = terrain.getHeightAt(xRandTranslate + scaleFactor / 2, zRandTranslate + scaleFactor / 2);
-	float minSide = std::min(bottomLeft, std::min(bottomRight, std::min(topLeft, topRight)));
 
-	vec3 position = vec3(xRandTranslate, minSide + 2.5f, zRandTranslate);
+	vec3 position = vec3(xRandTranslate, terrain.getHeightAt(xRandTranslate, zRandTranslate), zRandTranslate);
+	position = vec3(0, terrain.getHeightAt(0, 0) * 100, 0);
 
 	// Building L9 scalable/translatable/rotateable matrix for individual letter
 	mat4 modelScalingMatrix = scale(mat4(1.0f), vec3(scaleFactor));
